@@ -14,3 +14,6 @@
 
 # Maven wrapper binaries and local metadata
 .mvn/
+
+# Generated analysis output
+graphify-out/
