@@ -18,7 +18,6 @@ import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.impl.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
-import com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
 import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;

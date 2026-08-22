@@ -8,7 +8,6 @@ import com.cooksync.app.data.datasource.local.RecipeDraftStore;
 import com.cooksync.app.data.datasource.local.TokenStore;
 import com.dtos.response.auth.AuthResponse;
 
-import java.util.Objects;
 
 /**
  * Process-wide, observable holder of the current authentication state. Wraps

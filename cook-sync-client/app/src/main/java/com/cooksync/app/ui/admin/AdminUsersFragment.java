@@ -1,7 +1,4 @@
 package com.cooksync.app.ui.admin;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.content.Intent;
@@ -28,7 +25,6 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
-import com.cooksync.app.ui.base.ViewModelFactory;
 import com.dtos.response.user.UserResponse;
 import com.google.android.material.button.MaterialButton;
 

@@ -1,7 +1,5 @@
 package com.cooksync.app.ui.auth;
-import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.os.CountDownTimer;
@@ -11,7 +9,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;

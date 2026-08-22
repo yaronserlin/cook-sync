@@ -1,6 +1,5 @@
 package com.cooksync.app.ui.home;
 import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
@@ -9,19 +8,15 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
-import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.common.AvatarView;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
-import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.OrganicToast;
-import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.cooksync.app.ui.recipe.favorites.FavoriteRecipesActivity;
 import com.cooksync.app.ui.recipe.myrecipes.MyRecipesActivity;

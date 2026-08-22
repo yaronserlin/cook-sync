@@ -22,7 +22,6 @@ import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
-import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.user.UserResponse;

@@ -1,7 +1,5 @@
 package com.cooksync.app.ui.recipe.review;
-import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
@@ -10,7 +8,6 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
-import com.cooksync.app.ui.base.BaseViewModel;
 
 /**
  * ViewModel for {@link ReviewActivity}. Validates the rating/title client-side and delegates

@@ -1,13 +1,11 @@
 package com.cooksync.app.ui.recipe.cooking;
 import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -37,18 +35,11 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
 import com.cooksync.app.data.datasource.local.CookingPreferencesStore;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
-import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
-import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;
 import com.dtos.response.ingredient.IngredientResponse;

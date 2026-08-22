@@ -1,6 +1,5 @@
 package com.cooksync.app.ui.recipe.detail;
 import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
@@ -12,7 +11,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,13 +25,10 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.Nullable;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
-import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ReportReviewDialog;
-import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;

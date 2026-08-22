@@ -1,8 +1,5 @@
 package com.cooksync.app.ui.common;
 import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
