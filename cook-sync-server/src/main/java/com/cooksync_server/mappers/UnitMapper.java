@@ -18,10 +18,6 @@ public final class UnitMapper {
     /**
      * Converts a Unit entity into a UnitResponse DTO.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param unit target Unit entity instance
      * @return populated UnitResponse instance or null
      */

@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank;
  * Data Transfer Object for administrative tag consolidation operations.
  * Specifies the source duplicate tag identifier and target canonical tag identifier.
  *
- * @param sourceTagId the unique identifier of the duplicate tag to be merged and removed
- * @param targetTagId the unique identifier of the canonical tag to retain
+ * @param sourceTagId the unique identifier of the duplicate tag to be merged and removed, must not be blank
+ * @param targetTagId the unique identifier of the canonical tag to retain, must not be blank
  * @author Yaron Serlin
  * @version 1.0
  * @since 02/08/2026

@@ -47,20 +47,21 @@ public class SearchActivity extends BaseActivity {
     /** How long to wait after the last keystroke before running a live search. */
     private static final long SEARCH_DEBOUNCE_MS = 350L;
 
+    /** Intent extra key carrying the seeded sort choice (see {@link #newIntentWithFilters}). */
     private static final String EXTRA_SORT = "extra_sort";
+    /** Intent extra key carrying the seeded difficulty filter. */
     private static final String EXTRA_DIFFICULTY = "extra_difficulty";
+    /** Intent extra key carrying the seeded selected tag names. */
     private static final String EXTRA_TAGS = "extra_tags";
+    /** Intent extra key carrying the seeded minimum rating filter. */
     private static final String EXTRA_MIN_RATING = "extra_min_rating";
+    /** Intent extra key carrying the seeded maximum total time filter. */
     private static final String EXTRA_MAX_TOTAL_TIME_MINUTES = "extra_max_total_time_minutes";
 
     /**
      * Builds an {@link Intent} to this screen carrying {@code filters}' current sort/
      * difficulty/tags/rating/time, so a screen the viewer already filtered (e.g. Home) hands
      * that state off instead of Search silently resetting to its own defaults.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param context the calling screen's context
      * @param filters the filter state to carry over, typically the calling screen's ViewModel

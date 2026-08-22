@@ -56,6 +56,12 @@ public interface FavoriteRecipeRepository extends JpaRepository<FavoriteRecipe, 
     @Query("DELETE FROM FavoriteRecipe f WHERE f.user.id = :userId AND f.recipe.id = :recipeId")
     void deleteByUserIdAndRecipeId(@Param("userId") String userId, @Param("recipeId") String recipeId);
 
+    /**
+     * Deletes every favorite bookmark referencing a specific recipe, regardless of which user
+     * bookmarked it.
+     *
+     * @param recipeId unique recipe identifier
+     */
     @Modifying
     @Query("DELETE FROM FavoriteRecipe f WHERE f.recipe.id = :recipeId")
     void deleteByRecipeId(@Param("recipeId") String recipeId);

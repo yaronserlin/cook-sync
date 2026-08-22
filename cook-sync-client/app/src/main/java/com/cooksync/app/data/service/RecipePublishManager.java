@@ -283,88 +283,50 @@ public class RecipePublishManager {
         });
     }
 
-    private String fetchBaseFolderSync() throws InterruptedException {
+    /**
+     * Runs a one-shot repository call synchronously from a background thread, blocking until its
+     * {@link ApiResult} settles. Shared by every {@code *Sync} helper below, which otherwise
+     * differed only in payload type and which repository method they invoked.
+     *
+     * @param <T> the payload type carried by the repository call's result
+     * @param call repository invocation that posts its result onto the supplied target
+     * @return the settled result's payload, or null if the call did not succeed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
+    private <T> T runSync(java.util.function.Consumer<MutableLiveData<ApiResult<T>>> call) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<String> result = new AtomicReference<>();
-        MutableLiveData<ApiResult<String>> target = new MutableLiveData<>();
+        AtomicReference<T> result = new AtomicReference<>();
+        MutableLiveData<ApiResult<T>> target = new MutableLiveData<>();
 
         mainHandler.post(() -> observeOnceForever(target, res -> {
-            if (res instanceof ApiResult.Success<String> s) {
+            if (res instanceof ApiResult.Success<T> s) {
                 result.set(s.getData());
             }
             latch.countDown();
         }));
 
-        mediaRepository.getBaseFolder(target);
+        call.accept(target);
         latch.await();
         return result.get();
+    }
+
+    private String fetchBaseFolderSync() throws InterruptedException {
+        return runSync(mediaRepository::getBaseFolder);
     }
 
     private CloudinarySignatureResponse fetchSignatureSync(String folder, String publicId) throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<CloudinarySignatureResponse> result = new AtomicReference<>();
-        MutableLiveData<ApiResult<CloudinarySignatureResponse>> target = new MutableLiveData<>();
-
-        mainHandler.post(() -> observeOnceForever(target, res -> {
-            if (res instanceof ApiResult.Success<CloudinarySignatureResponse> s) {
-                result.set(s.getData());
-            }
-            latch.countDown();
-        }));
-
-        mediaRepository.getUploadSignature(folder, publicId, target);
-        latch.await();
-        return result.get();
+        return runSync(target -> mediaRepository.getUploadSignature(folder, publicId, target));
     }
 
     private TagResponse createTagSync(String tag) throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<TagResponse> result = new AtomicReference<>();
-        MutableLiveData<ApiResult<TagResponse>> target = new MutableLiveData<>();
-
-        mainHandler.post(() -> observeOnceForever(target, res -> {
-            if (res instanceof ApiResult.Success<TagResponse> s) {
-                result.set(s.getData());
-            }
-            latch.countDown();
-        }));
-
-        tagRepository.createTag(tag, target);
-        latch.await();
-        return result.get();
+        return runSync(target -> tagRepository.createTag(tag, target));
     }
 
     private RecipeResponse createRecipeSync(RecipeCreateRequestDTO dto) throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<RecipeResponse> result = new AtomicReference<>();
-        MutableLiveData<ApiResult<RecipeResponse>> target = new MutableLiveData<>();
-
-        mainHandler.post(() -> observeOnceForever(target, res -> {
-            if (res instanceof ApiResult.Success<RecipeResponse> s) {
-                result.set(s.getData());
-            }
-            latch.countDown();
-        }));
-
-        recipeRepository.createRecipe(dto, target);
-        latch.await();
-        return result.get();
+        return runSync(target -> recipeRepository.createRecipe(dto, target));
     }
 
     private RecipeResponse updateRecipeSync(String recipeId, RecipeCreateRequestDTO dto) throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<RecipeResponse> result = new AtomicReference<>();
-        MutableLiveData<ApiResult<RecipeResponse>> target = new MutableLiveData<>();
-
-        mainHandler.post(() -> observeOnceForever(target, res -> {
-            if (res instanceof ApiResult.Success<RecipeResponse> s) {
-                result.set(s.getData());
-            }
-            latch.countDown();
-        }));
-
-        recipeRepository.updateRecipe(recipeId, dto, target);
-        latch.await();
-        return result.get();
+        return runSync(target -> recipeRepository.updateRecipe(recipeId, dto, target));
     }
 }

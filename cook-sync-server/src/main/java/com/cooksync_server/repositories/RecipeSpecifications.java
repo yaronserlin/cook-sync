@@ -32,10 +32,6 @@ public final class RecipeSpecifications {
     /**
      * Specification filtering public recipes created by active enabled users.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return JPA Specification predicate
      */
     public static Specification<Recipe> isPublicAndEnabled() {
@@ -47,10 +43,6 @@ public final class RecipeSpecifications {
 
     /**
      * Specification filtering recipes authored by a matching name keyword.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param author author name query keyword
      * @return Specification predicate or null if search keyword is empty
@@ -65,10 +57,6 @@ public final class RecipeSpecifications {
 
     /**
      * Specification filtering recipes containing an ingredient with matching name.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ingredient ingredient search string
      * @return Specification predicate or null if search string is empty

@@ -54,12 +54,18 @@ public final class RecipeDraftValidator {
                 && draft.servings != null && draft.servings >= 1;
     }
 
-    /** @return {@code true} if the recipe title has been filled in */
+    /**
+     * @param draft the draft to inspect
+     * @return {@code true} if the recipe title has been filled in
+     */
     public static boolean isTitleValid(RecipeDraft draft) {
         return draft.title != null && !draft.title.trim().isEmpty();
     }
 
-    /** @return {@code true} if a difficulty level has been chosen */
+    /**
+     * @param draft the draft to inspect
+     * @return {@code true} if a difficulty level has been chosen
+     */
     public static boolean isDifficultySet(RecipeDraft draft) {
         return draft.difficulty != null && !draft.difficulty.isEmpty();
     }
@@ -152,18 +158,6 @@ public final class RecipeDraftValidator {
      */
     public static boolean areAllIngredientsValid(RecipeDraft draft) {
         return isIngredientsValid(draft);
-    }
-
-    /**
-     * @param draft the draft to inspect
-     * @return how many ingredient rows currently pass validation
-     */
-    public static int countValidIngredients(RecipeDraft draft) {
-        int count = 0;
-        for (RecipeDraft.DraftIngredient ingredient : draft.ingredients) {
-            if (isIngredientValid(ingredient)) count++;
-        }
-        return count;
     }
 
     /**

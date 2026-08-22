@@ -36,10 +36,6 @@ public class InstructionController {
     /**
      * Adds a new preparation instruction step to a recipe.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param request instruction creation request DTO
      * @param authentication active user authentication token
@@ -59,10 +55,6 @@ public class InstructionController {
     /**
      * Updates an existing preparation instruction step.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param instructionId target instruction step ID
      * @param request instruction update request DTO
      * @param authentication active user authentication token
@@ -80,10 +72,6 @@ public class InstructionController {
 
     /**
      * Deletes an instruction step from a recipe.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param instructionId target instruction step ID
      * @param authentication active user authentication token

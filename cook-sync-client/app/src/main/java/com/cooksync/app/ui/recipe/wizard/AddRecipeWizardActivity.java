@@ -16,7 +16,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.cooksync.app.R;
-import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.dtos.response.recipe.RecipeResponse;
 import com.google.android.material.button.MaterialButton;
@@ -46,7 +45,9 @@ public class AddRecipeWizardActivity extends BaseActivity {
     private MaterialButton btnDraft;
     private MaterialButton btnNext;
 
+    /** Intent extra key for the JSON-serialized {@link RecipeResponse} being edited. */
     public static final String EXTRA_EDIT_RECIPE_JSON = "extra_edit_recipe_json";
+    /** Intent extra key for the id of the locally saved draft being resumed. */
     public static final String EXTRA_RESUME_DRAFT_ID = "extra_resume_draft_id";
 
     /**
@@ -146,31 +147,15 @@ public class AddRecipeWizardActivity extends BaseActivity {
                 confirmDiscard();
             }
         });
-
-        observePublishResult();
-    }
-
-    private void observePublishResult() {
-        viewModel.getPublishResult().observe(this, event -> {
-            ApiResult<RecipeResponse> result = event.getContentIfNotHandled();
-            if (result == null) return;
-            if (result instanceof ApiResult.Success<RecipeResponse>) {
-                showSuccess(getString(R.string.wizard_published_toast), null);
-                finish();
-            } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                updateStepUi(viewPager.getCurrentItem());
-                showError(error.getMessage(), null);
-            }
-        });
     }
 
     /**
-     * Kicks off Publish: every cover/description/step photo still referenced by a local
-     * local URI is uploaded to Cloudinary first (one shared signature, uploaded
-     * sequentially), and only once every image is a real URL does {@link AddRecipeViewModel#publish()}
-     * actually run — matching the wizard's "nothing leaves the device before Publish" rule. This
-     * orchestration lives here rather than in the ViewModel because the Cloudinary Android SDK is
-     * inherently {@link android.content.Context}-dependent.
+     * Kicks off Publish: hands the draft to {@link com.cooksync.app.data.service.RecipePublishManager},
+     * which uploads every cover/description/step photo still referenced by a local URI to
+     * Cloudinary (one shared signature, uploaded sequentially), creates any pending new tags, and
+     * only then posts the recipe to the server — matching the wizard's "nothing leaves the device
+     * before Publish" rule. This screen does not wait for any of it: it navigates to
+     * {@code MyRecipesActivity} immediately, where the background job's live progress is shown.
      *
      * <p>The draft is saved locally right before backgrounding the publish and leaving this
      * screen, so if publishing fails (bad network, server error, upload failure) the recipe is

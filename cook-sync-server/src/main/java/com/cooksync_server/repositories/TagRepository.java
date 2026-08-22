@@ -51,6 +51,6 @@ public interface TagRepository extends JpaRepository<Tag, String> {
      *                 popular tags are returned
      * @return tags ordered by descending recipe usage count
      */
-    @Query("SELECT t FROM Tag t JOIN t.recipes r GROUP BY t ORDER BY COUNT(r) DESC")
+    @Query("SELECT t FROM Recipe r JOIN r.tags t GROUP BY t ORDER BY COUNT(r) DESC")
     List<Tag> findPopularTags(Pageable pageable);
 }

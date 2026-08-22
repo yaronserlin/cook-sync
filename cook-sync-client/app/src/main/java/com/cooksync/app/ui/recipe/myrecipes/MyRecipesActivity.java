@@ -1,7 +1,6 @@
 package com.cooksync.app.ui.recipe.myrecipes;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -15,7 +14,6 @@ import com.cooksync.app.data.datasource.local.RecipeDraftStore;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.base.ViewModelFactory;
@@ -296,45 +294,14 @@ public class MyRecipesActivity extends RecipeListActivity {
         styleChip(chipPrivate, "PRIVATE".equals(visibility));
     }
 
-    /**
-     * Updates the "Filters · N" button to reflect the currently active non-default filters
-     * (difficulty, tags, minimum rating, and/or total time — sort is ignored since one sort
-     * option is always selected). Reads the active filters directly from {@link #viewModel}.
-     */
-    private void updateFilterButton() {
-        int count = viewModel.getActiveFilterCount();
-        boolean active = count > 0;
-
-        btnFilters.setText(getString(R.string.filters_count_format, count));
-        btnFilters.setBackgroundTintList(ColorStateList.valueOf(
-                active ? getColor(R.color.color_accent) : getColor(R.color.color_neutral_300)));
-        btnFilters.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
-
-        ColorStateList tint = ColorStateList.valueOf(active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
-        btnFilters.setIconTint(tint);
+    @Override
+    protected FilterSheetLauncher.FilterState getFilterState() {
+        return viewModel;
     }
 
-    /**
-     * Builds the list of currently active search/filter constraints for the no-results state,
-     * mirroring {@code SearchActivity}'s equivalent.
-     */
-    private List<NoResultsStateHelper.Constraint> buildRemovableConstraints() {
-        List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
-
-        String query = viewModel.getCurrentQuery();
-        if (query != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(
-                    "\"" + query + "\"", () -> searchView.setQuery("", true)));
-        }
-        for (NoResultsStateHelper.Constraint shared : viewModel.buildRemovableConstraints(
-                t -> getString(R.string.filters_applied_time_format, t),
-                r -> getString(R.string.filters_applied_rating_format, r))) {
-            constraints.add(new NoResultsStateHelper.Constraint(shared.label(), () -> {
-                shared.onRemove().run();
-                updateFilterButton();
-            }));
-        }
-        return constraints;
+    @Override
+    protected String getCurrentSearchQuery() {
+        return viewModel.getCurrentQuery();
     }
 
     private void showOptionsMenu(RecipePreviewResponse recipe, View anchor) {
@@ -356,7 +323,7 @@ public class MyRecipesActivity extends RecipeListActivity {
                         showError(err.getMessage(), bottomNav);
                     }
                 });
-                viewModel.fetchRecipeDetail(recipe.id(), target);
+                viewModel.loadRecipeDetail(recipe.id(), target);
                 return true;
             }
             if (id == R.id.action_toggle_visibility) {

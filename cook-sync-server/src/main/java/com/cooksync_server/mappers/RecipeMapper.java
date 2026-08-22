@@ -83,21 +83,6 @@ public final class RecipeMapper {
     }
 
     /**
-     * Converts a Recipe entity into a RecipePreviewResponse with personal note flag.
-     *
-     * Complexity:
-     * Time: O(T) where T is tag count
-     * Space: O(T)
-     *
-     * @param recipe target Recipe entity
-     * @param hasPersonalNote flag indicating user attached note
-     * @return populated RecipePreviewResponse instance
-     */
-    public static RecipePreviewResponse toPreview(Recipe recipe, boolean hasPersonalNote) {
-        return toPreview(recipe, hasPersonalNote, null);
-    }
-
-    /**
      * Converts a Recipe entity into a RecipePreviewResponse with personal note text.
      *
      * Complexity:

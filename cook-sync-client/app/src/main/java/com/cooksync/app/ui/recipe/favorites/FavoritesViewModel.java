@@ -15,7 +15,6 @@ import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Manages data state for {@link FavoriteRecipesActivity}: the user's favorited recipes,
@@ -40,16 +39,11 @@ public class FavoritesViewModel extends AbstractFilterableListViewModel {
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
-    private String currentQuery = null;
     private boolean onlyWithNotes = false;
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param repository the repository used for favorites calls
      * @param tagRepository the repository used to load the available tags
@@ -73,9 +67,6 @@ public class FavoritesViewModel extends AbstractFilterableListViewModel {
     /** {@code true} once favorites have loaded and there's at least one. */
     public boolean hasAnyFavorites() { return !allFavorites.isEmpty(); }
 
-    /** The active search text, or {@code null} if none is set. */
-    public String getCurrentQuery() { return currentQuery; }
-
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
@@ -93,16 +84,6 @@ public class FavoritesViewModel extends AbstractFilterableListViewModel {
             }
         });
         repository.getFavorites(result);
-    }
-
-    /**
-     * Filters the already-loaded favorites by title/description match.
-     *
-     * @param query the search text, or blank/{@code null} to clear it
-     */
-    public void search(String query) {
-        currentQuery = (query == null || query.isBlank()) ? null : query.trim();
-        publishFiltered();
     }
 
     /**
@@ -165,16 +146,8 @@ public class FavoritesViewModel extends AbstractFilterableListViewModel {
     }
 
     private void publishFiltered() {
-        List<RecipePreviewResponse> displayed = new ArrayList<>(allFavorites);
+        List<RecipePreviewResponse> displayed = RecipeFilterUtils.filterByQuery(allFavorites, currentQuery);
 
-        if (currentQuery != null) {
-            String needle = currentQuery.toLowerCase(Locale.ROOT);
-            displayed.removeIf(r -> {
-                boolean titleMatch = r.title() != null && r.title().toLowerCase(Locale.ROOT).contains(needle);
-                boolean descMatch = r.description() != null && r.description().toLowerCase(Locale.ROOT).contains(needle);
-                return !titleMatch && !descMatch;
-            });
-        }
         if (onlyWithNotes) {
             displayed.removeIf(r -> !r.hasPersonalNote());
         }

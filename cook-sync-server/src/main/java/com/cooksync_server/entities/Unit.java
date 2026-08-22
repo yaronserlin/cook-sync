@@ -55,10 +55,6 @@ public class Unit {
 
     /**
      * Lifecycle callback establishing initial entity timestamps.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {
@@ -68,10 +64,6 @@ public class Unit {
 
     /**
      * Lifecycle callback updating entity timestamp.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PreUpdate
     protected void onUpdate() {

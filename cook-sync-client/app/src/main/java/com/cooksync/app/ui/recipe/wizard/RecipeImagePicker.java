@@ -39,6 +39,7 @@ import java.util.concurrent.Executors;
  */
 public final class RecipeImagePicker {
 
+    /** Single background thread used to copy picked images into this app's private cache. */
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
     /** Notified with the picked image's local URI, once it's been copied into this app's own cache. */
@@ -52,10 +53,6 @@ public final class RecipeImagePicker {
 
     /**
      * Registers the underlying picker launcher against {@code fragment}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param fragment the hosting fragment, mid-{@code onCreate}
      */
@@ -71,10 +68,6 @@ public final class RecipeImagePicker {
     /**
      * Launches the system image picker, invoking {@code listener} once the picked image has been
      * copied into this app's private cache.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param listener invoked with the copied image's {@code file://} URI; not called if the
      *                  user cancels the pick, or if the copy fails

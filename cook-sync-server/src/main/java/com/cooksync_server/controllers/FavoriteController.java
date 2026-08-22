@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cooksync_server.services.FavoriteService;
 import com.dtos.response.ApiResponse;
+import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -42,21 +44,17 @@ public class FavoriteController {
      * @return response entity containing PagedResponse of RecipePreviewResponse DTOs
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<com.dtos.response.PagedResponse<RecipePreviewResponse>>> getUserFavorites(
+    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getUserFavorites(
             Authentication authentication,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         String userEmail = authentication.getName();
-        com.dtos.response.PagedResponse<RecipePreviewResponse> favorites = favoriteService.getUserFavorites(userEmail, page, size);
+        PagedResponse<RecipePreviewResponse> favorites = favoriteService.getUserFavorites(userEmail, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, favorites, null, "Favorites retrieved successfully"));
     }
 
     /**
      * Adds a recipe to the authenticated user's favorite bookmarks.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param recipeId target recipe ID
      * @param authentication active user authentication token
@@ -73,10 +71,6 @@ public class FavoriteController {
 
     /**
      * Removes a recipe from the authenticated user's favorite bookmarks.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param recipeId target recipe ID
      * @param authentication active user authentication token

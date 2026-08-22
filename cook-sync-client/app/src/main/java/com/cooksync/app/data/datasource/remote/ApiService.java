@@ -13,7 +13,14 @@ import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
+import com.dtos.request.note.NoteRequestDTO;
+import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
+import com.dtos.request.review.ReportReviewRequestDTO;
+import com.dtos.request.review.ReviewRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
+import com.dtos.request.tags.TagRequestDTO;
+import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -22,7 +29,14 @@ import com.dtos.response.admin.ReportedReviewResponse;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
+import com.dtos.response.note.NoteResponse;
+import com.dtos.response.recipe.RecipePreviewResponse;
+import com.dtos.response.recipe.RecipeResponse;
+import com.dtos.response.tags.TagResponse;
+import com.dtos.response.unit.UnitResponse;
 import com.dtos.response.user.UserResponse;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -133,10 +147,10 @@ public interface ApiService {
      * @return call yielding a paged collection of the user's public recipes
      */
     @GET("api/users/{id}/recipes")
-    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getPublicUserRecipes(
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicUserRecipes(
             @Path("id") String id,
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -149,10 +163,10 @@ public interface ApiService {
      * @return call yielding a paged collection of the user's public favorites
      */
     @GET("api/users/{id}/favorites")
-    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getPublicUserFavorites(
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicUserFavorites(
             @Path("id") String id,
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -253,8 +267,8 @@ public interface ApiService {
      */
     @GET("api/cloudinary/signature")
     Call<ApiResponse<CloudinarySignatureResponse>> getMediaSignature(
-            @retrofit2.http.Query("folder") String folder,
-            @retrofit2.http.Query("publicId") String publicId
+            @Query("folder") String folder,
+            @Query("publicId") String publicId
     );
 
     /**
@@ -277,9 +291,9 @@ public interface ApiService {
      * @return call yielding a paged collection of recipe previews
      */
     @GET("api/recipes/public/paged")
-    Call<ApiResponse<com.dtos.response.PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getPublicFeed(
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicFeed(
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -293,12 +307,12 @@ public interface ApiService {
      * @return call yielding a paged collection of matching recipe previews
      */
     @GET("api/recipes/public/search")
-    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> searchRecipes(
-            @retrofit2.http.Query("q") String query,
-            @retrofit2.http.Query("author") String author,
-            @retrofit2.http.Query("ingredient") String ingredient,
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(
+            @Query("q") String query,
+            @Query("author") String author,
+            @Query("ingredient") String ingredient,
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -310,10 +324,10 @@ public interface ApiService {
      * @return call yielding a paged collection of recipe previews
      */
     @GET("api/recipes/public/tag/{tagName}")
-    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getRecipesByTag(
-            @retrofit2.http.Path("tagName") String tagName,
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getRecipesByTag(
+            @Path("tagName") String tagName,
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -323,8 +337,8 @@ public interface ApiService {
      * @return call yielding the full recipe detail
      */
     @GET("api/recipes/public/{id}")
-    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> getRecipeDetail(
-            @retrofit2.http.Path("id") String id
+    Call<ApiResponse<RecipeResponse>> getRecipeDetail(
+            @Path("id") String id
     );
 
     /**
@@ -334,8 +348,8 @@ public interface ApiService {
      * @return call yielding the newly created recipe
      */
     @POST("api/recipes")
-    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> createRecipe(
-            @Body com.dtos.request.recipe.RecipeCreateRequestDTO request
+    Call<ApiResponse<RecipeResponse>> createRecipe(
+            @Body RecipeCreateRequestDTO request
     );
 
     /**
@@ -346,9 +360,9 @@ public interface ApiService {
      * @return call yielding the updated recipe response
      */
     @PUT("api/recipes/{id}")
-    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> updateRecipe(
-            @retrofit2.http.Path("id") String id,
-            @Body com.dtos.request.recipe.RecipeCreateRequestDTO request
+    Call<ApiResponse<RecipeResponse>> updateRecipe(
+            @Path("id") String id,
+            @Body RecipeCreateRequestDTO request
     );
 
     /**
@@ -360,9 +374,9 @@ public interface ApiService {
      * @return call yielding a paged collection of the user's own recipes
      */
     @GET("api/recipes/mine")
-    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getMyRecipes(
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getMyRecipes(
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -371,8 +385,8 @@ public interface ApiService {
      * @param id the ID of the recipe to delete
      * @return call yielding an empty acknowledgement
      */
-    @retrofit2.http.DELETE("api/recipes/{id}")
-    Call<ApiResponse<Void>> deleteRecipe(@retrofit2.http.Path("id") String id);
+    @DELETE("api/recipes/{id}")
+    Call<ApiResponse<Void>> deleteRecipe(@Path("id") String id);
 
     /**
      * Changes only a recipe's visibility (Public/Private) without resubmitting the rest of
@@ -383,9 +397,9 @@ public interface ApiService {
      * @return call yielding the updated recipe
      */
     @PATCH("api/recipes/{id}/visibility")
-    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> updateRecipeVisibility(
-            @retrofit2.http.Path("id") String id,
-            @Body com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO request
+    Call<ApiResponse<RecipeResponse>> updateRecipeVisibility(
+            @Path("id") String id,
+            @Body RecipeVisibilityUpdateRequestDTO request
     );
 
     // ── Tags ───────────────────────────────────────────────────────
@@ -398,9 +412,9 @@ public interface ApiService {
      * @return call yielding a paged collection of tags
      */
     @GET("api/tags")
-    Call<ApiResponse<PagedResponse<com.dtos.response.tags.TagResponse>>> getAllTags(
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<TagResponse>>> getAllTags(
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -410,8 +424,8 @@ public interface ApiService {
      * @return call yielding the popular tags ordered by descending usage
      */
     @GET("api/tags/popular")
-    Call<ApiResponse<java.util.List<com.dtos.response.tags.TagResponse>>> getPopularTags(
-            @retrofit2.http.Query("limit") int limit
+    Call<ApiResponse<List<TagResponse>>> getPopularTags(
+            @Query("limit") int limit
     );
 
     /**
@@ -422,8 +436,8 @@ public interface ApiService {
      * @return call yielding the created (or matched) tag
      */
     @POST("api/tags/custom")
-    Call<ApiResponse<com.dtos.response.tags.TagResponse>> createCustomTag(
-            @Body com.dtos.request.tags.TagRequestDTO request
+    Call<ApiResponse<TagResponse>> createCustomTag(
+            @Body TagRequestDTO request
     );
 
     // ── Units ──────────────────────────────────────────────────────
@@ -436,9 +450,9 @@ public interface ApiService {
      * @return call yielding a paged collection of units
      */
     @GET("api/units")
-    Call<ApiResponse<PagedResponse<com.dtos.response.unit.UnitResponse>>> getUnits(
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<UnitResponse>>> getUnits(
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -448,7 +462,7 @@ public interface ApiService {
      * @return call yielding the created unit
      */
     @POST("api/units")
-    Call<ApiResponse<com.dtos.response.unit.UnitResponse>> createUnit(@Body com.dtos.request.unit.UnitRequestDTO request);
+    Call<ApiResponse<UnitResponse>> createUnit(@Body UnitRequestDTO request);
 
     /**
      * Deletes a measurement unit by ID. Admin-only.
@@ -469,9 +483,9 @@ public interface ApiService {
      * @return call yielding a paged collection of the user's favorites
      */
     @GET("api/favorites")
-    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getFavorites(
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getFavorites(
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -481,7 +495,7 @@ public interface ApiService {
      * @return call yielding an empty response
      */
     @POST("api/favorites/{recipeId}")
-    Call<ApiResponse<Void>> addFavorite(@retrofit2.http.Path("recipeId") String recipeId);
+    Call<ApiResponse<Void>> addFavorite(@Path("recipeId") String recipeId);
 
     /**
      * Removes a recipe from the user's favorites list.
@@ -489,8 +503,8 @@ public interface ApiService {
      * @param recipeId the ID of the recipe to unfavorite
      * @return call yielding an empty response
      */
-    @retrofit2.http.DELETE("api/favorites/{recipeId}")
-    Call<ApiResponse<Void>> removeFavorite(@retrofit2.http.Path("recipeId") String recipeId);
+    @DELETE("api/favorites/{recipeId}")
+    Call<ApiResponse<Void>> removeFavorite(@Path("recipeId") String recipeId);
 
     // ── Personal Notes ─────────────────────────────────────────────
 
@@ -501,14 +515,14 @@ public interface ApiService {
      * @return call yielding the personal note, if any
      */
     @GET("api/notes/recipe/{recipeId}")
-    Call<ApiResponse<com.dtos.response.note.NoteResponse>> getPersonalNote(
-            @retrofit2.http.Path("recipeId") String recipeId
+    Call<ApiResponse<NoteResponse>> getPersonalNote(
+            @Path("recipeId") String recipeId
     );
 
     /**
      * Fetches every private note the user has attached to a recipe, both the general
      * recipe-wide note and any notes attached to individual instruction steps
-     * (distinguished by {@link com.dtos.response.note.NoteResponse#instructionId()} being
+     * (distinguished by {@link NoteResponse#instructionId()} being
      * non-null). Used by Cooking Mode to show the right note alongside each step.
      *
      * @param recipeId the ID of the recipe
@@ -517,10 +531,10 @@ public interface ApiService {
      * @return call yielding a paged collection of every note (general + per-step) for the recipe
      */
     @GET("api/notes/recipe/{recipeId}/all")
-    Call<ApiResponse<PagedResponse<com.dtos.response.note.NoteResponse>>> getAllPersonalNotes(
-            @retrofit2.http.Path("recipeId") String recipeId,
-            @retrofit2.http.Query("page") int page,
-            @retrofit2.http.Query("size") int size
+    Call<ApiResponse<PagedResponse<NoteResponse>>> getAllPersonalNotes(
+            @Path("recipeId") String recipeId,
+            @Query("page") int page,
+            @Query("size") int size
     );
 
     /**
@@ -531,7 +545,7 @@ public interface ApiService {
      * @return call yielding an empty acknowledgement
      */
     @POST("api/notes")
-    Call<ApiResponse<Void>> saveNote(@Body com.dtos.request.note.NoteRequestDTO request);
+    Call<ApiResponse<Void>> saveNote(@Body NoteRequestDTO request);
 
     /**
      * Deletes a personal note.
@@ -539,8 +553,8 @@ public interface ApiService {
      * @param noteId the ID of the note to delete
      * @return call yielding an empty acknowledgement
      */
-    @retrofit2.http.DELETE("api/notes/{noteId}")
-    Call<ApiResponse<Void>> deleteNote(@retrofit2.http.Path("noteId") String noteId);
+    @DELETE("api/notes/{noteId}")
+    Call<ApiResponse<Void>> deleteNote(@Path("noteId") String noteId);
 
     // ── Reviews ───────────────────────────────────────────────────
 
@@ -553,8 +567,8 @@ public interface ApiService {
      */
     @POST("api/recipes/{recipeId}/reviews")
     Call<ApiResponse<Void>> submitReview(
-            @retrofit2.http.Path("recipeId") String recipeId,
-            @Body com.dtos.request.review.ReviewRequestDTO request
+            @Path("recipeId") String recipeId,
+            @Body ReviewRequestDTO request
     );
 
     /**
@@ -563,8 +577,8 @@ public interface ApiService {
      * @param reviewId the ID of the review to delete
      * @return call yielding an empty acknowledgement
      */
-    @retrofit2.http.DELETE("api/reviews/{reviewId}")
-    Call<ApiResponse<Void>> deleteReview(@retrofit2.http.Path("reviewId") String reviewId);
+    @DELETE("api/reviews/{reviewId}")
+    Call<ApiResponse<Void>> deleteReview(@Path("reviewId") String reviewId);
 
     /**
      * Flags a review for moderator review.
@@ -575,8 +589,8 @@ public interface ApiService {
      */
     @POST("api/reviews/{reviewId}/report")
     Call<ApiResponse<Void>> reportReview(
-            @retrofit2.http.Path("reviewId") String reviewId,
-            @Body com.dtos.request.review.ReportReviewRequestDTO request
+            @Path("reviewId") String reviewId,
+            @Body ReportReviewRequestDTO request
     );
 
     // ── Admin ─────────────────────────────────────────────────────

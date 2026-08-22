@@ -18,10 +18,6 @@ public final class TagMapper {
     /**
      * Converts a Tag entity into a TagResponse DTO.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param tag target Tag entity instance
      * @return populated TagResponse instance or null
      */

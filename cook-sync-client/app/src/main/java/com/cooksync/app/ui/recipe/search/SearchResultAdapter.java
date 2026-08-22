@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -61,12 +62,7 @@ public class SearchResultAdapter extends BaseAdapter<RecipePreviewResponse, Sear
         holder.time.setText(holder.itemView.getContext()
                 .getString(R.string.time_format, recipe.prepTimeMinutes() + recipe.cookTimeMinutes()));
 
-        Glide.with(holder.itemView.getContext())
-                .load(recipe.primaryImageUrl())
-                .placeholder(R.drawable.bg_skeleton_bone)
-                .error(R.drawable.ic_image_failed)
-                .centerCrop()
-                .into(holder.image);
+        GlideUtils.loadThumbnail(Glide.with(holder.itemView.getContext()), recipe.primaryImageUrl(), holder.image);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {

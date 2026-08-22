@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.TextWatchers;
@@ -305,10 +306,7 @@ public class WizardBasicsFragment extends Fragment {
         cardCoverPreview.setVisibility(hasCover ? View.VISIBLE : View.GONE);
         btnPickCover.setVisibility(hasCover ? View.GONE : View.VISIBLE);
         if (hasCover) {
-            Glide.with(this).load(url)
-                    .placeholder(R.drawable.bg_skeleton_bone)
-                    .error(R.drawable.ic_image_failed)
-                    .into(ivCoverPreview);
+            GlideUtils.loadPreview(Glide.with(this), url, ivCoverPreview);
         }
     }
 

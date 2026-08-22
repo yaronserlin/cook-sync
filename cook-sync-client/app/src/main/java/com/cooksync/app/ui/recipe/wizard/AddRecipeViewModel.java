@@ -2,8 +2,6 @@ package com.cooksync.app.ui.recipe.wizard;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
-import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
-import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import androidx.lifecycle.LiveData;
@@ -15,7 +13,6 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.UnitRepository;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.domain.Event;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.recipe.RecipeResponse;
@@ -49,15 +46,10 @@ public class AddRecipeViewModel extends BaseViewModel {
     private final MutableLiveData<ApiResult<List<TagResponse>>> tagsResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<TagResponse>>> popularTagsResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<UnitResponse>>> unitsResult = new MutableLiveData<>();
-    private final MutableLiveData<Event<ApiResult<RecipeResponse>>> publishResult = new MutableLiveData<>();
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param recipeRepository the repository used to publish the finished recipe
      * @param tagRepository the repository used to load/create tags
@@ -78,10 +70,6 @@ public class AddRecipeViewModel extends BaseViewModel {
      * Returns whether at least one locally saved draft exists to resume, without loading any of
      * them.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return {@code true} if any resumable draft is stored on-device
      */
     public boolean hasResumableDraft() {
@@ -92,10 +80,6 @@ public class AddRecipeViewModel extends BaseViewModel {
      * Starts a brand-new, empty draft. Called when {@link AddRecipeWizardActivity} launches for
      * "Create recipe" (as opposed to resuming a specific saved draft or editing an existing
      * recipe), so an arbitrary number of drafts can coexist without one silently reusing another.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void startNewDraft() {
         draft = new RecipeDraft();
@@ -197,7 +181,8 @@ public class AddRecipeViewModel extends BaseViewModel {
 
     /**
      * Appends an inline description photo, referenced for now by its local picked-file URI —
-     * nothing is uploaded to Cloudinary until {@link #publish()}, matching the wizard's "nothing
+     * nothing is uploaded to Cloudinary until Publish (see
+     * {@link com.cooksync.app.data.service.RecipePublishManager}), matching the wizard's "nothing
      * leaves the device before Publish" rule. Matching the design's own copy ("Photos sit inline
      * where you place them. The first one becomes the cover if you don't set one."), this becomes
      * the cover photo too if none was explicitly chosen yet.
@@ -279,8 +264,8 @@ public class AddRecipeViewModel extends BaseViewModel {
     }
 
     /**
-     * @param localUri the picked cover photo's local (file://) URI, as a string — not
-     *                 uploaded until {@link #publish()}
+     * @param localUri the picked cover photo's local (file://) URI, as a string — not uploaded
+     *                 until Publish (see {@link com.cooksync.app.data.service.RecipePublishManager})
      */
     public void setCoverImageUrl(String localUri) {
         draft.primaryImageUrl = localUri;
@@ -312,7 +297,8 @@ public class AddRecipeViewModel extends BaseViewModel {
     /**
      * Marks a not-yet-existing tag name as selected, purely locally — matching the rest of the
      * wizard's "nothing hits the server before Publish" rule. The tag is only actually created
-     * (via {@link TagRepository#createTag}) as part of {@link #publish()}.
+     * (via {@link TagRepository#createTag}) as part of the Publish flow (see
+     * {@link com.cooksync.app.data.service.RecipePublishManager}).
      *
      * @param name the new tag's name
      */
@@ -386,6 +372,8 @@ public class AddRecipeViewModel extends BaseViewModel {
      * Context-dependent), so — matching this app's MVVM boundary — {@link AddRecipeWizardActivity}
      * owns the upload loop itself and calls {@link #resolvePendingImageUpload} as each finishes;
      * this ViewModel only tracks *where* each pending image lives in the draft.
+     *
+     * @return every draft image still referenced by a local (not-yet-uploaded) URI
      */
     public List<RecipeDraftMediaHelper.PendingImageUpload> collectPendingImageUploads() {
         return RecipeDraftMediaHelper.collectPendingImageUploads(draft);
@@ -398,10 +386,6 @@ public class AddRecipeViewModel extends BaseViewModel {
     /**
      * Requests a fresh Cloudinary upload signature into a caller-owned {@code resultTarget},
      * exactly like every {@code *Repository} call in the app.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param resultTarget LiveData target to post the outcome
      */
@@ -417,60 +401,6 @@ public class AddRecipeViewModel extends BaseViewModel {
     public void setVisibility(String visibility) {
         draft.visibility = visibility;
     }
-
-    /**
-     * Validates and publishes the draft. Assumes {@link AddRecipeWizardActivity} has already
-     * resolved every {@link #collectPendingImageUploads()} entry (i.e. every image is a real
-     * Cloudinary URL, not a local URI) before calling this. Any tag names picked via
-     * "Create tag" are only created server-side now, at the start of publishing — not when the
-     * user typed them — so an abandoned draft never leaves orphaned tags or uploaded images
-     * behind. On success, the local draft is cleared since it now exists on the server.
-     *
-     * Complexity:
-     * Time: O(t) network round-trips for t pending tags, plus one to publish
-     * Space: O(1)
-     */
-    public void publish() {
-        if (!RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_REVIEW)) {
-            publishResult.setValue(new Event<>(new ApiResult.Error<>("Please complete every required field first.", null)));
-            return;
-        }
-        resolveNextPendingTagThenPublish();
-    }
-
-    /** Resolves {@link RecipeDraft#pendingNewTagNames} one at a time, then submits the recipe. */
-    private void resolveNextPendingTagThenPublish() {
-        if (draft.pendingNewTagNames.isEmpty()) {
-            submitRecipe();
-            return;
-        }
-        String name = draft.pendingNewTagNames.get(0);
-        MutableLiveData<ApiResult<TagResponse>> result = new MutableLiveData<>();
-        observeOnce(result, apiResult -> {
-            if (apiResult instanceof ApiResult.Success<TagResponse> success) {
-                draft.tags.add(success.getData());
-                draft.pendingNewTagNames.remove(0);
-                resolveNextPendingTagThenPublish();
-            } else if (apiResult instanceof ApiResult.Error<TagResponse> error) {
-                publishResult.setValue(new Event<>(new ApiResult.Error<>(error.getMessage(), error.getCause())));
-            }
-        });
-        tagRepository.createTag(name, result);
-    }
-
-    private void submitRecipe() {
-        MutableLiveData<ApiResult<RecipeResponse>> result = new MutableLiveData<>();
-        observeOnce(result, apiResult -> {
-            if (apiResult instanceof ApiResult.Success<RecipeResponse>) {
-                RecipeDraftStore.remove(draft.draftId);
-                RecipeImagePicker.clearCache(com.cooksync.app.CookSyncApplication.getAppContext());
-            }
-            publishResult.setValue(new Event<>(apiResult));
-        });
-        recipeRepository.createRecipe(RecipeDraftMapper.toDto(draft), result);
-    }
-
-    public LiveData<Event<ApiResult<RecipeResponse>>> getPublishResult() { return publishResult; }
 
     /**
      * Pads {@code realNames} up to {@code limit} entries using {@code fallbackNames}, skipping

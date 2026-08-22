@@ -36,10 +36,6 @@ public class IngredientController {
     /**
      * Appends a new ingredient entry to a specific recipe.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param request ingredient creation payload DTO
      * @param authentication active Spring Security user token
@@ -59,10 +55,6 @@ public class IngredientController {
     /**
      * Updates an existing ingredient entry.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ingredientId target ingredient ID
      * @param request ingredient update payload DTO
      * @param authentication active Spring Security user token
@@ -80,10 +72,6 @@ public class IngredientController {
 
     /**
      * Deletes an ingredient entry from a recipe.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ingredientId target ingredient ID
      * @param authentication active Spring Security user token

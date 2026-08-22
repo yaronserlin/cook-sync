@@ -5,6 +5,7 @@ import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -20,15 +21,18 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.HomeActivity;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
 import com.cooksync.app.ui.settings.SettingsActivity;
+import com.cooksync.app.util.DimensionUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -65,6 +69,19 @@ public abstract class RecipeListActivity extends BaseActivity {
     /** Which bottom-nav item corresponds to this screen. */
     @IdRes
     protected abstract int getSelectedNavItemId();
+
+    /**
+     * The subclass's ViewModel, viewed only through its shared filter-state surface — used by
+     * {@link #updateFilterButton()} and {@link #buildRemovableConstraints()} so those can live
+     * here instead of being duplicated in every {@link RecipeListActivity} subclass.
+     */
+    protected abstract FilterSheetLauncher.FilterState getFilterState();
+
+    /**
+     * The subclass's currently active free-text search query, or {@code null} if none is set —
+     * used by {@link #buildRemovableConstraints()} to render the query's removable chip.
+     */
+    protected abstract String getCurrentSearchQuery();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,10 +164,6 @@ public abstract class RecipeListActivity extends BaseActivity {
      * keystroke, matching the "live filter as you type" search behavior shared by My Recipes
      * and Favorites (unlike {@code SearchActivity}, neither screen debounces or hits the
      * network — both filter an already-loaded local list).
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param onQueryChange invoked with the current query text on submit and on every change
      */
@@ -240,7 +253,49 @@ public abstract class RecipeListActivity extends BaseActivity {
     }
 
     private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
+        return DimensionUtils.dpToPx(this, dp);
+    }
+
+    /**
+     * Updates the "Filters · N" button to reflect the currently active non-default filters
+     * (difficulty, tags, minimum rating, and/or total time — sort is ignored since one sort
+     * option is always selected). Reads the active filters from {@link #getFilterState()}.
+     */
+    protected void updateFilterButton() {
+        int count = getFilterState().getActiveFilterCount();
+        boolean active = count > 0;
+
+        btnFilters.setText(getString(R.string.filters_count_format, count));
+        btnFilters.setBackgroundTintList(ColorStateList.valueOf(
+                active ? getColor(R.color.color_accent) : getColor(R.color.color_neutral_300)));
+        btnFilters.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
+
+        ColorStateList tint = ColorStateList.valueOf(active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
+        btnFilters.setIconTint(tint);
+    }
+
+    /**
+     * Builds the list of currently active search/filter constraints for the no-results state,
+     * mirroring {@code SearchActivity}'s equivalent.
+     *
+     * @return one removable constraint per active search query and filter, in display order
+     */
+    protected List<NoResultsStateHelper.Constraint> buildRemovableConstraints() {
+        List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
+
+        String query = getCurrentSearchQuery();
+        if (query != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    "\"" + query + "\"", () -> searchView.setQuery("", true)));
+        }
+        for (NoResultsStateHelper.Constraint shared : getFilterState().buildRemovableConstraints(
+                t -> getString(R.string.filters_applied_time_format, t),
+                r -> getString(R.string.filters_applied_rating_format, r))) {
+            constraints.add(new NoResultsStateHelper.Constraint(shared.label(), () -> {
+                shared.onRemove().run();
+                updateFilterButton();
+            }));
+        }
+        return constraints;
     }
 }

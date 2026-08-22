@@ -8,7 +8,6 @@ import com.dtos.response.instruction.InstructionResponse;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Instruction;
 import com.cooksync_server.entities.Recipe;
-import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.mappers.InstructionMapper;
 import com.cooksync_server.repositories.IngredientRepository;
@@ -51,15 +50,14 @@ public class InstructionServiceImp implements InstructionService {
      * @param request instruction step creation request DTO
      * @param userEmail user email address
      * @return InstructionResponse DTO of saved step
+     * @throws ResourceNotFoundException if the recipe or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     @Transactional
     public InstructionResponse addInstructionToRecipe(String recipeId, InstructionRequestDTO request, String userEmail) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(recipe.getCreatedBy().getId(), user,
+        Recipe recipe = OwnershipValidator.requireOwnedResource(
+                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this recipe.");
 
         Instruction instruction = Instruction.builder()
@@ -86,15 +84,14 @@ public class InstructionServiceImp implements InstructionService {
      * @param request instruction step update request DTO
      * @param userEmail user email address
      * @return InstructionResponse DTO of updated step
+     * @throws ResourceNotFoundException if the instruction or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the instruction's recipe owner nor an administrator
      */
     @Transactional
     public InstructionResponse updateInstruction(String instructionId, InstructionRequestDTO request, String userEmail) {
-        Instruction instruction = instructionRepository.findById(instructionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Instruction", instructionId));
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(instruction.getRecipe().getCreatedBy().getId(), user,
+        Instruction instruction = OwnershipValidator.requireOwnedResource(
+                () -> instructionRepository.findById(instructionId), "Instruction", instructionId,
+                i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this instruction.");
 
         instruction.setStepNumber(request.stepNumber());
@@ -110,21 +107,16 @@ public class InstructionServiceImp implements InstructionService {
     /**
      * Deletes an instruction step from a recipe.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param instructionId target instruction step ID
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if the instruction or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the instruction's recipe owner nor an administrator
      */
     @Transactional
     public void deleteInstruction(String instructionId, String userEmail) {
-        Instruction instruction = instructionRepository.findById(instructionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Instruction", instructionId));
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(instruction.getRecipe().getCreatedBy().getId(), user,
+        Instruction instruction = OwnershipValidator.requireOwnedResource(
+                () -> instructionRepository.findById(instructionId), "Instruction", instructionId,
+                i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to delete this instruction.");
 
         instructionRepository.delete(instruction);

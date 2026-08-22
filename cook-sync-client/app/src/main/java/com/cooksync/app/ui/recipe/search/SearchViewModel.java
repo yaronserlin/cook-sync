@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  */
 public class SearchViewModel extends AbstractFilterableListViewModel {
 
+    /** Number of results requested per page. */
     private static final int PAGE_SIZE = 10;
 
     private final RecipeRepository recipeRepository;
@@ -48,17 +49,12 @@ public class SearchViewModel extends AbstractFilterableListViewModel {
     private int currentPage = 0;
     private boolean isLastPage = false;
 
-    private String currentQuery = null;
     /** The tag currently being browsed via {@link #searchByTag}, or {@code null} for a keyword search. */
     private String browseTagName = null;
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param recipeRepository the repository used for search/tag-browse calls
      * @param tagRepository the repository used to load the tag catalog
@@ -71,16 +67,15 @@ public class SearchViewModel extends AbstractFilterableListViewModel {
     public LiveData<FeedState> getFeedState() { return feedState; }
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
 
-    /** @return the most recently submitted (non-blank) search query, or {@code null} */
-    public String getCurrentQuery() { return currentQuery; }
-
     /**
      * Runs a keyword search against the public recipe catalog, resetting pagination. Resets
      * nothing about the active filters — clearing/re-running a search keeps whatever filters
-     * were already active.
+     * were already active. Overrides the inherited default (a pure client-side re-filter) since
+     * search results here are paginated server-side and a new query needs a fresh fetch.
      *
      * @param query the search text
      */
+    @Override
     public void search(String query) {
         if (query == null || query.isBlank()) {
             currentQuery = null;

@@ -18,10 +18,6 @@ public final class ReviewMapper {
     /**
      * Converts a Review entity into a ReviewResponse DTO.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param review target Review entity instance
      * @return populated ReviewResponse instance or null
      */

@@ -27,6 +27,7 @@ import java.util.List;
  */
 public class ReviewActivity extends BaseActivity {
 
+    /** Intent extra key for the id of the recipe being reviewed. */
     public static final String EXTRA_RECIPE_ID = "extra_recipe_id";
 
     private ReviewViewModel viewModel;
@@ -97,6 +98,13 @@ public class ReviewActivity extends BaseActivity {
             } else if (result instanceof ApiResult.Error<Void> error) {
                 setLoading(false);
                 showError(error.getMessage(), null);
+            }
+        });
+
+        viewModel.getValidationError().observe(this, event -> {
+            String message = event.getContentIfNotHandled();
+            if (message != null) {
+                showError(message, null);
             }
         });
     }

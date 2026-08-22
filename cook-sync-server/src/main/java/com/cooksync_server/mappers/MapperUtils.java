@@ -17,10 +17,6 @@ final class MapperUtils {
     /**
      * Formats a LocalDateTime instance to ISO string format or null.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param dateTime target LocalDateTime instance
      * @return ISO-formatted string representation or null if input is null
      */

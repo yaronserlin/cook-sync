@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.ApiResponse;
+import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
 import com.cooksync_server.services.UnitService;
 
@@ -43,23 +45,21 @@ public class UnitController {
      * Time: O(U) where U is total unit count
      * Space: O(U)
      *
+     * @param page page number index
+     * @param size page size limit
      * @return response entity containing list of UnitResponse DTOs
      */
     @GetMapping("")
-    public ResponseEntity<ApiResponse<com.dtos.response.PagedResponse<UnitResponse>>> getAllUnits(
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page, 
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size) {
+    public ResponseEntity<ApiResponse<PagedResponse<UnitResponse>>> getAllUnits(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         log.debug("Fetching all units from the system");
-        com.dtos.response.PagedResponse<UnitResponse> units = unitService.getAllUnits(page, size);
+        PagedResponse<UnitResponse> units = unitService.getAllUnits(page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, units, null, "All units retrieved successfully"));
     }
 
     /**
      * Retrieves a specific measurement unit by ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target unit unique identifier
      * @return response entity containing UnitResponse DTO
@@ -75,10 +75,6 @@ public class UnitController {
     /**
      * Creates a new measurement unit definition.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request unit creation request DTO
      * @return response entity containing created UnitResponse DTO
      */
@@ -93,10 +89,6 @@ public class UnitController {
 
     /**
      * Deletes a measurement unit by ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target unit unique identifier
      * @return response entity acknowledging unit deletion

@@ -46,10 +46,6 @@ public final class TagAutocompleteController {
     /**
      * Wires the controller to its input field and chip group.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param input the tag-name text field
      * @param chipGroup the group selected-tag chips are rendered into
      * @param listener notified of selection/creation/removal

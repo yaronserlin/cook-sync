@@ -90,10 +90,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
      * Cartesian product instead of being deduplicated the way the Set-typed collections are.
      * See {@link #findDescriptionBlocksByRecipeId(String)} for the companion fetch.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target recipe unique identifier
      * @return optional containing fully initialized Recipe entity if present
      */

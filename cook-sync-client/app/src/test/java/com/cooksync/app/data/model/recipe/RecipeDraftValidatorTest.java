@@ -116,17 +116,6 @@ public class RecipeDraftValidatorTest {
         assertFalse(RecipeDraftValidator.isIngredientBlank(ingredient));
     }
 
-    @Test
-    public void countValidIngredients_countsOnlyFullyValidRows() {
-        RecipeDraft draft = new RecipeDraft();
-        draft.ingredients.add(validIngredient());
-        draft.ingredients.add(new RecipeDraft.DraftIngredient());
-        RecipeDraft.DraftIngredient invalid = validIngredient();
-        invalid.unitId = null;
-        draft.ingredients.add(invalid);
-        assertEquals(1, RecipeDraftValidator.countValidIngredients(draft));
-    }
-
     // ── parsePositiveQuantity ─────────────────────────────────────────
 
     @Test

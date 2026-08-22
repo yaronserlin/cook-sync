@@ -29,10 +29,6 @@ public final class CookingPreferencesStore {
     /**
      * Returns whether cooking mode should keep the screen awake.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return {@code true} if the screen should stay awake during cooking mode, defaults to
      *         {@code true} for a fresh install
      */
@@ -43,10 +39,6 @@ public final class CookingPreferencesStore {
     /**
      * Persists whether cooking mode should keep the screen awake.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param enabled {@code true} to keep the screen awake during cooking mode
      */
     public static void setScreenAwakeEnabled(boolean enabled) {
@@ -55,10 +47,6 @@ public final class CookingPreferencesStore {
 
     /**
      * Returns whether a finished step timer should play a sound and vibrate.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return {@code true} if timers should sound and vibrate, defaults to {@code true} for a
      *         fresh install
@@ -69,10 +57,6 @@ public final class CookingPreferencesStore {
 
     /**
      * Persists whether a finished step timer should play a sound and vibrate.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param enabled {@code true} to play a sound and vibrate when a timer finishes
      */

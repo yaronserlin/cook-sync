@@ -10,7 +10,6 @@ import com.dtos.response.ingredient.IngredientResponse;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.Unit;
-import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.mappers.IngredientMapper;
 import com.cooksync_server.repositories.IngredientRepository;
@@ -39,23 +38,18 @@ public class IngredientServiceImp implements IngredientService {
     /**
      * Appends a new ingredient entry to a target recipe following authorization verification.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param request ingredient creation payload DTO
      * @param userEmail user email address
      * @return IngredientResponse DTO of saved ingredient
+     * @throws ResourceNotFoundException if the recipe, acting user, or referenced unit cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     @Transactional
     public IngredientResponse addIngredientToRecipe(String recipeId, IngredientRequestDTO request, String userEmail) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(recipe.getCreatedBy().getId(), user,
+        Recipe recipe = OwnershipValidator.requireOwnedResource(
+                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this recipe's ingredients.");
 
         Unit unit = unitRepository.findById(request.unitId())
@@ -74,23 +68,18 @@ public class IngredientServiceImp implements IngredientService {
     /**
      * Updates an existing ingredient item details.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ingredientId target ingredient ID
      * @param request ingredient update payload DTO
      * @param userEmail user email address
      * @return IngredientResponse DTO of updated ingredient
+     * @throws ResourceNotFoundException if the ingredient, acting user, or referenced unit cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the ingredient's recipe owner nor an administrator
      */
     @Transactional
     public IngredientResponse updateIngredient(String ingredientId, IngredientRequestDTO request, String userEmail) {
-        Ingredient ingredient = ingredientRepository.findById(ingredientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ingredient", ingredientId));
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(ingredient.getRecipe().getCreatedBy().getId(), user,
+        Ingredient ingredient = OwnershipValidator.requireOwnedResource(
+                () -> ingredientRepository.findById(ingredientId), "Ingredient", ingredientId,
+                i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this ingredient.");
 
         Unit unit = unitRepository.findById(request.unitId())
@@ -106,21 +95,16 @@ public class IngredientServiceImp implements IngredientService {
     /**
      * Deletes an ingredient item from a recipe.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ingredientId target ingredient ID
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if the ingredient or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the ingredient's recipe owner nor an administrator
      */
     @Transactional
     public void deleteIngredient(String ingredientId, String userEmail) {
-        Ingredient ingredient = ingredientRepository.findById(ingredientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ingredient", ingredientId));
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(ingredient.getRecipe().getCreatedBy().getId(), user,
+        Ingredient ingredient = OwnershipValidator.requireOwnedResource(
+                () -> ingredientRepository.findById(ingredientId), "Ingredient", ingredientId,
+                i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to delete this ingredient.");
 
         ingredientRepository.delete(ingredient);

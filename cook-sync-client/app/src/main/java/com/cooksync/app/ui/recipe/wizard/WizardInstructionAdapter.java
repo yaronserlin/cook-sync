@@ -24,6 +24,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.TextWatchers;
 
 import java.util.ArrayList;
@@ -138,10 +139,8 @@ public class WizardInstructionAdapter extends BaseAdapter<RecipeDraft.DraftInstr
 
             if (instruction.imageUrl != null && !instruction.imageUrl.isEmpty()) {
                 cardPhotoPreview.setVisibility(View.VISIBLE);
-                Glide.with(context).load(instruction.imageUrl)
-                        .placeholder(R.drawable.bg_skeleton_bone)
-                        .error(R.drawable.ic_image_failed)
-                        .into((ImageView) cardPhotoPreview.findViewById(R.id.iv_instruction_photo_preview));
+                GlideUtils.loadPreview(Glide.with(context), instruction.imageUrl,
+                        (ImageView) cardPhotoPreview.findViewById(R.id.iv_instruction_photo_preview));
             } else {
                 cardPhotoPreview.setVisibility(View.GONE);
             }

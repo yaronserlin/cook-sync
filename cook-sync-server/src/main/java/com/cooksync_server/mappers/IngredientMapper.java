@@ -19,10 +19,6 @@ public final class IngredientMapper {
     /**
      * Converts an Ingredient entity into an IngredientResponse DTO.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param entity target Ingredient entity
      * @return populated IngredientResponse DTO instance or null
      */

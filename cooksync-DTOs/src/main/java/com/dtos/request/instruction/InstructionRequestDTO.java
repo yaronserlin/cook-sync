@@ -9,7 +9,7 @@ import java.util.UUID;
  * Data Transfer Object for creating or updating a recipe instruction step.
  * Encapsulates step order, textual description, optional timer configurations, and ingredient references.
  *
- * @param stepNumber the 1-based sequential position of the instruction step
+ * @param stepNumber the 1-based sequential position of the instruction step, must be positive
  * @param description the step-by-step instruction text, must not be blank
  * @param hasTimer flag indicating whether this step requires a countdown timer
  * @param timeSeconds optional timer duration in seconds if hasTimer is true

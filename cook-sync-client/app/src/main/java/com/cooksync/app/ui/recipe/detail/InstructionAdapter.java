@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.cooksync.app.util.CommitOnceGuard;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.instruction.InstructionResponse;
@@ -107,12 +109,7 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         holder.stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
         if (hasImage) {
             holder.stepImage.setVisibility(View.VISIBLE);
-            Glide.with(holder.stepImage.getContext())
-                    .load(imageUrl)
-                    .placeholder(R.drawable.bg_skeleton_bone)
-                    .error(R.drawable.ic_image_failed)
-                    .centerCrop()
-                    .into(holder.stepImage);
+            GlideUtils.loadThumbnail(Glide.with(holder.stepImage.getContext()), imageUrl, holder.stepImage);
             holder.stepImage.setOnClickListener(v -> {
                 if (imageClickListener != null) {
                     imageClickListener.onImageClick(imageUrl);
@@ -150,15 +147,14 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         // Commits on either an explicit tap of the save icon, or on blur (tapping outside the
         // field) — both routes are wired below and can fire back-to-back for the same gesture
         // (tapping Save itself first blurs the field, which also fires the focus-loss commit).
-        // The "already committed" guard on this holder makes the second firing a no-op, so
+        // The CommitOnceGuard makes the second firing a no-op, so
         // RecyclerView#notifyDataSetChanged() (and any onSaveNote/onDeleteNote callback) never
         // runs twice for one user action.
-        boolean[] alreadyCommitted = {false};
+        CommitOnceGuard commitGuard = new CommitOnceGuard();
         View.OnClickListener commitEditor = v -> {
-            if (alreadyCommitted[0]) {
+            if (!commitGuard.tryCommit()) {
                 return;
             }
-            alreadyCommitted[0] = true;
             String text = holder.noteEditText.getText() == null ? "" : holder.noteEditText.getText().toString().trim();
             if (!text.isEmpty() && !Objects.equals(text, note) && noteChangeListener != null) {
                 noteChangeListener.onSaveNote(step, text);
@@ -174,10 +170,9 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         });
 
         holder.deleteNoteButton.setOnClickListener(v -> {
-            if (alreadyCommitted[0]) {
+            if (!commitGuard.tryCommit()) {
                 return;
             }
-            alreadyCommitted[0] = true;
             if (noteChangeListener != null) {
                 noteChangeListener.onDeleteNote(step);
             }

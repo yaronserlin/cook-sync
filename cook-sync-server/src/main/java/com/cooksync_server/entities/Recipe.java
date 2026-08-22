@@ -126,10 +126,6 @@ public class Recipe {
 
     /**
      * Initializes timestamps prior to persistence.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {
@@ -139,10 +135,6 @@ public class Recipe {
 
     /**
      * Refreshes modification timestamp prior to update execution.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PreUpdate
     protected void onUpdate() {

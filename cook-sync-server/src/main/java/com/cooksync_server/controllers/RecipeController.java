@@ -69,10 +69,6 @@ public class RecipeController {
     /**
      * Retrieves full detail view of a single recipe by ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target recipe unique identifier
      * @return response entity containing full RecipeResponse DTO
      */
@@ -96,6 +92,8 @@ public class RecipeController {
      * @param sortBy sort criterion: newest (default), rating, fastest
      * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
      * @param minRating optional minimum average rating threshold
+     * @param page zero-based page index
+     * @param size page size limit
      * @return response entity containing search result list of RecipePreviewResponse DTOs
      */
     @GetMapping("/public/search")
@@ -124,6 +122,8 @@ public class RecipeController {
      * @param sortBy sort criterion: newest (default), rating, fastest
      * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
      * @param minRating optional minimum average rating threshold
+     * @param page zero-based page index
+     * @param size page size limit
      * @return response entity containing list of RecipePreviewResponse DTOs
      */
     @GetMapping("/public/tag/{tagName}")
@@ -146,6 +146,8 @@ public class RecipeController {
      * Space: O(U)
      *
      * @param authentication active user authentication token
+     * @param page zero-based page index
+     * @param size page size limit
      * @return response entity containing user's RecipePreviewResponse DTOs
      */
     @GetMapping("/mine")
@@ -203,10 +205,6 @@ public class RecipeController {
     /**
      * Updates only a recipe's visibility (PUBLIC/PRIVATE), without resubmitting the rest of the recipe.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target recipe unique identifier
      * @param request visibility update payload DTO
      * @param authentication active user authentication token
@@ -224,10 +222,6 @@ public class RecipeController {
 
     /**
      * Deletes a recipe by unique ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target recipe unique identifier
      * @param authentication active user authentication token

@@ -18,10 +18,15 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
  */
 public class AddRecipeWizardPagerAdapter extends FragmentStateAdapter {
 
+    /** Basics step index, mirroring {@link RecipeDraftValidator#STEP_BASICS}. */
     public static final int STEP_BASICS = RecipeDraftValidator.STEP_BASICS;
+    /** Ingredients step index, mirroring {@link RecipeDraftValidator#STEP_INGREDIENTS}. */
     public static final int STEP_INGREDIENTS = RecipeDraftValidator.STEP_INGREDIENTS;
+    /** Instructions step index, mirroring {@link RecipeDraftValidator#STEP_INSTRUCTIONS}. */
     public static final int STEP_INSTRUCTIONS = RecipeDraftValidator.STEP_INSTRUCTIONS;
+    /** Review step index, mirroring {@link RecipeDraftValidator#STEP_REVIEW}. */
     public static final int STEP_REVIEW = RecipeDraftValidator.STEP_REVIEW;
+    /** Total number of wizard steps. */
     public static final int STEP_COUNT = 4;
 
     public AddRecipeWizardPagerAdapter(@NonNull FragmentActivity activity) {

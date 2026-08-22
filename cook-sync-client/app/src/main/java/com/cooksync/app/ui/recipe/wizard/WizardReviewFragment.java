@@ -18,6 +18,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
+import com.cooksync.app.util.DimensionUtils;
+import com.cooksync.app.util.GlideUtils;
 import com.dtos.response.tags.TagResponse;
 import com.google.android.material.card.MaterialCardView;
 
@@ -102,10 +104,7 @@ public class WizardReviewFragment extends Fragment {
 
         if (draft.primaryImageUrl != null && !draft.primaryImageUrl.isEmpty()) {
             cardCover.setVisibility(View.VISIBLE);
-            Glide.with(this).load(draft.primaryImageUrl)
-                    .placeholder(R.drawable.bg_skeleton_bone)
-                    .error(R.drawable.ic_image_failed)
-                    .into(ivCover);
+            GlideUtils.loadPreview(Glide.with(this), draft.primaryImageUrl, ivCover);
         } else {
             cardCover.setVisibility(View.GONE);
         }
@@ -207,7 +206,7 @@ public class WizardReviewFragment extends Fragment {
     }
 
     private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+        return DimensionUtils.dpToPx(requireContext(), value);
     }
 
     private void styleVisibilityChips() {

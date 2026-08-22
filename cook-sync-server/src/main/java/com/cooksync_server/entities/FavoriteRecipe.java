@@ -52,10 +52,6 @@ public class FavoriteRecipe {
 
     /**
      * Initializes creation timestamp before entity persistence.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {

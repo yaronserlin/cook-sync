@@ -37,6 +37,8 @@ public class TagServiceImp implements TagService{
      * Time: O(T) where T is total tag count
      * Space: O(T)
      *
+     * @param page page number index
+     * @param size page size limit
      * @return list of TagResponse DTOs
      */
     @Transactional(readOnly = true)
@@ -65,12 +67,9 @@ public class TagServiceImp implements TagService{
     /**
      * Retrieves a tag by unique ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target tag ID
      * @return TagResponse DTO
+     * @throws ResourceNotFoundException if no tag with the given ID exists
      */
     @Transactional(readOnly = true)
     public TagResponse getTagById(String id) {
@@ -81,10 +80,6 @@ public class TagServiceImp implements TagService{
 
     /**
      * Finds an existing tag by name or creates a new one if not existing.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request tag request DTO
      * @return TagResponse DTO
@@ -101,12 +96,9 @@ public class TagServiceImp implements TagService{
     /**
      * Creates a new tag ensuring uniqueness against existing tag names.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request tag creation request DTO
      * @return TagResponse DTO of created tag
+     * @throws ResourceAllReadyExistsException if a tag with the same name already exists
      */
     @Transactional
     public TagResponse createTag(TagRequestDTO request) {
@@ -123,13 +115,11 @@ public class TagServiceImp implements TagService{
     /**
      * Updates an existing tag name.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target tag ID
      * @param request tag update request DTO
      * @return TagResponse DTO of updated tag
+     * @throws ResourceNotFoundException if no tag with the given ID exists
+     * @throws ResourceAllReadyExistsException if another tag with the same name already exists
      */
     @Transactional
     public TagResponse updateTag(String id, TagRequestDTO request) {
@@ -146,11 +136,8 @@ public class TagServiceImp implements TagService{
     /**
      * Deletes a tag by ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target tag ID
+     * @throws ResourceNotFoundException if no tag with the given ID exists
      */
     @Transactional
     public void deleteTag(String id) {

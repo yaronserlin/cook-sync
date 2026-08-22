@@ -35,6 +35,8 @@ public class UnitServiceImp implements UnitService{
      * Time: O(U) where U is total unit count
      * Space: O(U)
      *
+     * @param page page number index
+     * @param size page size limit
      * @return list of UnitResponse DTOs
      */
     @Transactional(readOnly = true)
@@ -45,12 +47,9 @@ public class UnitServiceImp implements UnitService{
     /**
      * Retrieves a measurement unit by ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target unit ID
      * @return UnitResponse DTO
+     * @throws ResourceNotFoundException if no unit with the given ID exists
      */
     @Transactional(readOnly = true)
     public UnitResponse getUnitById(String id) {
@@ -62,12 +61,9 @@ public class UnitServiceImp implements UnitService{
     /**
      * Creates a new measurement unit definition ensuring code uniqueness.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request unit creation request DTO
      * @return UnitResponse DTO of created unit
+     * @throws ResourceAllReadyExistsException if a unit with the same code or name already exists
      */
     @Transactional
     public UnitResponse createUnit(UnitRequestDTO request) {
@@ -92,11 +88,8 @@ public class UnitServiceImp implements UnitService{
     /**
      * Deletes a measurement unit by ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target unit ID
+     * @throws ResourceNotFoundException if no unit with the given ID exists
      */
     @Transactional
     public void deleteUnit(String id) {

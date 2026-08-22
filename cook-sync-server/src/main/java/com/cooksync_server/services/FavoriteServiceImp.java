@@ -42,12 +42,9 @@ public class FavoriteServiceImp implements FavoriteService{
     /**
      * Adds a recipe to the user's favorite bookmarks if not already bookmarked.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param userEmail authenticated user email address
+     * @throws ResourceNotFoundException if the user or recipe cannot be found
      */
     @Transactional
     public void addFavorite(String recipeId, String userEmail) {
@@ -68,12 +65,9 @@ public class FavoriteServiceImp implements FavoriteService{
     /**
      * Removes a recipe from the user's favorite bookmarks.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param userEmail authenticated user email address
+     * @throws ResourceNotFoundException if the user or recipe cannot be found
      */
     @Transactional
     public void removeFavorite(String recipeId, String userEmail) {
@@ -97,6 +91,7 @@ public class FavoriteServiceImp implements FavoriteService{
      * @param page page number
      * @param size page size
      * @return PagedResponse of RecipePreviewResponse DTOs with personal notes if present
+     * @throws ResourceNotFoundException if no user with the given email exists
      */
     @Transactional(readOnly = true)
     public PagedResponse<RecipePreviewResponse> getUserFavorites(String userEmail, int page, int size) {
@@ -129,6 +124,7 @@ public class FavoriteServiceImp implements FavoriteService{
      * @param page page number
      * @param size page size
      * @return PagedResponse of RecipePreviewResponse DTOs, empty if the user opted out
+     * @throws ResourceNotFoundException if no user with the given ID exists
      */
     @Transactional(readOnly = true)
     public PagedResponse<RecipePreviewResponse> getPublicFavoritesByUser(String userId, int page, int size) {

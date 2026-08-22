@@ -35,6 +35,8 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
+import com.cooksync.app.util.DimensionUtils;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.data.datasource.local.CookingPreferencesStore;
 import com.cooksync.app.domain.ApiResult;
@@ -398,12 +400,7 @@ public class CookingModeActivity extends BaseActivity {
         stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
         if (!hasImage) return;
         stepImage.setVisibility(View.VISIBLE);
-        Glide.with(stepImage.getContext())
-                .load(imageUrl)
-                .placeholder(R.drawable.bg_skeleton_bone)
-                .error(R.drawable.ic_image_failed)
-                .centerCrop()
-                .into(stepImage);
+        GlideUtils.loadThumbnail(Glide.with(stepImage.getContext()), imageUrl, stepImage);
         stepImage.setOnClickListener(v -> openFullscreenImage(imageUrl));
     }
 
@@ -561,8 +558,7 @@ public class CookingModeActivity extends BaseActivity {
     }
 
     private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
+        return DimensionUtils.dpToPx(this, dp);
     }
 
     @Override

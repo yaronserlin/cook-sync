@@ -83,6 +83,9 @@ public class RecipeServiceImp implements RecipeService{
      *
      * @param page page index
      * @param size page size limit
+     * @param sortBy sort criterion: newest (default), rating, fastest
+     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
+     * @param minRating optional minimum average rating threshold
      * @return PagedResponse containing RecipePreviewResponse DTOs
      */
     @Transactional(readOnly = true)
@@ -101,12 +104,9 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Retrieves full detail view of a single recipe by ID using optimized fetch join.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target recipe ID
      * @return RecipeResponse DTO
+     * @throws ResourceNotFoundException if no recipe with the given ID exists
      */
     @Transactional(readOnly = true)
     public RecipeResponse getRecipeById(String id) {
@@ -114,7 +114,7 @@ public class RecipeServiceImp implements RecipeService{
         Recipe recipe = recipeRepository.findByIdWithDetails(id)
                 .orElseGet(() -> recipeRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Recipe", id)));
-        recipeRepository.findDescriptionBlocksByRecipeId(id);
+        recipe = recipeRepository.findDescriptionBlocksByRecipeId(id).orElse(recipe);
         return RecipeMapper.toResponse(recipe);
     }
 
@@ -128,6 +128,11 @@ public class RecipeServiceImp implements RecipeService{
      * @param keyword search keyword
      * @param author author name filter
      * @param ingredient ingredient filter
+     * @param sortBy sort criterion: newest (default), rating, fastest
+     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
+     * @param minRating optional minimum average rating threshold
+     * @param page page index
+     * @param size page size limit
      * @return list of RecipePreviewResponse DTOs
      */
     @Transactional(readOnly = true)
@@ -153,6 +158,11 @@ public class RecipeServiceImp implements RecipeService{
      * Space: O(T)
      *
      * @param tagName target tag label name
+     * @param sortBy sort criterion: newest (default), rating, fastest
+     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
+     * @param minRating optional minimum average rating threshold
+     * @param page page index
+     * @param size page size limit
      * @return list of RecipePreviewResponse DTOs
      */
     @Transactional(readOnly = true)
@@ -176,7 +186,10 @@ public class RecipeServiceImp implements RecipeService{
      * Space: O(U)
      *
      * @param userEmail user email address
+     * @param page page index
+     * @param size page size limit
      * @return list of RecipePreviewResponse DTOs
+     * @throws ResourceNotFoundException if no user with the given email exists
      */
     @Transactional(readOnly = true)
     public PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, int page, int size) {
@@ -201,6 +214,7 @@ public class RecipeServiceImp implements RecipeService{
      * @param page page index
      * @param size page size limit
      * @return PagedResponse containing RecipePreviewResponse DTOs, empty if the user opted out
+     * @throws ResourceNotFoundException if no user with the given ID exists
      */
     @Transactional(readOnly = true)
     public PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, int page, int size) {
@@ -227,6 +241,7 @@ public class RecipeServiceImp implements RecipeService{
      * @param request recipe creation request DTO
      * @param userEmail creator user email address
      * @return created RecipeResponse DTO
+     * @throws ResourceNotFoundException if the creator user, a referenced tag, or a referenced unit cannot be found
      */
     @Transactional
     public RecipeResponse createRecipe(RecipeCreateRequestDTO request, String userEmail) {
@@ -244,7 +259,7 @@ public class RecipeServiceImp implements RecipeService{
         Map<String, Ingredient> tmpIdToIngredient = new HashMap<>();
         savedRecipe.setIngredients(saveIngredients(request.ingredients(), savedRecipe, tmpIdToIngredient));
         savedRecipe.setInstructions(saveInstructions(request.instructions(), savedRecipe, tmpIdToIngredient));
-        saveImages(savedRecipe, request.primaryImageUrl(), null);
+        saveImages(savedRecipe, request.primaryImageUrl());
         saveDescriptionBlocks(savedRecipe, request.descriptionBlocks());
 
         return RecipeMapper.toResponse(savedRecipe);
@@ -261,15 +276,14 @@ public class RecipeServiceImp implements RecipeService{
      * @param request recipe update request DTO
      * @param userEmail user email address
      * @return updated RecipeResponse DTO
+     * @throws ResourceNotFoundException if the recipe, acting user, a referenced tag, or a referenced unit cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     @Transactional
     public RecipeResponse updateRecipe(String recipeId, RecipeCreateRequestDTO request, String userEmail) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
-        User currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(recipe.getCreatedBy().getId(), currentUser,
+        Recipe recipe = OwnershipValidator.requireOwnedResource(
+                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to edit this recipe.");
 
         List<String> oldImageUrls = RecipeImageUtils.extractAllImageUrls(recipe);
@@ -282,7 +296,7 @@ public class RecipeServiceImp implements RecipeService{
 
         recipe.getInstructions().clear();
         recipe.getInstructions().addAll(saveInstructions(request.instructions(), recipe, tmpIdToIngredient));
-        saveImages(recipe, request.primaryImageUrl(), null);
+        saveImages(recipe, request.primaryImageUrl());
         saveDescriptionBlocks(recipe, request.descriptionBlocks());
 
         List<String> newImageUrls = RecipeImageUtils.extractAllImageUrls(recipe);
@@ -298,23 +312,18 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Updates only a recipe's visibility, without touching its other fields.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param request visibility update request DTO
      * @param userEmail user email address
      * @return updated RecipeResponse DTO
+     * @throws ResourceNotFoundException if the recipe or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     @Transactional
     public RecipeResponse updateVisibility(String recipeId, RecipeVisibilityUpdateRequestDTO request, String userEmail) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
-        User currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(recipe.getCreatedBy().getId(), currentUser,
+        Recipe recipe = OwnershipValidator.requireOwnedResource(
+                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to edit this recipe.");
 
         recipe.setVisibility(parseVisibility(request.visibility()));
@@ -325,21 +334,16 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Deletes a recipe by ID following ownership validation.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if the recipe or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     @Transactional
     public void deleteRecipe(String recipeId, String userEmail) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
-        User currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(recipe.getCreatedBy().getId(), currentUser,
+        Recipe recipe = OwnershipValidator.requireOwnedResource(
+                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to delete this recipe.");
 
         List<String> imageUrls = RecipeImageUtils.extractAllImageUrls(recipe);
@@ -386,7 +390,7 @@ public class RecipeServiceImp implements RecipeService{
         return Recipe.Visibility.valueOf(visibility.toUpperCase());
     }
 
-    private void saveImages(Recipe recipe, String primaryImageUrl, List<String> additionalImageUrls) {
+    private void saveImages(Recipe recipe, String primaryImageUrl) {
         recipe.getImages().clear();
         if (primaryImageUrl != null && !primaryImageUrl.isBlank()) {
             recipe.getImages().add(RecipeImage.builder()
@@ -394,18 +398,6 @@ public class RecipeServiceImp implements RecipeService{
                     .imageUrl(primaryImageUrl)
                     .isPrimary(true)
                     .build());
-        }
-
-        if (additionalImageUrls != null) {
-            for (String imageUrl : additionalImageUrls) {
-                if (imageUrl != null && !imageUrl.isBlank()) {
-                    recipe.getImages().add(RecipeImage.builder()
-                            .recipe(recipe)
-                            .imageUrl(imageUrl)
-                            .isPrimary(false)
-                            .build());
-                }
-            }
         }
     }
 

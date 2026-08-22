@@ -80,10 +80,6 @@ public class Instruction {
 
     /**
      * Lifecycle callback setting creation and update timestamps.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {
@@ -93,10 +89,6 @@ public class Instruction {
 
     /**
      * Lifecycle callback refreshing modification timestamp.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PreUpdate
     protected void onUpdate() {

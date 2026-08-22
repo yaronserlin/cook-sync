@@ -52,6 +52,7 @@ public class ReviewServiceImp implements ReviewService{
      * @param page page number
      * @param size page size
      * @return paged response of ReviewResponse DTOs
+     * @throws ResourceNotFoundException if no recipe with the given ID exists
      */
     @Transactional(readOnly = true)
     public PagedResponse<ReviewResponse> getReviewsForRecipe(String recipeId, int page, int size) {
@@ -75,6 +76,7 @@ public class ReviewServiceImp implements ReviewService{
      * @param recipeId target recipe ID
      * @param request review creation request DTO
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if the user or recipe cannot be found
      */
     @Transactional
     public void addReview(String recipeId, ReviewRequestDTO request, String userEmail) {
@@ -110,15 +112,14 @@ public class ReviewServiceImp implements ReviewService{
      *
      * @param reviewId target review ID
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if the review or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the review's author nor an administrator
      */
     @Transactional
     public void deleteReview(String reviewId, String userEmail) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
-        User currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        OwnershipValidator.requireOwnerOrAdmin(review.getUser().getId(), currentUser,
+        Review review = OwnershipValidator.requireOwnedResource(
+                () -> reviewRepository.findById(reviewId), "Review", reviewId,
+                r -> r.getUser().getId(), userRepository, userEmail,
                 "You are not allowed to delete this review.");
 
         Recipe recipe = review.getRecipe();
@@ -139,13 +140,10 @@ public class ReviewServiceImp implements ReviewService{
      * reflect this latest report, preserving the existing admin moderation console's
      * "currently reported" flag and dashboard count.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param reviewId target review ID
      * @param request moderation report request DTO
      * @param userEmail email address of the reporting user
+     * @throws ResourceNotFoundException if the reporting user or review cannot be found
      */
     @Transactional
     public void reportReview(String reviewId, ReportReviewRequestDTO request, String userEmail) {

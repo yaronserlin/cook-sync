@@ -64,10 +64,6 @@ public class ReviewReport {
 
     /**
      * Initializes the creation timestamp before persistence.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {

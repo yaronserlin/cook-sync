@@ -33,6 +33,8 @@ import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
+import com.cooksync.app.util.CommitOnceGuard;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.dtos.response.instruction.InstructionResponse;
@@ -101,7 +103,7 @@ public class RecipeDetailActivity extends BaseActivity {
     /** Guards against a duplicate commit when both the save/delete icon tap and the resulting
      *  focus-loss on {@link #etNote} fire for the same user gesture. Reset each time the note
      *  editor opens. */
-    private boolean noteEditCommitted = false;
+    private final CommitOnceGuard noteEditGuard = new CommitOnceGuard();
 
     private MaterialButton btnEditRecipe;
     private boolean isFavorite = false;
@@ -142,10 +144,6 @@ public class RecipeDetailActivity extends BaseActivity {
      * Reloads the recipe on every return to this screen after the first creation, so a
      * review just submitted from {@link ReviewActivity} (reached either from here or from the
      * end of {@link CookingModeActivity}) shows up immediately without a manual refresh.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @Override
     protected void onResume() {
@@ -422,7 +420,7 @@ public class RecipeDetailActivity extends BaseActivity {
         groupNoteView.setVisibility(View.GONE);
         groupNoteEdit.setVisibility(View.VISIBLE);
         btnNoteDelete.setVisibility(existing != null ? View.VISIBLE : View.GONE);
-        noteEditCommitted = false;
+        noteEditGuard.reset();
     }
 
     /**
@@ -437,13 +435,12 @@ public class RecipeDetailActivity extends BaseActivity {
     /**
      * Commits the recipe-wide note editor's current text. Called both from the explicit save
      * icon and from the {@link EditText} losing focus (i.e. the user taps outside it) — the
-     * {@link #noteEditCommitted} guard makes whichever fires second a no-op, since tapping the
+     * {@link #noteEditGuard} makes whichever fires second a no-op, since tapping the
      * save/delete icon itself blurs the field first. Only saves if the text is non-blank and
      * actually changed.
      */
     private void commitRecipeNoteInline() {
-        if (noteEditCommitted) return;
-        noteEditCommitted = true;
+        if (!noteEditGuard.tryCommit()) return;
         String text = etNote.getText() == null ? "" : etNote.getText().toString().trim();
         NoteResponse existing = viewModel.findRecipeNote(currentNotes);
         String currentText = existing != null ? existing.note() : "";
@@ -455,8 +452,7 @@ public class RecipeDetailActivity extends BaseActivity {
     }
 
     private void deleteRecipeNoteInline() {
-        if (noteEditCommitted) return;
-        noteEditCommitted = true;
+        if (!noteEditGuard.tryCommit()) return;
         NoteResponse existing = viewModel.findRecipeNote(currentNotes);
         if (existing != null) viewModel.deleteNote(existing.id());
         closeRecipeNoteEditor();
@@ -532,11 +528,7 @@ public class RecipeDetailActivity extends BaseActivity {
         }
 
         if (recipe.primaryImageUrl() != null && !recipe.primaryImageUrl().isBlank()) {
-            Glide.with(this)
-                    .load(recipe.primaryImageUrl())
-                    .placeholder(R.drawable.bg_skeleton_bone)
-                    .error(R.drawable.ic_image_failed)
-                    .centerCrop()
+            GlideUtils.requestThumbnail(Glide.with(this), recipe.primaryImageUrl())
                     .listener(new RequestListener<Drawable>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {

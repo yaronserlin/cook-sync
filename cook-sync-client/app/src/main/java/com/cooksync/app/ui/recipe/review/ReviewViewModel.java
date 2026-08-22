@@ -28,10 +28,6 @@ public class ReviewViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param repository the repository used for the submit-review call
      */
     public ReviewViewModel(RecipeRepository repository) {

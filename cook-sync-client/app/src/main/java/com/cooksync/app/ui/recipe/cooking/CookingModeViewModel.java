@@ -80,6 +80,14 @@ public class CookingModeViewModel extends BaseViewModel {
         repository.getAllPersonalNotes(recipeId, notesResult);
     }
 
+    /**
+     * Moves to a specific step, if the index is in range: cancels any running timer and resets
+     * the new step's timer state (seeded from its own duration, if it has one), since a timer
+     * from the previous step should never carry over.
+     *
+     * @param index the step index to move to
+     * @param steps the recipe's ordered instruction steps
+     */
     public void goToStep(int index, @NonNull List<InstructionResponse> steps) {
         if (index < 0 || index >= steps.size()) {
             return;
@@ -189,10 +197,6 @@ public class CookingModeViewModel extends BaseViewModel {
      * Breaks a remaining-seconds count down into hours/minutes/seconds for the timer clock
      * label.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param remainingSeconds seconds left on the current step's timer
      * @return a 3-element array of {@code [hours, minutes, seconds]}
      */
@@ -206,10 +210,6 @@ public class CookingModeViewModel extends BaseViewModel {
     /**
      * Computes how far the timer ring should be filled to represent elapsed (not remaining)
      * time, so the ring depletes as the timer counts down.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param remainingSeconds seconds left on the current step's timer
      * @param totalSeconds the step's full timer duration; a non-positive value (no timer set

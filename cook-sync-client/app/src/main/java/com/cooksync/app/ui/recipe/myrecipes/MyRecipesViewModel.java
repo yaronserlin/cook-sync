@@ -19,7 +19,6 @@ import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -46,7 +45,6 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
-    private String currentQuery = null;
     /** One of "ALL", "PUBLIC", "PRIVATE". */
     private String visibilityFilter = "ALL";
 
@@ -65,10 +63,6 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param repository the repository used for recipe management calls
      * @param tagRepository the repository used to load the available tags
      */
@@ -81,7 +75,7 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
 
-    public void fetchRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
+    public void loadRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
         repository.getRecipeDetail(recipeId, resultTarget);
     }
 
@@ -112,9 +106,6 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
     /** {@code true} once the user's recipe library has loaded and contains at least one recipe. */
     public boolean hasAnyRecipes() { return !allRecipes.isEmpty(); }
 
-    /** The active search text, or {@code null} if none is set. */
-    public String getCurrentQuery() { return currentQuery; }
-
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
@@ -135,17 +126,6 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
             }
         });
         repository.getMyRecipes(result);
-    }
-
-    /**
-     * Filters the already-loaded recipes by title/description match. Unlike the home feed,
-     * this never hits the network — the full "mine" list is already local.
-     *
-     * @param query the search text, or blank/{@code null} to clear it
-     */
-    public void search(String query) {
-        currentQuery = (query == null || query.isBlank()) ? null : query.trim();
-        publishFiltered();
     }
 
     /**
@@ -261,16 +241,8 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
      * sort state, publishing the result — {@link #allRecipes} itself is left untouched.
      */
     private void publishFiltered() {
-        List<RecipePreviewResponse> displayed = new ArrayList<>(allRecipes);
+        List<RecipePreviewResponse> displayed = RecipeFilterUtils.filterByQuery(allRecipes, currentQuery);
 
-        if (currentQuery != null) {
-            String needle = currentQuery.toLowerCase(Locale.ROOT);
-            displayed.removeIf(r -> {
-                boolean titleMatch = r.title() != null && r.title().toLowerCase(Locale.ROOT).contains(needle);
-                boolean descMatch = r.description() != null && r.description().toLowerCase(Locale.ROOT).contains(needle);
-                return !titleMatch && !descMatch;
-            });
-        }
         if (!"ALL".equals(visibilityFilter)) {
             displayed.removeIf(r -> r.visibility() == null || !r.visibility().equalsIgnoreCase(visibilityFilter));
         }

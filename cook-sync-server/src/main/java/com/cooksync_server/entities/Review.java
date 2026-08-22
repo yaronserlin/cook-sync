@@ -54,7 +54,7 @@ public class Review {
     @Column(nullable = false, precision = 2, scale = 1)
     private BigDecimal rating;
 
-    @Column(length = 255)
+    @Column(nullable = false, length = 255)
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -89,10 +89,6 @@ public class Review {
 
     /**
      * Initializes creation and modification timestamps before persistence.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {
@@ -102,10 +98,6 @@ public class Review {
 
     /**
      * Refreshes update timestamp prior to entity update execution.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PreUpdate
     protected void onUpdate() {

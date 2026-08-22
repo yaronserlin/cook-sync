@@ -145,10 +145,6 @@ public abstract class BaseRepository {
      * {@code message} field in the JSON body if present, falling back to a status-code-specific
      * default otherwise.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param response the non-successful HTTP response
      * @return a user-facing error string
      */

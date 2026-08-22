@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.GlideUtils;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 
 import java.util.List;
@@ -37,9 +38,12 @@ public class DescriptionBlockAdapter extends BaseAdapter<DescriptionBlockDTO, Re
         void onImageClick(String imageUrl);
     }
 
+    /** The server-side {@code descriptionBlocks} block type that renders as a captioned image. */
     private static final String TYPE_IMAGE = "IMAGE";
 
+    /** View type for a plain text paragraph block. */
     private static final int VIEW_TYPE_TEXT = 0;
+    /** View type for a captioned image block. */
     private static final int VIEW_TYPE_IMAGE = 1;
 
     private OnImageClickListener imageClickListener;
@@ -83,12 +87,7 @@ public class DescriptionBlockAdapter extends BaseAdapter<DescriptionBlockDTO, Re
             // Stays hidden until the load actually succeeds, rather than showing a placeholder
             // tile, so a slow or failed fetch never renders as a gray box or broken image.
             imageHolder.image.setVisibility(View.VISIBLE);
-            Glide.with(imageHolder.image.getContext())
-                    .load(block.imageUrl())
-                    .placeholder(R.drawable.bg_skeleton_bone)
-                    .error(R.drawable.ic_image_failed)
-                    .centerCrop()
-                    .into(imageHolder.image);
+            GlideUtils.loadThumbnail(Glide.with(imageHolder.image.getContext()), block.imageUrl(), imageHolder.image);
             imageHolder.image.setOnClickListener(v -> {
                 if (imageClickListener != null) {
                     imageClickListener.onImageClick(block.imageUrl());

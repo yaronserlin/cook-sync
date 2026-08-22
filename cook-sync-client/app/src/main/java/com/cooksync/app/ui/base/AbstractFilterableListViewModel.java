@@ -35,6 +35,26 @@ public abstract class AbstractFilterableListViewModel extends BaseViewModel impl
     protected Integer currentMaxTotalTimeMinutes = null;
     protected final Set<String> selectedTags = new LinkedHashSet<>();
 
+    /** The active free-text search query, or {@code null} if none is set. */
+    protected String currentQuery = null;
+
+    /** The active search text, or {@code null} if none is set. */
+    public final String getCurrentQuery() { return currentQuery; }
+
+    /**
+     * Sets the free-text search query and invokes {@link #onFiltersChanged()} to re-filter
+     * already-loaded data. The default implementation suits subclasses whose full result set is
+     * already loaded client-side (re-filtering is all a new query needs); a subclass whose
+     * results are paginated server-side (e.g. one needing to reset pagination and issue a new
+     * fetch per query) should override this instead of relying on the default.
+     *
+     * @param query the search text, or blank/{@code null} to clear it
+     */
+    public void search(String query) {
+        this.currentQuery = (query == null || query.isBlank()) ? null : query.trim();
+        onFiltersChanged();
+    }
+
     @Override
     public String getCurrentSort() { return currentSort; }
 

@@ -25,7 +25,10 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Manages data state for {@link RecipeDetailActivity}.
+ * ViewModel for {@link RecipeDetailActivity}: holds the loaded recipe, its private notes, and
+ * the current user's favorites, and owns the delete/report/favorite actions' optimistic-with-undo
+ * behavior (see {@link #deleteReview}, {@link #reportReview}, {@link #toggleFavorite}) so a
+ * hidden action isn't actually sent to the server until its undo window has passed.
  *
  * @author Yaron Serlin
  * @version 1.2
@@ -56,10 +59,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
     /**
      * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param repository the repository used for recipe/note/favorite/review calls
      */
@@ -240,10 +239,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * Renders an average rating as a five-character filled/outline star string (e.g.
      * {@code "★★★★☆"}) for the reviews-summary card headline.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param averageRating the recipe's average rating, or {@code null} if it has no reviews yet
      * @return a 5-character string of {@code ★}/{@code ☆} characters
      */
@@ -261,10 +256,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
     /**
      * Formats a recipe's average rating to one decimal place for display, matching the design's
      * "4.3" style summary numbers.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param averageRating the recipe's average rating, or {@code null} if it has no reviews yet
      * @return a "0.0"-formatted string, or the literal {@code "0.0"} if {@code averageRating} is {@code null}
@@ -343,10 +334,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * Rounds a single review's rating to the nearest whole star and clamps it into the
      * displayable 1–5 range, for the rating-breakdown bars and star-filter chips.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param rating a single review's raw rating, or {@code null}
      * @return a whole-star value between 1 and 5 inclusive
      */
@@ -360,10 +347,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * Formats an ISO-8601 timestamp into a "Month yyyy" label for the recipe kicker
      * (e.g. "April 2026"). Falls back to a raw date substring on API levels below 26, where
      * {@code java.time} isn't available without desugaring.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param isoTimestamp the recipe's {@code createdAt} value
      * @return a human-readable "Month yyyy" string, or "" if unparseable

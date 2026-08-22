@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -18,6 +19,34 @@ import java.util.Objects;
  * @since 07/08/2026
  */
 public class RecipeFilterUtils {
+
+    /**
+     * Filters {@code source} down to entries whose title or description contains {@code query}
+     * (case-insensitive). Does not mutate {@code source}. Extracted from duplicated logic that
+     * previously lived independently in both {@code FavoritesViewModel} and
+     * {@code MyRecipesViewModel}.
+     *
+     * Complexity:
+     * Time: O(n) where n is {@code source.size()}
+     * Space: O(n) for the filtered copy
+     *
+     * @param source the unfiltered recipe previews
+     * @param query the search text, or {@code null}/blank to skip this filter
+     * @return a new, filtered list
+     */
+    public static List<RecipePreviewResponse> filterByQuery(List<RecipePreviewResponse> source, String query) {
+        List<RecipePreviewResponse> displayed = new ArrayList<>(source);
+        if (query == null || query.isBlank()) {
+            return displayed;
+        }
+        String needle = query.toLowerCase(Locale.ROOT);
+        displayed.removeIf(r -> {
+            boolean titleMatch = r.title() != null && r.title().toLowerCase(Locale.ROOT).contains(needle);
+            boolean descMatch = r.description() != null && r.description().toLowerCase(Locale.ROOT).contains(needle);
+            return !titleMatch && !descMatch;
+        });
+        return displayed;
+    }
 
     /**
      * Applies difficulty, minimum-rating, maximum-total-time, and tag filters to

@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.TextWatchers;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 
@@ -181,10 +182,7 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
                     return false;
                 });
             } else {
-                Glide.with(itemView.getContext()).load(block.imageUrl())
-                        .placeholder(R.drawable.bg_skeleton_bone)
-                        .error(R.drawable.ic_image_failed)
-                        .into(ivImage);
+                GlideUtils.loadPreview(Glide.with(itemView.getContext()), block.imageUrl(), ivImage);
                 etCaption.setText(block.caption());
                 captionWatcher = TextWatchers.onChanged(value -> {
                     DescriptionBlockDTO current = currentBlock();

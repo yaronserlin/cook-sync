@@ -46,6 +46,8 @@ public class TagsController {
      * Time: O(T) where T is total tag count
      * Space: O(T)
      *
+     * @param page page number index
+     * @param size page size limit
      * @return response entity containing list of TagResponse DTOs
      */
     @GetMapping
@@ -77,10 +79,6 @@ public class TagsController {
     /**
      * Retrieves a tag by unique ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target tag ID
      * @return response entity containing TagResponse DTO
      */
@@ -92,10 +90,6 @@ public class TagsController {
 
     /**
      * Creates or retrieves an existing custom tag on-the-fly during recipe editing.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request tag request DTO
      * @return response entity containing TagResponse DTO
@@ -110,10 +104,6 @@ public class TagsController {
     /**
      * Creates a new tag with administrative validation against existing tag names.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request tag request DTO
      * @return response entity containing created TagResponse DTO
      */
@@ -127,10 +117,6 @@ public class TagsController {
 
     /**
      * Updates an existing tag name.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target tag ID
      * @param request tag update request DTO
@@ -147,10 +133,6 @@ public class TagsController {
 
     /**
      * Deletes a tag by ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target tag ID
      * @return response entity acknowledging tag deletion
