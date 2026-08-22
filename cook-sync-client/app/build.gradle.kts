@@ -99,8 +99,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 
-    // Shared DTOs — single source of truth for request/response payload shapes,
-    // consumed identically by cook-sync-server (Maven) via JitPack.
+    // Shared DTOs (../cooksync-DTOs) — single source of truth for request/response
+    // payload shapes, consumed identically by cook-sync-server (Maven) from the
+    // local Maven repository.
     implementation(libs.cooksync.dtos)
 
     // Networking

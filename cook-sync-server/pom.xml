@@ -19,23 +19,12 @@
              JDK instrumentation on JDK 25/26 ("Could not modify all classes" at test time). -->
         <mockito.version>5.23.0</mockito.version>
         <byte-buddy.version>1.18.10</byte-buddy.version>
-        <!-- JitPack's floating selector for "latest commit on this branch" — matches
-             cook-sync-client's gradle/libs.versions.toml (cooksyncDtos) so both consumers
-             always resolve the same, current DTO shapes without a manual SHA bump. Maven
-             treats -SNAPSHOT versions as changing artifacts (rechecked per its update
-             policy); force an immediate refresh with `mvn -U`. -->
-        <cooksync-dtos.version>master-SNAPSHOT</cooksync-dtos.version>
+        <!-- Matches the version in ../cooksync-DTOs/pom.xml and cook-sync-client's
+             gradle/libs.versions.toml (cooksyncDtos), so both consumers resolve the same
+             locally-built DTO jar. Run `mvn install` in cooksync-DTOs after changing a DTO
+             so this module (and Gradle's mavenLocal()) pick up the new jar. -->
+        <cooksync-dtos.version>1.0.0-SNAPSHOT</cooksync-dtos.version>
     </properties>
-
-    <repositories>
-        <!-- Serves the shared cooksync-DTOs repository (github.com/yaronserlin/cooksync-DTOs)
-             as a Maven artifact, built directly from its git commits. Both this server and
-             cook-sync-client depend on the exact same DTO sources through this. -->
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
 
     <dependencies>
 
@@ -120,11 +109,12 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Shared DTOs module — single source of truth for request/response payload
-             shapes, consumed identically by cook-sync-client (Gradle) via JitPack. -->
+        <!-- Shared DTOs module (../cooksync-DTOs) — single source of truth for
+             request/response payload shapes, consumed identically by cook-sync-client
+             (Gradle) from the local Maven repository. -->
         <dependency>
-            <groupId>com.github.yaronserlin</groupId>
-            <artifactId>cooksync-DTOs</artifactId>
+            <groupId>com.cooksync</groupId>
+            <artifactId>dtos</artifactId>
             <version>${cooksync-dtos.version}</version>
         </dependency>
 

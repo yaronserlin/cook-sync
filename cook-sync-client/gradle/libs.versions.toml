@@ -20,7 +20,7 @@ glide = "4.16.0"
 cloudinary = "3.1.2"
 fresco = "3.7.0"
 photoview = "2.3.0"
-cooksyncDtos = "master-SNAPSHOT"
+cooksyncDtos = "1.0.0-SNAPSHOT"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -39,8 +39,8 @@ retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
-# Shared DTOs (github.com/yaronserlin/cooksync-DTOs, served via JitPack)
-cooksync-dtos = { group = "com.github.yaronserlin", name = "cooksync-DTOs", version.ref = "cooksyncDtos" }
+# Shared DTOs (../cooksync-DTOs), resolved from the local Maven repository
+cooksync-dtos = { group = "com.cooksync", name = "dtos", version.ref = "cooksyncDtos" }
 
 # Security — encrypted local token storage
 security-crypto = { group = "androidx.security", name = "security-crypto-ktx", version.ref = "securityCrypto" }

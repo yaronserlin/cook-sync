@@ -19,11 +19,13 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Required for com.github.chrisbanes:PhotoView, genuinely hosted on JitPack
+        // (unrelated to the shared DTOs, which now resolve from mavenLocal() below).
         maven("https://jitpack.io")
+        // Resolves the shared ../cooksync-DTOs module from the local Maven repository
+        // (run `mvn install` there after changing a DTO). Both this client and
+        // cook-sync-server depend on the exact same DTO sources through this.
         mavenLocal()
-        // Serves the shared cooksync-DTOs repository (github.com/yaronserlin/cooksync-DTOs)
-        // as a Maven artifact, built directly from its git tags/branches. Both this client
-        // and the cook-sync-server depend on the exact same DTO sources through this.
     }
 }
 

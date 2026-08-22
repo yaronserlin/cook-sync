@@ -2,44 +2,47 @@
 
 Shared Data Transfer Object definitions for the CookSync platform, consumed by both:
 
-- **cook-sync-server** (Spring Boot, Maven) — `com.github.yaronserlin:cooksync-DTOs:<tag>`
-- **cook-sync-client** (Android, Gradle) — `com.github.yaronserlin:cooksync-DTOs:<tag>`
+- **cook-sync-server** (Spring Boot, Maven)
+- **cook-sync-client** (Android, Gradle)
 
-Distributed via [JitPack](https://jitpack.io), which builds this repository directly from
-GitHub tags/commits — no manual publishing step. Both consumers resolve the exact same
-artifact, so request/response payload shapes never drift between client and server.
+Both live alongside this module in the same repository and consume it as a locally-built
+Maven artifact (`com.cooksync:dtos`) from `~/.m2/repository` — no external hosting or
+network dependency required.
 
 ## Usage
 
-**Maven (server):**
-```xml
-<repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</repository>
+Build and install this module to your local Maven repository whenever a DTO changes:
 
+```bash
+cd cooksync-DTOs
+mvn install
+```
+
+**Maven (server)**, in `pom.xml`:
+```xml
 <dependency>
-    <groupId>com.github.yaronserlin</groupId>
-    <artifactId>cooksync-DTOs</artifactId>
-    <version>TAG</version>
+    <groupId>com.cooksync</groupId>
+    <artifactId>dtos</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
-**Gradle (client), in `settings.gradle.kts`:**
+**Gradle (client)**, in `settings.gradle.kts`:
 ```kotlin
 dependencyResolutionManagement {
     repositories {
-        maven { url = uri("https://jitpack.io") }
+        mavenLocal()
     }
 }
 ```
 and in `app/build.gradle.kts`:
 ```kotlin
-implementation("com.github.yaronserlin:cooksync-DTOs:TAG")
+implementation("com.cooksync:dtos:1.0.0-SNAPSHOT")
 ```
 
 ## Versioning
 
-Tag a commit (e.g. `git tag v1.0.0 && git push --tags`) whenever a DTO changes. JitPack
-builds that tag on first request and caches it — both server and client should pin to the
-same tag to stay in sync.
+Both consumers pin to the same `1.0.0-SNAPSHOT` version (see `cook-sync-server/pom.xml`'s
+`cooksync-dtos.version` property and `cook-sync-client/gradle/libs.versions.toml`'s
+`cooksyncDtos` version). After changing a DTO, run `mvn install` here, then rebuild the
+server and client so they pick up the refreshed jar from the local Maven repository.
