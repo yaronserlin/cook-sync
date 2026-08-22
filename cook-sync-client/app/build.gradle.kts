@@ -1,16 +1,5 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
-}
-
-// Release signing credentials, loaded from a gitignored keystore.properties
-// so the keystore path and passwords never get committed.
-val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("keystore.properties")
-val hasReleaseSigning = keystorePropertiesFile.exists()
-if (hasReleaseSigning) {
-    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
 java {
@@ -34,6 +23,10 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        resValue("string", "app_name", "CookSync")
+        // Local dev server address. Update to your machine's LAN IP when testing on a device.
+        buildConfigField("String", "BASE_URL", "\"http://172.20.10.3:8080/\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
@@ -51,36 +44,6 @@ android {
         }
     }
 
-    // Selects which backend the app talks to. "dev" hits the local network server used during
-    // development; "prod" hits the deployed Render instance. Switch via the Android Studio
-    // Build Variants panel (or -PbuildVariant / --product-flavor on the CLI).
-    flavorDimensions += "environment"
-
-    productFlavors {
-        create("dev") {
-            dimension = "environment"
-            applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev"
-            resValue("string", "app_name", "CookSync Dev")
-            buildConfigField("String", "BASE_URL", "\"http://172.20.10.3:8080/\"") // LOCAL_DEV_HOST: rewritten by run_project.sh to the current machine's LAN IP
-        }
-        create("prod") {
-            dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"https://cooksync-server.onrender.com/\"")
-        }
-    }
-
-    signingConfigs {
-        if (hasReleaseSigning) {
-            create("release") {
-                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
-            }
-        }
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -88,9 +51,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (hasReleaseSigning) {
-                signingConfig = signingConfigs.getByName("release")
-            }
         }
     }
 

@@ -17,3 +17,6 @@
 
 # Generated analysis output
 graphify-out/
+
+.claude/*
+.semanticgraphs/*
