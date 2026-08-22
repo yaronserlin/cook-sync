@@ -71,10 +71,6 @@ public class AuthService implements IAuthService {
     /**
      * Constructs AuthService with required dependencies and initializes timing attack dummy hash.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userRepository repository for user persistence
      * @param passwordEncoder encoder for BCrypt password hashing
      * @param jwtUtil utility for JWT generation and verification
@@ -102,10 +98,6 @@ public class AuthService implements IAuthService {
      * a one-time 6-digit verification code. No account is created and no tokens are issued until
      * the code is confirmed via {@link #verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO)} —
      * if the user never completes verification, nothing survives past the pending row's expiry.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request registration details payload
      * @return PendingRegistrationResponse acknowledging the pending registration and OTP expiry
@@ -152,14 +144,10 @@ public class AuthService implements IAuthService {
      * registration is invalidated and the user must submit the registration form again for a
      * fresh code.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request OTP verification payload
      * @return AuthResponse containing access token, refresh token, and user info
      */
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidOtpException.class, TooManyOtpAttemptsException.class})
     public AuthResponse verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO request) {
         PendingRegistration pending = pendingRegistrationRepository.findByEmail(request.email())
                 .orElseThrow(() -> new InvalidOtpException("No pending registration found for this email"));
@@ -207,10 +195,6 @@ public class AuthService implements IAuthService {
      * restarting its expiry window and resetting its incorrect-attempt count. Used when the
      * previous code expired or was not received.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request resend request payload
      * @return PendingRegistrationResponse acknowledging the newly issued OTP and its expiry
      */
@@ -249,10 +233,6 @@ public class AuthService implements IAuthService {
 
     /**
      * Authenticates user credentials with constant-time password comparison to prevent timing attacks.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request login credentials payload
      * @return AuthResponse containing fresh tokens and user info
@@ -294,10 +274,6 @@ public class AuthService implements IAuthService {
      * {@link UnauthorizedActionException} the next time it is presented, since it no longer
      * exists in the database.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request refresh token request payload
      * @return AuthResponse containing new access token and newly rotated refresh token
      */
@@ -319,10 +295,6 @@ public class AuthService implements IAuthService {
     /**
      * Validates active JWT token context and returns user profile details without issuing new tokens.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userEmail authenticated user email
      * @return AuthResponse with profile details
      */
@@ -336,10 +308,6 @@ public class AuthService implements IAuthService {
 
     /**
      * Revokes active user refresh tokens upon logout.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userEmail authenticated user email
      */
@@ -356,10 +324,6 @@ public class AuthService implements IAuthService {
      * deactivation (never self-service restorable) or an already-lapsed deletion request (the
      * scheduled purge job should have already erased it, but login is rejected defensively
      * either way since {@link #login(LoginRequestDTO)} only reaches this check for existing rows).
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param user the disabled account attempting to log in
      * @return true if the account has a pending deletion request within the grace period

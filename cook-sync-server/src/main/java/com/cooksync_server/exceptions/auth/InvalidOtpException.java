@@ -13,10 +13,6 @@ public class InvalidOtpException extends RuntimeException {
     /**
      * Constructs an InvalidOtpException with context details.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param message exception message context
      */
     public InvalidOtpException(String message) {

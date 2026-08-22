@@ -48,10 +48,6 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
 
     /**
      * Constructs the repository using the shared authenticated Retrofit service.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public AuthRepositoryImpl() {
         this.apiService = RetrofitClient.getInstance();

@@ -52,10 +52,6 @@ public class PasswordService implements IPasswordService {
     /**
      * Changes user account password following verification of current password, revoking existing sessions.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userEmail target user email
      * @param request password change request DTO
      */
@@ -79,10 +75,6 @@ public class PasswordService implements IPasswordService {
      * unknown emails as well, so the response never reveals whether an address is registered.
      * Calling this again for the same account (e.g. the client's "resend code" action) simply
      * invalidates any prior code and issues a fresh one — there is no separate resend endpoint.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request forgot-password request payload
      */
@@ -119,13 +111,9 @@ public class PasswordService implements IPasswordService {
      * caller (same exception, same message), preserving {@link #forgotPassword}'s guarantee that
      * account existence is never revealed.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request reset-password request payload
      */
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidOtpException.class, TooManyOtpAttemptsException.class})
     public void resetPassword(ResetPasswordRequestDTO request) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new InvalidOtpException("Invalid or expired reset code"));

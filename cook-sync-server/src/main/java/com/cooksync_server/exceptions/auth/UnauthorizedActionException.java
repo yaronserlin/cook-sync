@@ -12,10 +12,6 @@ public class UnauthorizedActionException extends RuntimeException {
     /**
      * Constructs an UnauthorizedActionException with authorization failure details.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param message failure detail message
      */
     public UnauthorizedActionException(String message) {

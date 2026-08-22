@@ -12,10 +12,6 @@ public class InvalidCredentialsException extends RuntimeException {
     /**
      * Constructs an InvalidCredentialsException with a detailed failure message.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param message descriptive exception message
      */
     public InvalidCredentialsException(String message) {
@@ -24,10 +20,6 @@ public class InvalidCredentialsException extends RuntimeException {
 
     /**
      * Constructs an InvalidCredentialsException with default error message.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public InvalidCredentialsException() {
         super("Invalid email or password");

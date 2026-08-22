@@ -43,10 +43,6 @@ public class LoginViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given {@link AuthRepository}, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authRepository the repository used for login and token validation calls
      */
     public LoginViewModel(AuthRepository authRepository) {
@@ -91,10 +87,6 @@ public class LoginViewModel extends BaseViewModel {
     /**
      * Verifies the stored access token with the server. Used by {@link LoginActivity}
      * on startup to silently auto-login a user whose previous session is still valid.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void validateExistingToken() {
         authRepository.validateToken(validateResult);

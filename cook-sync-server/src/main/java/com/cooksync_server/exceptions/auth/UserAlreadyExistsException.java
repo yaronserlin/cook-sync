@@ -12,10 +12,6 @@ public class UserAlreadyExistsException extends RuntimeException {
     /**
      * Constructs a UserAlreadyExistsException with duplicate email context details.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param message exception message context
      */
     public UserAlreadyExistsException(String message) {

@@ -46,10 +46,6 @@ public class RegisterViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given {@link AuthRepository}, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authRepository the repository used for the registration call
      */
     public RegisterViewModel(AuthRepository authRepository) {

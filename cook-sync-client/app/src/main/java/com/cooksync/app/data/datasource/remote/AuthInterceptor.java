@@ -33,10 +33,6 @@ public class AuthInterceptor implements Interceptor {
     /**
      * Attaches the {@code Authorization: Bearer <token>} header to authenticated requests.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param chain the interceptor chain providing the outgoing request
      * @return the response produced by proceeding down the chain
      * @throws IOException if the underlying call fails

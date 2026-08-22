@@ -52,10 +52,6 @@ public class VerifyOtpActivity extends BaseActivity {
      * Builds an intent to launch {@link VerifyOtpActivity} for the given pending-registration
      * email address.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param context calling context
      * @param email   the email address the OTP code was sent to
      * @return an intent ready to start {@link VerifyOtpActivity}
@@ -67,6 +63,13 @@ public class VerifyOtpActivity extends BaseActivity {
         return intent;
     }
 
+    /**
+     * Inflates the OTP verification layout, reads the target email from the launching intent,
+     * and initializes the ViewModel (starting its resend cooldown) before wiring up view
+     * binding, LiveData observation, and click listeners.
+     *
+     * @param savedInstanceState saved instance state bundle (may be {@code null})
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +86,9 @@ public class VerifyOtpActivity extends BaseActivity {
         setListeners();
     }
 
+    /**
+     * Binds all view references from the inflated layout.
+     */
     private void bindViews() {
         tvSubtitle = findViewById(R.id.tv_subtitle);
         etOtpCode = findViewById(R.id.et_otp_code);
@@ -92,6 +98,9 @@ public class VerifyOtpActivity extends BaseActivity {
         progress = findViewById(R.id.progress);
     }
 
+    /**
+     * Subscribes to all LiveData streams from {@link VerifyOtpViewModel}.
+     */
     private void observeViewModel() {
         viewModel.getOtpCodeError().observe(this, e -> showFieldError(tvOtpCodeError, e));
 
@@ -131,33 +140,28 @@ public class VerifyOtpActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Attaches click listeners to interactive elements.
+     */
     private void setListeners() {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
         btnVerify.setOnClickListener(v -> viewModel.verify(etOtpCode.getText().toString()));
         btnResend.setOnClickListener(v -> viewModel.resend());
     }
 
+    /**
+     * Enables or disables the verify button and OTP input field during an in-flight call.
+     *
+     * @param enabled {@code true} to re-enable, {@code false} to disable
+     */
     private void setFormEnabled(boolean enabled) {
         btnVerify.setEnabled(enabled);
         etOtpCode.setEnabled(enabled);
     }
 
-    private void showFieldError(TextView tv, String error) {
-        if (error == null) {
-            tv.setVisibility(View.GONE);
-        } else {
-            tv.setText(error);
-            tv.setVisibility(View.VISIBLE);
-        }
-    }
-
     /**
      * Navigates to the main screen after successful OTP verification, exactly as
      * {@code RegisterActivity} used to do directly on successful registration.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void navigateToMain() {
         Intent extras = new Intent();

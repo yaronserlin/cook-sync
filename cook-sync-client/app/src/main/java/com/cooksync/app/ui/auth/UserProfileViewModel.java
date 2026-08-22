@@ -35,10 +35,6 @@ public class UserProfileViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authRepository the repository used to fetch the target user's public profile
      * @param recipeRepository the repository used to fetch the target user's public recipes/favorites
      */
@@ -50,10 +46,6 @@ public class UserProfileViewModel extends BaseViewModel {
     /**
      * Loads the public profile of the given user, then — once it resolves — loads whichever of
      * their recipes/favorites sections the returned privacy flags say should be shown.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userId the ID of the user whose profile should be fetched
      */

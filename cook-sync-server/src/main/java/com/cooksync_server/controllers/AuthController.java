@@ -33,6 +33,7 @@ import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.user.UserResponse;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
  * REST Controller exposing user authentication, registration, session management, and profile settings endpoints.
@@ -43,6 +44,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final IAuthService authService;
@@ -50,32 +52,10 @@ public class AuthController {
     private final IPasswordService passwordService;
 
     /**
-     * Constructs AuthController with its domain service dependencies.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param authService registration/login/token domain service instance
-     * @param userProfileService profile management domain service instance
-     * @param passwordService password change/reset domain service instance
-     */
-    public AuthController(IAuthService authService, IUserProfileService userProfileService,
-            IPasswordService passwordService) {
-        this.authService = authService;
-        this.userProfileService = userProfileService;
-        this.passwordService = passwordService;
-    }
-
-    /**
      * Initiates registration for a new account with the provided credentials. No account is
      * created and no tokens are issued yet — a one-time verification code is emailed to the
      * given address, and the registration is only completed by calling
      * {@link #verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO)} with that code.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request registration details payload DTO
      * @return response entity containing PendingRegistrationResponse payload
@@ -90,10 +70,6 @@ public class AuthController {
      * Completes registration by validating the OTP code emailed for a pending registration. On
      * success, creates the user account and issues initial access and refresh tokens.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request OTP verification payload DTO
      * @return response entity containing AuthResponse payload
      */
@@ -107,10 +83,6 @@ public class AuthController {
      * Regenerates and re-emails a fresh OTP code for an existing pending registration, used when
      * the previous code expired or was not received.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request resend request payload DTO
      * @return response entity containing PendingRegistrationResponse payload
      */
@@ -122,10 +94,6 @@ public class AuthController {
 
     /**
      * Authenticates existing user with email and password credentials.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request login credentials payload DTO
      * @return response entity containing AuthResponse payload
@@ -139,10 +107,6 @@ public class AuthController {
     /**
      * Generates a new JWT access token using a valid refresh token payload.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request refresh token request payload DTO
      * @return response entity containing renewed AuthResponse payload
      */
@@ -154,10 +118,6 @@ public class AuthController {
 
     /**
      * Validates active JWT authentication token and returns user profile payload.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param authentication active Spring Security authentication token
      * @return response entity containing AuthResponse payload
@@ -174,10 +134,6 @@ public class AuthController {
      * {@link AuthResponse} (city, bio, privacy preferences). Used by the client's Account
      * Details screen to pre-fill the edit form.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authentication active Spring Security authentication token
      * @return response entity containing the current user's full profile
      */
@@ -189,10 +145,6 @@ public class AuthController {
 
     /**
      * Invalidates active user refresh token session upon logout.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param authentication active Spring Security authentication token
      * @return response entity acknowledging logout
@@ -206,10 +158,6 @@ public class AuthController {
 
     /**
      * Updates profile picture avatar URL for authenticated user.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request avatar URL update payload DTO
      * @param authentication active Spring Security authentication token
@@ -227,10 +175,6 @@ public class AuthController {
     /**
      * Updates first and last name profile details for authenticated user.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request profile details update payload DTO
      * @param authentication active Spring Security authentication token
      * @return response entity acknowledging profile update
@@ -245,10 +189,6 @@ public class AuthController {
 
     /**
      * Updates password for authenticated user following password verification.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request change password payload DTO
      * @param authentication active Spring Security authentication token
@@ -265,10 +205,6 @@ public class AuthController {
     /**
      * Updates email address for authenticated user and issues new JWT tokens.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request email update payload DTO
      * @param authentication active Spring Security authentication token
      * @return response entity containing new AuthResponse payload
@@ -284,10 +220,6 @@ public class AuthController {
     /**
      * Deactivates account for authenticated user.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authentication active Spring Security authentication token
      * @return response entity acknowledging account deactivation
      */
@@ -299,10 +231,6 @@ public class AuthController {
 
     /**
      * Updates public-profile privacy preferences for authenticated user.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request privacy settings update payload DTO
      * @param authentication active Spring Security authentication token
@@ -320,10 +248,6 @@ public class AuthController {
      * Starts the 30-day self-service account-deletion grace period for authenticated user,
      * following password verification. The account is restored automatically if the user logs
      * back in before the grace period lapses; otherwise it is permanently purged.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request delete-account payload DTO carrying the current password for verification
      * @param authentication active Spring Security authentication token
@@ -343,10 +267,6 @@ public class AuthController {
      * email belongs to a registered account. Always returns success regardless of whether the
      * email is registered, so the response never reveals account existence.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request forgot-password request payload DTO
      * @return response entity acknowledging the request
      */
@@ -360,10 +280,6 @@ public class AuthController {
     /**
      * Completes the forgot-password flow by consuming a valid reset token and setting a new
      * account password.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request reset-password request payload DTO
      * @return response entity acknowledging the password reset

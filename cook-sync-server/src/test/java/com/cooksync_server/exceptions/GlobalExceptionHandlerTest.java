@@ -3,6 +3,7 @@ package com.cooksync_server.exceptions;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.errors.ApiErrorResponse;
 import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
+import com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,18 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response.getBody());
         ApiErrorResponse error = (ApiErrorResponse) response.getBody().error();
         assertEquals("ACCESS_DENIED", error.errorCode());
+    }
+
+    @Test
+    void handleTooManyOtpAttempts_ShouldReturn429Payload() {
+        TooManyOtpAttemptsException ex = new TooManyOtpAttemptsException("Too many incorrect attempts. Please register again.");
+        ResponseEntity<ApiResponse<ApiErrorResponse>> response = exceptionHandler.handleTooManyOtpAttempts(ex);
+
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().success());
+        ApiErrorResponse error = (ApiErrorResponse) response.getBody().error();
+        assertEquals("TOO_MANY_OTP_ATTEMPTS", error.errorCode());
     }
 
     @Test

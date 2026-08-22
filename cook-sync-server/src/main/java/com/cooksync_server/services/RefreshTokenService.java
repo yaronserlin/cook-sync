@@ -36,10 +36,6 @@ public class RefreshTokenService implements IRefreshTokenService{
     /**
      * Finds a RefreshToken entity by string value.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param token refresh token string
      * @return Optional containing RefreshToken if found
      */
@@ -49,10 +45,6 @@ public class RefreshTokenService implements IRefreshTokenService{
 
     /**
      * Generates a new RefreshToken entity for specified user, revoking any existing user session token.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userId unique user identifier
      * @return created RefreshToken entity
@@ -74,10 +66,6 @@ public class RefreshTokenService implements IRefreshTokenService{
     /**
      * Verifies that a RefreshToken has not expired, deleting it if expired.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param token target RefreshToken entity
      * @return valid RefreshToken instance
      */
@@ -91,10 +79,6 @@ public class RefreshTokenService implements IRefreshTokenService{
 
     /**
      * Deletes all refresh tokens belonging to a user ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userId target user ID
      */

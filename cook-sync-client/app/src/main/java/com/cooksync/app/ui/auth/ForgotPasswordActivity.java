@@ -43,6 +43,14 @@ public class ForgotPasswordActivity extends BaseActivity {
     private com.google.android.material.button.MaterialButton btnResendCode;
     private ProgressBar progress;
 
+    /**
+     * Inflates the forgot-password layout and wires up view binding, LiveData observation,
+     * and click listeners. Both the request and reset stages are inflated up front; the
+     * reset stage is simply hidden until {@link ForgotPasswordViewModel#getForgotPasswordResult()}
+     * reports success.
+     *
+     * @param savedInstanceState saved instance state bundle (may be {@code null})
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +63,9 @@ public class ForgotPasswordActivity extends BaseActivity {
         setListeners();
     }
 
+    /**
+     * Binds all view references from the inflated layout.
+     */
     private void bindViews() {
         requestStage = findViewById(R.id.request_stage);
         resetStage = findViewById(R.id.reset_stage);
@@ -73,6 +84,9 @@ public class ForgotPasswordActivity extends BaseActivity {
         progress = findViewById(R.id.progress);
     }
 
+    /**
+     * Subscribes to all LiveData streams exposed by {@link ForgotPasswordViewModel}.
+     */
     private void observeViewModel() {
         viewModel.getEmailError().observe(this, e -> showFieldError(tvEmailError, e));
         viewModel.getCodeError().observe(this, e -> showFieldError(tvCodeError, e));
@@ -124,6 +138,9 @@ public class ForgotPasswordActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Attaches click listeners to interactive elements.
+     */
     private void setListeners() {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_send_reset_link).setOnClickListener(v ->
@@ -140,14 +157,5 @@ public class ForgotPasswordActivity extends BaseActivity {
                         etRepeatPassword.getText().toString()
                 )
         );
-    }
-
-    private void showFieldError(TextView tv, String error) {
-        if (error == null) {
-            tv.setVisibility(View.GONE);
-        } else {
-            tv.setText(error);
-            tv.setVisibility(View.VISIBLE);
-        }
     }
 }

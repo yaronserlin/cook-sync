@@ -79,10 +79,6 @@ public final class InputValidator {
         /**
          * Constructs a passing result.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @return a valid {@code ValidationResult}
          */
         @NonNull
@@ -92,10 +88,6 @@ public final class InputValidator {
 
         /**
          * Constructs a failing result with a user-facing message.
-         *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
          *
          * @param message the error description to display next to the field
          * @return an invalid {@code ValidationResult}
@@ -287,10 +279,6 @@ public final class InputValidator {
      *   <li>Must be {@code true}</li>
      * </ol>
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param accepted the current checked state of the terms checkbox
      * @return the validation result
      */
@@ -310,10 +298,6 @@ public final class InputValidator {
      *   <li>Not blank</li>
      *   <li>Exactly 6 digits</li>
      * </ol>
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param raw raw value from the OTP code {@code EditText}
      * @return the validation result

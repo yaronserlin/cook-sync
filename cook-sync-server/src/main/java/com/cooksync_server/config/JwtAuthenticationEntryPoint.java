@@ -32,10 +32,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     /**
      * Constructs JwtAuthenticationEntryPoint with Jackson ObjectMapper dependency.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param objectMapper Jackson JSON mapper instance
      */
     public JwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
@@ -44,10 +40,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     /**
      * Commences unauthorized error response write operation.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param request incoming HTTP servlet request
      * @param response outgoing HTTP servlet response

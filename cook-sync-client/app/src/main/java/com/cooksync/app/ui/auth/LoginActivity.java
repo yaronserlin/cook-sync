@@ -84,10 +84,6 @@ public class LoginActivity extends BaseActivity {
 
     /**
      * Binds all view references from the inflated layout.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void bindViews() {
         formContainer = findViewById(R.id.form_container);
@@ -100,10 +96,6 @@ public class LoginActivity extends BaseActivity {
 
     /**
      * Subscribes to all LiveData streams exposed by {@link LoginViewModel}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void observeViewModel() {
         // ── Silent token validation result (skeleton → navigate or form) ────────
@@ -139,10 +131,6 @@ public class LoginActivity extends BaseActivity {
 
     /**
      * Attaches click listeners to interactive elements.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void setListeners() {
         findViewById(R.id.btn_sign_in).setOnClickListener(v ->
@@ -158,10 +146,6 @@ public class LoginActivity extends BaseActivity {
 
     /**
      * Hides the skeleton, stops the shimmer animator, and reveals the real form.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void transitionToForm() {
         showSkeleton(false, formContainer);
@@ -169,10 +153,6 @@ public class LoginActivity extends BaseActivity {
 
     /**
      * Enables or disables both form-submission buttons during an in-flight call.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param enabled {@code true} to re-enable, {@code false} to disable
      */
@@ -182,31 +162,8 @@ public class LoginActivity extends BaseActivity {
     }
 
     /**
-     * Displays or hides a field-level validation error message.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param tv    the error {@link TextView} attached to a specific field
-     * @param error the error message to display, or {@code null} to hide the view
-     */
-    private void showFieldError(TextView tv, String error) {
-        if (error == null) {
-            tv.setVisibility(View.GONE);
-        } else {
-            tv.setText(error);
-            tv.setVisibility(View.VISIBLE);
-        }
-    }
-
-    /**
      * Navigates to the application's main screen and removes the login screen from
      * the back stack so the user cannot navigate back to it while logged in.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void navigateToMain() {
         Intent extras = new Intent();

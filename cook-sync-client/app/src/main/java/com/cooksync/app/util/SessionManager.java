@@ -41,10 +41,6 @@ public final class SessionManager {
     /**
      * Returns the process-wide singleton instance.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the shared {@code SessionManager} instance
      */
     public static SessionManager getInstance() {
@@ -54,10 +50,6 @@ public final class SessionManager {
     /**
      * Synchronizes the observable login state with whatever session {@link TokenStore}
      * currently holds on disk. Called once on process start.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void restoreFromTokenStore() {
         loggedIn.postValue(TokenStore.hasSession());
@@ -65,10 +57,6 @@ public final class SessionManager {
 
     /**
      * Persists a newly issued session and flips observers to the logged-in state.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param authResponse the auth payload returned by login, register, or token refresh
      */
@@ -90,10 +78,6 @@ public final class SessionManager {
      * token fields by design (it's a profile check, not a token-issuing call) — passing that
      * response to {@link #startSession} would overwrite a good token pair with {@code null}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authResponse the auth payload returned by token validation
      */
     public void refreshCachedProfile(AuthResponse authResponse) {
@@ -113,10 +97,6 @@ public final class SessionManager {
      * whoever signs in next on this device must not see the outgoing user's drafts. A forced
      * logout ({@link #forceLogout()}, e.g. an expired refresh token) does not clear drafts,
      * since the same person is expected to sign back in as themselves.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void logout() {
         TokenStore.clear();
@@ -129,10 +109,6 @@ public final class SessionManager {
      * Clears the stored session because token refresh failed (refresh token expired or
      * revoked). Distinct method from {@link #logout()} only for call-site clarity —
      * behavior is currently identical.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void forceLogout() {
         TokenStore.clear();
@@ -145,10 +121,6 @@ public final class SessionManager {
      * exactly once, by the process-wide logged-out observer, immediately after reacting to a
      * true → false transition.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return {@code true} if the logout was forced (expired/revoked session)
      */
     public boolean consumeWasForcedLogout() {
@@ -160,10 +132,6 @@ public final class SessionManager {
     /**
      * Exposes the observable login state for UI components to react to session changes.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return live, observable login state
      */
     public LiveData<Boolean> isLoggedIn() {
@@ -172,10 +140,6 @@ public final class SessionManager {
 
     /**
      * Returns the cached first name of the currently authenticated user.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the first name, or {@code null} if no session is active
      */
@@ -187,10 +151,6 @@ public final class SessionManager {
     /**
      * Returns the cached last name of the currently authenticated user.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the last name, or {@code null} if no session is active
      */
     @Nullable
@@ -201,10 +161,6 @@ public final class SessionManager {
     /**
      * Builds a two-letter initials string (e.g. "YS") from the cached first/last name, for
      * the avatar chip shown in the app bar. Falls back to a single "?" if no session is active.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the initials to render in the profile avatar
      */
@@ -234,10 +190,6 @@ public final class SessionManager {
     /**
      * Returns the cached user ID of the currently authenticated user.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the user ID, or {@code null} if no session is active
      */
     @Nullable
@@ -248,10 +200,6 @@ public final class SessionManager {
     /**
      * Returns the cached email of the currently authenticated user.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the email, or {@code null} if no session is active or it was never cached
      */
     @Nullable
@@ -261,10 +209,6 @@ public final class SessionManager {
 
     /**
      * Returns the cached avatar URL of the currently authenticated user.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the avatar URL, or {@code null} if unset
      */
@@ -277,10 +221,6 @@ public final class SessionManager {
      * Returns whether the currently authenticated user has administrative privileges, used to
      * gate admin-only UI (e.g. the Settings screen's "Admin console" row).
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return {@code true} if the current user is an admin
      */
     public boolean isAdmin() {
@@ -292,10 +232,6 @@ public final class SessionManager {
      * email field, so this is populated separately from whichever request payload already
      * had it (login, register, or an email-change request), rather than from the response.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param email the email address to cache
      */
     public void cacheEmail(String email) {
@@ -304,10 +240,6 @@ public final class SessionManager {
 
     /**
      * Updates the cached first/last name after a successful profile edit.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param firstName the updated first name
      * @param lastName the updated last name
@@ -318,10 +250,6 @@ public final class SessionManager {
 
     /**
      * Updates the cached avatar URL after a successful avatar edit.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param avatarUrl the updated avatar URL
      */

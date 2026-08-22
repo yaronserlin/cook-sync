@@ -34,8 +34,6 @@ public class SecurityConfig {
      * Configures HttpSecurity chain settings, endpoint permissions, stateless
      * session policies, and custom filters.
      *
-     * Complexity: Time: O(1) Space: O(1)
-     *
      * @param http HttpSecurity configuration builder
      * @return constructed SecurityFilterChain bean
      * @throws Exception if security filter building fails
@@ -59,8 +57,6 @@ public class SecurityConfig {
 
     /**
      * Configures BCrypt password encoder bean for secure password hashing.
-     *
-     * Complexity: Time: O(1) Space: O(1)
      *
      * @return BCryptPasswordEncoder instance
      */

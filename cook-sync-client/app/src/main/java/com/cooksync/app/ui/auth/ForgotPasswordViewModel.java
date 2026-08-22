@@ -2,8 +2,6 @@ package com.cooksync.app.ui.auth;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
-import android.os.CountDownTimer;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -11,13 +9,14 @@ import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
+import com.cooksync.app.util.ResendCooldownTimer;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 
 /**
  * ViewModel for {@link ForgotPasswordActivity}. Drives both stages of the forgot-password
  * flow: requesting a reset code by email, then consuming that code to set a new password. A
- * client-side resend cooldown, identical in shape to {@link VerifyOtpViewModel}'s, disables the
+ * client-side {@link ResendCooldownTimer}, shared with {@link VerifyOtpViewModel}, disables the
  * resend action for {@value #RESEND_COOLDOWN_SECONDS} seconds after a code is issued or resent.
  *
  * @author Yaron Serlin
@@ -42,15 +41,11 @@ public class ForgotPasswordViewModel extends BaseViewModel {
     private final MutableLiveData<String> repeatPasswordError = new MutableLiveData<>();
     private final MutableLiveData<Integer> resendCooldownSeconds = new MutableLiveData<>(0);
 
-    private CountDownTimer resendCountDownTimer;
+    private final ResendCooldownTimer cooldownTimer = new ResendCooldownTimer(RESEND_COOLDOWN_SECONDS, resendCooldownSeconds);
 
     /**
      * Constructs the ViewModel with the given {@link AuthRepository}, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param authRepository the repository used for the forgot/reset password calls
      */
@@ -78,7 +73,7 @@ public class ForgotPasswordViewModel extends BaseViewModel {
         this.email = trimmedEmail;
         observeOnce(forgotPasswordResult, result -> {
             if (result instanceof ApiResult.Success) {
-                startResendCooldown();
+                cooldownTimer.start();
             }
         });
         authRepository.forgotPassword(new ForgotPasswordRequestDTO(trimmedEmail), forgotPasswordResult);
@@ -88,10 +83,6 @@ public class ForgotPasswordViewModel extends BaseViewModel {
      * Requests a fresh reset code for the email captured by {@link #requestReset}, restarting
      * the resend cooldown on success. No-op while the cooldown from a previous send is still
      * running.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void resendCode() {
         Integer cooldown = resendCooldownSeconds.getValue();
@@ -100,7 +91,7 @@ public class ForgotPasswordViewModel extends BaseViewModel {
         }
         observeOnce(resendCodeResult, result -> {
             if (result instanceof ApiResult.Success) {
-                startResendCooldown();
+                cooldownTimer.start();
             }
         });
         authRepository.forgotPassword(new ForgotPasswordRequestDTO(email), resendCodeResult);
@@ -137,36 +128,6 @@ public class ForgotPasswordViewModel extends BaseViewModel {
         authRepository.resetPassword(new ResetPasswordRequestDTO(email, code, newPassword), resetPasswordResult);
     }
 
-    /**
-     * (Re)starts the resend cooldown countdown from {@value #RESEND_COOLDOWN_SECONDS} seconds.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     */
-    private void startResendCooldown() {
-        cancelResendCountDown();
-        resendCooldownSeconds.setValue(RESEND_COOLDOWN_SECONDS);
-        resendCountDownTimer = new CountDownTimer(RESEND_COOLDOWN_SECONDS * 1000L, 1000L) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                resendCooldownSeconds.setValue((int) Math.ceil(millisUntilFinished / 1000.0));
-            }
-
-            @Override
-            public void onFinish() {
-                resendCooldownSeconds.setValue(0);
-            }
-        }.start();
-    }
-
-    private void cancelResendCountDown() {
-        if (resendCountDownTimer != null) {
-            resendCountDownTimer.cancel();
-            resendCountDownTimer = null;
-        }
-    }
-
     /** @return observable forgot-password request result (Loading → Success/Error) */
     public LiveData<ApiResult<Void>> getForgotPasswordResult() { return forgotPasswordResult; }
     /** @return observable resend-code result (Loading → Success/Error) */
@@ -187,6 +148,6 @@ public class ForgotPasswordViewModel extends BaseViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        cancelResendCountDown();
+        cooldownTimer.cancel();
     }
 }

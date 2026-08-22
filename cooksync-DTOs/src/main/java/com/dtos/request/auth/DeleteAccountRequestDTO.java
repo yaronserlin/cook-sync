@@ -1,7 +1,6 @@
 package com.dtos.request.auth;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.dtos.validation.CurrentPassword;
 
 /**
  * Data Transfer Object for self-service account-deletion requests.
@@ -14,8 +13,7 @@ import jakarta.validation.constraints.Size;
  * @since 08/08/2026
  */
 public record DeleteAccountRequestDTO(
-        @NotBlank(message = "Current password is required")
-        @Size(max = 100, message = "Current password cannot exceed 100 characters")
+        @CurrentPassword
         String currentPassword
 ) {
 }

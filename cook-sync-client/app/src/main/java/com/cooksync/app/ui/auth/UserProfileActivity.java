@@ -63,6 +63,13 @@ public class UserProfileActivity extends BaseActivity {
     private TextView tvFavoritesEmpty;
     private RecipeRowCardAdapter favoritesAdapter;
 
+    /**
+     * Inflates the public-profile layout, renders the cached display name immediately (if one
+     * was passed via {@link #EXTRA_USER_NAME}), then loads the target user's full profile,
+     * recipes, and favorites by ID.
+     *
+     * @param savedInstanceState saved instance state bundle (may be {@code null})
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +96,9 @@ public class UserProfileActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Binds all view references from the inflated layout.
+     */
     private void bindViews() {
         avatarView = findViewById(R.id.avatar_view);
         tvFullName = findViewById(R.id.tv_full_name);
@@ -144,12 +154,21 @@ public class UserProfileActivity extends BaseActivity {
         rvFavorites.setAdapter(favoritesAdapter);
     }
 
+    /**
+     * Navigates to the full recipe detail screen for a tapped row in either list.
+     *
+     * @param recipe the recipe preview whose row was tapped
+     */
     private void openRecipe(RecipePreviewResponse recipe) {
         Intent intent = new Intent();
         intent.putExtra(Navigator.EXTRA_RECIPE_ID, recipe.id());
         Navigator.start(this, RecipeDetailActivity.class, intent);
     }
 
+    /**
+     * Subscribes to the target user's profile-fetch result, rendering it on success or
+     * surfacing an error toast on failure.
+     */
     private void observeProfile() {
         viewModel.getProfileResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
@@ -164,6 +183,12 @@ public class UserProfileActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Populates the header views (name, avatar, city, bio) from a fetched profile and toggles
+     * the recipes/favorites sections according to that user's privacy preferences.
+     *
+     * @param user the fetched public profile to render
+     */
     private void renderUser(UserResponse user) {
         String fullName = (user.firstName() + " " + user.lastName()).trim();
         if (fullName.isEmpty()) fullName = getString(R.string.anonymous);
@@ -188,6 +213,10 @@ public class UserProfileActivity extends BaseActivity {
         sectionFavorites.setVisibility(user.showFavoritesPublicly() ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * Subscribes to the target user's public-recipes fetch result, populating the recipes
+     * list and toggling its empty-state placeholder.
+     */
     private void observeRecipes() {
         viewModel.getRecipesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
@@ -199,6 +228,10 @@ public class UserProfileActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Subscribes to the target user's public-favorites fetch result, populating the favorites
+     * list and toggling its empty-state placeholder.
+     */
     private void observeFavorites() {
         viewModel.getFavoritesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {

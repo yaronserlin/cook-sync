@@ -38,10 +38,6 @@ public class JwtUtil {
     /**
      * Extracts subject email address from the given JWT token string.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param token encoded JWT token
      * @return extracted subject email string
      */
@@ -51,10 +47,6 @@ public class JwtUtil {
 
     /**
      * Extracts a custom claim using the supplied claim resolver function.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param <T> claim return type
      * @param token encoded JWT token
@@ -68,10 +60,6 @@ public class JwtUtil {
 
     /**
      * Generates a signed JWT access token containing user identity and role claims.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param email target user email
      * @param userId target user ID
@@ -97,10 +85,6 @@ public class JwtUtil {
 
     /**
      * Validates whether the token subject matches target user email and is unexpired.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param token JWT string
      * @param email target user email

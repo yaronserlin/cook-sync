@@ -1,5 +1,7 @@
 package com.dtos.request.auth;
 
+import com.dtos.validation.CurrentPassword;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -20,8 +22,7 @@ public record EmailUpdateRequestDTO(
         @Size(max = 255, message = "Email cannot exceed 255 characters")
         String newEmail,
 
-        @NotBlank(message = "Current password is required")
-        @Size(max = 100, message = "Current password cannot exceed 100 characters")
+        @CurrentPassword
         String currentPassword
 ) {
 }

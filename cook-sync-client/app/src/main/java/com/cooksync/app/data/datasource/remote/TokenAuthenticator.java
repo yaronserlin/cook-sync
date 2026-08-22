@@ -41,10 +41,6 @@ public class TokenAuthenticator implements Authenticator {
      * refresh-token call. This service must be built WITHOUT {@link AuthInterceptor} or this
      * same authenticator attached, to avoid recursively triggering another refresh.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param refreshApiService a bare API service pointed at the same base URL
      */
     public TokenAuthenticator(ApiService refreshApiService) {
@@ -113,10 +109,6 @@ public class TokenAuthenticator implements Authenticator {
 
     /**
      * Rebuilds a request with a fresh {@code Authorization} header.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param original the request that originally failed
      * @param accessToken the new access token to attach

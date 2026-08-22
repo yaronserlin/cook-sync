@@ -45,10 +45,6 @@ public final class TokenStore {
      * Creates the encrypted preferences file, generating (or reusing) an AES256-GCM master
      * key in the Android Keystore. Safe to call more than once; subsequent calls are no-ops.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param context application context used to resolve the Keystore-backed master key
      */
     public static void init(Context context) {
@@ -79,10 +75,6 @@ public final class TokenStore {
     /**
      * Persists a fresh JWT access/refresh token pair, replacing any previous values.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param accessToken bearer token to attach to subsequent authenticated requests
      * @param refreshToken token used to obtain a new access token once it expires
      */
@@ -95,10 +87,6 @@ public final class TokenStore {
 
     /**
      * Persists the minimal cached user profile fields carried on an {@code AuthResponse}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userId unique identifier of the authenticated user
      * @param firstName authenticated user's first name
@@ -123,10 +111,6 @@ public final class TokenStore {
      * callers cache it from whichever request payload they already had it in (login,
      * register, or an email-change request).
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param email the authenticated user's email address
      */
     public static void saveEmail(String email) {
@@ -135,10 +119,6 @@ public final class TokenStore {
 
     /**
      * Returns the cached authenticated user's email address.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the email address, or {@code null} if unset
      */
@@ -149,10 +129,6 @@ public final class TokenStore {
     /**
      * Updates the cached first/last name after a successful profile edit, without touching
      * the other cached fields.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param firstName the updated first name
      * @param lastName the updated last name
@@ -168,10 +144,6 @@ public final class TokenStore {
      * Updates the cached avatar URL after a successful avatar edit, without touching the
      * other cached fields.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param avatarUrl the updated avatar URL
      */
     public static void updateAvatarUrl(String avatarUrl) {
@@ -180,10 +152,6 @@ public final class TokenStore {
 
     /**
      * Returns the currently stored access token.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the bearer access token, or {@code null} if no session is stored
      */
@@ -194,10 +162,6 @@ public final class TokenStore {
     /**
      * Returns the currently stored refresh token.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the refresh token, or {@code null} if no session is stored
      */
     public static String getRefreshToken() {
@@ -206,10 +170,6 @@ public final class TokenStore {
 
     /**
      * Returns the cached authenticated user id.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the user id, or {@code null} if no session is stored
      */
@@ -220,10 +180,6 @@ public final class TokenStore {
     /**
      * Returns the cached authenticated user's first name.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the first name, or {@code null} if no session is stored
      */
     public static String getFirstName() {
@@ -232,10 +188,6 @@ public final class TokenStore {
 
     /**
      * Returns the cached authenticated user's last name.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the last name, or {@code null} if no session is stored
      */
@@ -246,10 +198,6 @@ public final class TokenStore {
     /**
      * Returns whether the cached authenticated user has administrative privileges.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return {@code true} if the user is an admin, {@code false} otherwise or if unset
      */
     public static boolean isAdmin() {
@@ -259,10 +207,6 @@ public final class TokenStore {
     /**
      * Returns the cached authenticated user's avatar URL.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the avatar URL, or {@code null} if unset
      */
     public static String getAvatarUrl() {
@@ -271,10 +215,6 @@ public final class TokenStore {
 
     /**
      * Returns whether a non-blank access token is currently stored.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return {@code true} if a session is stored, {@code false} otherwise
      */
@@ -286,10 +226,6 @@ public final class TokenStore {
     /**
      * Clears all stored tokens and cached profile fields, e.g. on logout or when a
      * refresh attempt fails because the refresh token itself is no longer valid.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public static void clear() {
         preferences.edit().clear().apply();

@@ -12,10 +12,6 @@ public class OtpExpiredException extends RuntimeException {
     /**
      * Constructs an OtpExpiredException with context details.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param message exception message context
      */
     public OtpExpiredException(String message) {

@@ -30,25 +30,17 @@ public class EmailService implements IEmailService{
      * Sends a password-reset email containing the given code to the given address via Gmail
      * SMTP.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param toEmail the recipient's email address
      * @param resetCode the one-time 6-digit password-reset code to include in the email
      * @param validityMinutes number of minutes the code remains valid, included in the email body
      */
     public void sendPasswordResetEmail(String toEmail, String resetCode, int validityMinutes) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromAddress);
-        message.setTo(toEmail);
-        message.setSubject("Reset your CookSync password");
-        message.setText("We received a request to reset your CookSync password."
-                + "\n\nYour password reset code is: " + resetCode
-                + "\n\nEnter this code in the app to choose a new password. It expires in "
-                + validityMinutes + " minutes."
-                + "\n\nIf you didn't request this, you can safely ignore this email.");
-        mailSender.send(message);
+        sendEmail(toEmail, "Reset your CookSync password",
+                "We received a request to reset your CookSync password."
+                        + "\n\nYour password reset code is: " + resetCode
+                        + "\n\nEnter this code in the app to choose a new password. It expires in "
+                        + validityMinutes + " minutes."
+                        + "\n\nIf you didn't request this, you can safely ignore this email.");
         log.info("Password reset email sent to {}", toEmail);
     }
 
@@ -56,23 +48,33 @@ public class EmailService implements IEmailService{
      * Sends a registration verification email containing the given one-time OTP code via Gmail
      * SMTP.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param toEmail the recipient's email address
      * @param code the 6-digit OTP code to include in the email
      * @param validityMinutes number of minutes the code remains valid, included in the email body
      */
     public void sendOtpEmail(String toEmail, String code, int validityMinutes) {
+        sendEmail(toEmail, "Your CookSync verification code",
+                "Your CookSync verification code is: " + code
+                        + "\n\nThis code expires in " + validityMinutes + " minutes."
+                        + "\n\nIf you didn't request this, you can safely ignore this email.");
+        log.info("Registration OTP email sent to {}", toEmail);
+    }
+
+    /**
+     * Builds and sends a plain-text transactional email via Gmail SMTP. Shared by every
+     * account-email method in this class so the {@link SimpleMailMessage} construction lives
+     * in exactly one place.
+     *
+     * @param toEmail the recipient's email address
+     * @param subject the email subject line
+     * @param body the plain-text email body
+     */
+    private void sendEmail(String toEmail, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(toEmail);
-        message.setSubject("Your CookSync verification code");
-        message.setText("Your CookSync verification code is: " + code
-                + "\n\nThis code expires in " + validityMinutes + " minutes."
-                + "\n\nIf you didn't request this, you can safely ignore this email.");
+        message.setSubject(subject);
+        message.setText(body);
         mailSender.send(message);
-        log.info("Registration OTP email sent to {}", toEmail);
     }
 }

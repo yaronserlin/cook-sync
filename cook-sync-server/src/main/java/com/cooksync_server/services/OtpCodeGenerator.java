@@ -25,10 +25,6 @@ final class OtpCodeGenerator {
      * Generates a random 6-digit numeric OTP code, zero-padded so every code is exactly 6
      * characters (e.g. "004821").
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return a 6-digit numeric OTP code string
      */
     static String generate() {

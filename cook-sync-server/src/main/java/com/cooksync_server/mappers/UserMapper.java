@@ -18,10 +18,6 @@ public final class UserMapper {
     /**
      * Converts a User entity into a UserResponse DTO.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param user target User entity instance
      * @return populated UserResponse instance or null
      */

@@ -119,10 +119,6 @@ public class User {
 
     /**
      * Initializes timestamps prior to persistence.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {
@@ -132,10 +128,6 @@ public class User {
 
     /**
      * Computes the trimmed full name of the user.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return formatted full name string
      */
@@ -155,10 +147,6 @@ public class User {
 
     /**
      * Updates modified timestamp prior to entity update execution.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PreUpdate
     protected void onUpdate() {

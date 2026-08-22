@@ -47,10 +47,6 @@ public class UserProfileService implements IUserProfileService {
      * Fetches the authenticated user's full profile, including fields not carried by
      * {@link AuthResponse} (city, bio, privacy preferences).
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userEmail authenticated user email
      * @return the user's full profile
      */
@@ -64,10 +60,6 @@ public class UserProfileService implements IUserProfileService {
     /**
      * Fetches a specific user's public profile by user ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userId target user unique identifier
      * @return UserResponse DTO
      */
@@ -80,10 +72,6 @@ public class UserProfileService implements IUserProfileService {
 
     /**
      * Updates user avatar picture URL.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userEmail target user email
      * @param avatarUrl new profile picture URL
@@ -105,10 +93,6 @@ public class UserProfileService implements IUserProfileService {
     /**
      * Updates user first name, last name, city, and bio profile details.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userEmail target user email
      * @param request profile update request DTO
      */
@@ -126,10 +110,6 @@ public class UserProfileService implements IUserProfileService {
     /**
      * Updates the user's public-profile privacy preferences.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userEmail target user email
      * @param request privacy settings update request DTO
      */
@@ -144,10 +124,6 @@ public class UserProfileService implements IUserProfileService {
 
     /**
      * Updates user account email address following password verification and issues updated tokens.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userEmail current authenticated user email
      * @param request email update request DTO
@@ -182,10 +158,6 @@ public class UserProfileService implements IUserProfileService {
     /**
      * Deactivates user account (soft delete) and revokes active refresh tokens.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param userEmail target user email
      */
     @Transactional
@@ -204,10 +176,6 @@ public class UserProfileService implements IUserProfileService {
      * user's reviews and starts the countdown to permanent purge; a plain deactivation does
      * neither. Logging back in within the grace period restores the account via
      * {@link AuthService#login}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param userEmail target user email
      * @param request delete-account request DTO carrying the current password for verification

@@ -35,10 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * Processes request header, validates bearer token, and establishes security context.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request current HTTP request
      * @param response current HTTP response
      * @param filterChain target filter chain

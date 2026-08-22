@@ -91,10 +91,6 @@ public class RegisterActivity extends BaseActivity {
     /**
      * Cancels the pending skeleton-transition runnable so it never fires after the
      * Activity has left the foreground.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @Override
     protected void onStop() {
@@ -104,10 +100,6 @@ public class RegisterActivity extends BaseActivity {
 
     /**
      * Binds all view references.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void bindViews() {
         formContainer = findViewById(R.id.form_container);
@@ -146,10 +138,6 @@ public class RegisterActivity extends BaseActivity {
 
     /**
      * Subscribes to all LiveData streams from {@link RegisterViewModel}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void observeViewModel() {
         viewModel.getFirstNameError().observe(this, e -> showFieldError(tvFirstNameError, e));
@@ -175,10 +163,6 @@ public class RegisterActivity extends BaseActivity {
 
     /**
      * Attaches click listeners.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void setListeners() {
         findViewById(R.id.btn_create_account).setOnClickListener(v ->
@@ -201,10 +185,6 @@ public class RegisterActivity extends BaseActivity {
 
     /**
      * Hides the skeleton, stops the shimmer animator, and reveals the registration form.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void transitionToForm() {
         showSkeleton(false, formContainer);
@@ -212,10 +192,6 @@ public class RegisterActivity extends BaseActivity {
 
     /**
      * Enables or disables both submission buttons simultaneously to prevent double-tap.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param enabled {@code true} to re-enable, {@code false} to disable
      */
@@ -225,32 +201,9 @@ public class RegisterActivity extends BaseActivity {
     }
 
     /**
-     * Displays or hides a per-field validation error.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param tv    the error {@link TextView} for a specific field
-     * @param error the error string, or {@code null} to hide
-     */
-    private void showFieldError(TextView tv, String error) {
-        if (error == null) {
-            tv.setVisibility(View.GONE);
-        } else {
-            tv.setText(error);
-            tv.setVisibility(View.VISIBLE);
-        }
-    }
-
-    /**
      * Navigates to the OTP verification screen after a successful registration submission. No
      * session exists yet at this point — registration only completes once the emailed code is
      * verified there.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param email the email address the OTP code was sent to
      */
