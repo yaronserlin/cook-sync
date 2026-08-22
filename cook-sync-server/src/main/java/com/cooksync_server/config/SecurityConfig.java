@@ -45,9 +45,6 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh-token",
                         "/api/auth/forgot-password", "/api/auth/reset-password",
                         "/api/auth/verify-registration-otp", "/api/auth/resend-registration-otp").permitAll()
