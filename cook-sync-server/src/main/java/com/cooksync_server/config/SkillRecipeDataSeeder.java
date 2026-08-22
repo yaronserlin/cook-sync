@@ -191,7 +191,7 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
 
     /**
      * Helper for building and wiring Recipe entity instances. The recipe's own
-     * {@code description} field is derived the same way RecipeService does for
+     * {@code description} field is derived the same way RecipeServiceImp does for
      * live API submissions: the first TEXT description block's text, or "".
      */
     private Recipe createRecipe(String title, Recipe.Difficulty difficulty, int prepTime, int cookTime,

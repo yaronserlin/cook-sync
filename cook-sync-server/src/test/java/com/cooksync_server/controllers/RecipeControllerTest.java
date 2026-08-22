@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
-import com.cooksync_server.services.IRecipeService;
+import com.cooksync_server.services.RecipeService;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Web-layer test suite verifying {@link RecipeController}'s request mapping, payload validation,
- * and status-code wiring against a mocked {@link IRecipeService}. Complements the service-layer
+ * and status-code wiring against a mocked {@link RecipeService}. Complements the service-layer
  * {@code RecipeServiceTest} by catching controller-only regressions (wrong path/param names,
  * missing {@code @Valid}, wrong HTTP status) that a service-only test suite cannot see.
  *
@@ -54,7 +54,7 @@ class RecipeControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private IRecipeService recipeService;
+    private RecipeService recipeService;
 
     /**
      * {@link com.cooksync_server.config.JwtAuthenticationFilter} is auto-registered by

@@ -24,11 +24,11 @@ import java.util.List;
  * @version 1.0
  * @since 04/08/2026
  */
-public class RecipeRepositoryImpl extends BaseRepository implements RecipeRepository {
+public class RecipeRepositoryImp extends BaseRepository implements RecipeRepository {
 
     private final ApiService apiService;
 
-    public RecipeRepositoryImpl() {
+    public RecipeRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 

@@ -27,7 +27,7 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
 
 /**
- * Unit test suite verifying measurement unit retrieval, creation uniqueness, and deletion in UnitService.
+ * Unit test suite verifying measurement unit retrieval, creation uniqueness, and deletion in UnitServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -40,7 +40,7 @@ class UnitServiceTest {
     private UnitRepository unitRepository;
 
     @InjectMocks
-    private UnitService unitService;
+    private UnitServiceImp unitService;
 
     private Unit sampleUnit;
 

@@ -5,17 +5,17 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.data.repository.AdminRepository;
-import com.cooksync.app.data.repository.impl.AdminRepositoryImpl;
+import com.cooksync.app.data.repository.impl.AdminRepositoryImp;
 import com.cooksync.app.data.repository.AuthRepository;
-import com.cooksync.app.data.repository.impl.AuthRepositoryImpl;
+import com.cooksync.app.data.repository.impl.AuthRepositoryImp;
 import com.cooksync.app.data.repository.MediaRepository;
-import com.cooksync.app.data.repository.impl.MediaRepositoryImpl;
+import com.cooksync.app.data.repository.impl.MediaRepositoryImp;
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.impl.RecipeRepositoryImpl;
+import com.cooksync.app.data.repository.impl.RecipeRepositoryImp;
 import com.cooksync.app.data.repository.TagRepository;
-import com.cooksync.app.data.repository.impl.TagRepositoryImpl;
+import com.cooksync.app.data.repository.impl.TagRepositoryImp;
 import com.cooksync.app.data.repository.UnitRepository;
-import com.cooksync.app.data.repository.impl.UnitRepositoryImpl;
+import com.cooksync.app.data.repository.impl.UnitRepositoryImp;
 import com.cooksync.app.ui.admin.AdminReportsViewModel;
 import com.cooksync.app.ui.admin.AdminStatsViewModel;
 import com.cooksync.app.ui.admin.AdminTagsViewModel;
@@ -39,7 +39,7 @@ import com.cooksync.app.ui.settings.SettingsViewModel;
 /**
  * Factory for constructing ViewModels with their required repository dependencies, following
  * the Dependency Inversion principle: feature ViewModels declare their repository
- * dependencies as constructor parameters instead of instantiating {@code *RepositoryImpl}
+ * dependencies as constructor parameters instead of instantiating {@code *RepositoryImp}
  * classes themselves, and this factory is the single place that wires concrete
  * implementations in. Used via {@code new ViewModelProvider(this, new ViewModelFactory())}
  * from every Activity that owns a ViewModel.
@@ -66,12 +66,12 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
      * Space: O(1)
      */
     public ViewModelFactory() {
-        this.authRepository = new AuthRepositoryImpl();
-        this.recipeRepository = new RecipeRepositoryImpl();
-        this.tagRepository = new TagRepositoryImpl();
-        this.mediaRepository = new MediaRepositoryImpl();
-        this.adminRepository = new AdminRepositoryImpl();
-        this.unitRepository = new UnitRepositoryImpl();
+        this.authRepository = new AuthRepositoryImp();
+        this.recipeRepository = new RecipeRepositoryImp();
+        this.tagRepository = new TagRepositoryImp();
+        this.mediaRepository = new MediaRepositoryImp();
+        this.adminRepository = new AdminRepositoryImp();
+        this.unitRepository = new UnitRepositoryImp();
     }
 
     /**

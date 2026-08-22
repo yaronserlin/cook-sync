@@ -13,7 +13,7 @@ import com.dtos.response.PagedResponse;
 /**
  * Utility class converting a Spring Data {@link Page} of entities into a {@link PagedResponse}
  * of DTOs. Centralizes the entity-to-DTO page mapping shape shared by every paginated service
- * method (e.g. {@link RecipeService}, {@link FavoriteService}, {@link TagService}) so each call
+ * method (e.g. {@link RecipeServiceImp}, {@link FavoriteServiceImp}, {@link TagServiceImp}) so each call
  * site only supplies the entity-to-DTO mapper.
  *
  * @author Yaron Serlin
@@ -48,8 +48,8 @@ final class PagedResponseMapper {
     /**
      * Fetches an unfiltered, unsorted page directly from a repository and maps it to a
      * {@link PagedResponse} of DTOs in one call. Covers the plain "list everything, paginated"
-     * shape shared by simple reference-data lookups (e.g. {@link UnitService#getAllUnits},
-     * {@link TagService#getAllTags}) that need no filtering or sorting beyond page/size.
+     * shape shared by simple reference-data lookups (e.g. {@link UnitServiceImp#getAllUnits},
+     * {@link TagServiceImp#getAllTags}) that need no filtering or sorting beyond page/size.
      *
      * Complexity:
      * Time: O(N) where N is the page's content size

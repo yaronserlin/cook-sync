@@ -27,7 +27,7 @@ import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.response.instruction.InstructionResponse;
 
 /**
- * Unit test suite verifying instruction step creation, update, and deletion authorization in InstructionService.
+ * Unit test suite verifying instruction step creation, update, and deletion authorization in InstructionServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -46,7 +46,7 @@ class InstructionServiceTest {
     private IngredientRepository ingredientRepository;
 
     @InjectMocks
-    private InstructionService instructionService;
+    private InstructionServiceImp instructionService;
 
     private User owner;
     private User otherUser;

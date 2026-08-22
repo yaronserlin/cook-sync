@@ -23,11 +23,11 @@ import com.dtos.response.user.UserResponse;
  * @version 1.0
  * @since 07/08/2026
  */
-public class AdminRepositoryImpl extends BaseRepository implements AdminRepository {
+public class AdminRepositoryImp extends BaseRepository implements AdminRepository {
 
     private final ApiService apiService;
 
-    public AdminRepositoryImpl() {
+    public AdminRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 

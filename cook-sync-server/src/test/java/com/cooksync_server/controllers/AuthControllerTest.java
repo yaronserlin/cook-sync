@@ -18,9 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
-import com.cooksync_server.services.IAuthService;
-import com.cooksync_server.services.IPasswordService;
-import com.cooksync_server.services.IUserProfileService;
+import com.cooksync_server.services.AuthService;
+import com.cooksync_server.services.PasswordService;
+import com.cooksync_server.services.UserProfileService;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
@@ -31,9 +31,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Web-layer test suite verifying {@link AuthController}'s request mapping, payload validation,
- * and status-code wiring against mocked {@link IAuthService}, {@link IUserProfileService}, and
- * {@link IPasswordService} instances. Confirms the controller routes each endpoint to the correct
- * one of the three services after {@code AuthService} was split by responsibility.
+ * and status-code wiring against mocked {@link AuthService}, {@link UserProfileService}, and
+ * {@link PasswordService} instances. Confirms the controller routes each endpoint to the correct
+ * one of the three services after {@code AuthServiceImp} was split by responsibility.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -50,13 +50,13 @@ class AuthControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private IAuthService authService;
+    private AuthService authService;
 
     @MockitoBean
-    private IUserProfileService userProfileService;
+    private UserProfileService userProfileService;
 
     @MockitoBean
-    private IPasswordService passwordService;
+    private PasswordService passwordService;
 
     /**
      * {@link com.cooksync_server.config.JwtAuthenticationFilter} is auto-registered by

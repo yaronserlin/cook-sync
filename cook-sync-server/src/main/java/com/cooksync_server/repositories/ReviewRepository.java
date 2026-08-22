@@ -70,7 +70,7 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
      * Bulk-flips the hidden flag for every review authored by a user, used to hide their reviews
      * when an account-deletion request starts and to restore them if the user logs back in
      * within the grace period. Deliberately does NOT clear the persistence context (unlike the
-     * other bulk-cleanup queries in this codebase): both callers in {@code AccountDeletionService}
+     * other bulk-cleanup queries in this codebase): both callers in {@code AccountDeletionServiceImp}
      * mutate the {@code User} entity in the same transaction around this call, and an automatic
      * clear would detach that entity before its pending field changes (enabled/status/
      * deletionRequestedAt) are flushed — silently discarding them instead of persisting them.

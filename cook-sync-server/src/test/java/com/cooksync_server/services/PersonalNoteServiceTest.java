@@ -31,7 +31,7 @@ import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.note.NoteResponse;
 
 /**
- * Unit test suite verifying personal note creation, retrieval, and deletion authorization in PersonalNoteService.
+ * Unit test suite verifying personal note creation, retrieval, and deletion authorization in PersonalNoteServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -50,7 +50,7 @@ class PersonalNoteServiceTest {
     private FavoriteRecipeRepository favoriteRepository;
 
     @InjectMocks
-    private PersonalNoteService personalNoteService;
+    private PersonalNoteServiceImp personalNoteService;
 
     private User sampleUser;
     private Recipe sampleRecipe;

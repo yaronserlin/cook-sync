@@ -1,80 +1,29 @@
 package com.cooksync_server.services;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
- * Service responsible for sending transactional emails to users, backed by Gmail SMTP via
- * {@link JavaMailSender} (see {@code spring.mail.*} in application.properties).
+ * Service interface for sending transactional account emails.
  *
  * @author Yaron Serlin
  * @version 1.0
- * @since 05/08/2026
+ * @since 02/08/2026
  */
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class EmailService implements IEmailService{
-
-    private final JavaMailSender mailSender;
-
-    @Value("${spring.mail.username}")
-    private String fromAddress;
+public interface EmailService {
 
     /**
-     * Sends a password-reset email containing the given code to the given address via Gmail
-     * SMTP.
+     * Sends a password-reset email containing the given reset code to the target address.
      *
-     * @param toEmail the recipient's email address
-     * @param resetCode the one-time 6-digit password-reset code to include in the email
+     * @param toEmail recipient email address
+     * @param resetCode single-use 6-digit password reset code to embed in the email
      * @param validityMinutes number of minutes the code remains valid, included in the email body
      */
-    public void sendPasswordResetEmail(String toEmail, String resetCode, int validityMinutes) {
-        sendEmail(toEmail, "Reset your CookSync password",
-                "We received a request to reset your CookSync password."
-                        + "\n\nYour password reset code is: " + resetCode
-                        + "\n\nEnter this code in the app to choose a new password. It expires in "
-                        + validityMinutes + " minutes."
-                        + "\n\nIf you didn't request this, you can safely ignore this email.");
-        log.info("Password reset email sent to {}", toEmail);
-    }
+    void sendPasswordResetEmail(String toEmail, String resetCode, int validityMinutes);
 
     /**
-     * Sends a registration verification email containing the given one-time OTP code via Gmail
-     * SMTP.
+     * Sends a registration verification email containing the given one-time OTP code.
      *
-     * @param toEmail the recipient's email address
-     * @param code the 6-digit OTP code to include in the email
+     * @param toEmail recipient email address
+     * @param code the 6-digit OTP code to embed in the email
      * @param validityMinutes number of minutes the code remains valid, included in the email body
      */
-    public void sendOtpEmail(String toEmail, String code, int validityMinutes) {
-        sendEmail(toEmail, "Your CookSync verification code",
-                "Your CookSync verification code is: " + code
-                        + "\n\nThis code expires in " + validityMinutes + " minutes."
-                        + "\n\nIf you didn't request this, you can safely ignore this email.");
-        log.info("Registration OTP email sent to {}", toEmail);
-    }
-
-    /**
-     * Builds and sends a plain-text transactional email via Gmail SMTP. Shared by every
-     * account-email method in this class so the {@link SimpleMailMessage} construction lives
-     * in exactly one place.
-     *
-     * @param toEmail the recipient's email address
-     * @param subject the email subject line
-     * @param body the plain-text email body
-     */
-    private void sendEmail(String toEmail, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromAddress);
-        message.setTo(toEmail);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
-    }
+    void sendOtpEmail(String toEmail, String code, int validityMinutes);
 }

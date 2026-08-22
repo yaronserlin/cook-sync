@@ -20,7 +20,7 @@ import com.cooksync_server.repositories.ReviewRepository;
 import com.cooksync_server.repositories.TagRepository;
 import com.cooksync_server.repositories.UnitRepository;
 import com.cooksync_server.repositories.UserRepository;
-import com.cooksync_server.services.ICloudinaryService;
+import com.cooksync_server.services.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -68,7 +68,7 @@ public class DataSeeder implements CommandLineRunner {
     private final RecipeImageRepository recipeImageRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
-    private final ICloudinaryService cloudinaryService;
+    private final CloudinaryService cloudinaryService;
     private final Cloudinary cloudinary;
 
     /** In-memory cache of remote image URL -> Cloudinary secure URL to prevent redundant uploads. */
@@ -203,7 +203,7 @@ public class DataSeeder implements CommandLineRunner {
                 Tag.builder().name("baking").build(),
                 Tag.builder().name("seafood").build(),
                 // Space-separated variants of existing hyphenated tags, so the admin
-                // duplicate-tag tools (AdminService#getDuplicateTagGroups / mergeTags) have
+                // duplicate-tag tools (AdminServiceImp#getDuplicateTagGroups / mergeTags) have
                 // real groups to detect and merge. They must differ by separator character,
                 // not just casing: tags.name has a case-insensitive unique constraint
                 // (utf8mb4_unicode_ci), so a same-case-insensitive-string variant like

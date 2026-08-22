@@ -27,7 +27,7 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
 
 /**
- * Unit test suite verifying tag catalog retrieval, creation uniqueness, and deletion in TagService.
+ * Unit test suite verifying tag catalog retrieval, creation uniqueness, and deletion in TagServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -40,7 +40,7 @@ class TagServiceTest {
     private TagRepository tagRepository;
 
     @InjectMocks
-    private TagService tagService;
+    private TagServiceImp tagService;
 
     private Tag sampleTag;
 

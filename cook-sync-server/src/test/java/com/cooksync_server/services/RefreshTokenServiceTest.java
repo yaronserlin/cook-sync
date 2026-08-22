@@ -25,7 +25,7 @@ import com.cooksync_server.repositories.RefreshTokenRepository;
 import com.cooksync_server.repositories.UserRepository;
 
 /**
- * Unit test suite verifying refresh token generation, expiry validation, and cleanup in RefreshTokenService.
+ * Unit test suite verifying refresh token generation, expiry validation, and cleanup in RefreshTokenServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -40,7 +40,7 @@ class RefreshTokenServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private RefreshTokenService refreshTokenService;
+    private RefreshTokenServiceImp refreshTokenService;
 
     private User sampleUser;
 

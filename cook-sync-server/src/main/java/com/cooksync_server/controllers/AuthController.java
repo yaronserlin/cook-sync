@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.services.IAuthService;
-import com.cooksync_server.services.IPasswordService;
-import com.cooksync_server.services.IUserProfileService;
+import com.cooksync_server.services.AuthService;
+import com.cooksync_server.services.PasswordService;
+import com.cooksync_server.services.UserProfileService;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.DeleteAccountRequestDTO;
@@ -47,9 +47,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final IAuthService authService;
-    private final IUserProfileService userProfileService;
-    private final IPasswordService passwordService;
+    private final AuthService authService;
+    private final UserProfileService userProfileService;
+    private final PasswordService passwordService;
 
     /**
      * Initiates registration for a new account with the provided credentials. No account is

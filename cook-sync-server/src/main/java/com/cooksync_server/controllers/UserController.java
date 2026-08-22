@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.services.IFavoriteService;
-import com.cooksync_server.services.IRecipeService;
-import com.cooksync_server.services.IUserProfileService;
+import com.cooksync_server.services.FavoriteService;
+import com.cooksync_server.services.RecipeService;
+import com.cooksync_server.services.UserProfileService;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -31,9 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final IUserProfileService userProfileService;
-    private final IRecipeService recipeService;
-    private final IFavoriteService favoriteService;
+    private final UserProfileService userProfileService;
+    private final RecipeService recipeService;
+    private final FavoriteService favoriteService;
 
     /**
      * Fetches public user profile information by user ID.

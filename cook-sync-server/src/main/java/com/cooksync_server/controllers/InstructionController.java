@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.services.IInstructionService;
+import com.cooksync_server.services.InstructionService;
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.instruction.InstructionResponse;
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InstructionController {
 
-    private final IInstructionService instructionService;
+    private final InstructionService instructionService;
 
     /**
      * Adds a new preparation instruction step to a recipe.

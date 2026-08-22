@@ -42,14 +42,14 @@ import java.io.IOException;
  * @version 1.0
  * @since 04/08/2026
  */
-public class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
+public class AuthRepositoryImp extends BaseRepository implements AuthRepository {
 
     private final ApiService apiService;
 
     /**
      * Constructs the repository using the shared authenticated Retrofit service.
      */
-    public AuthRepositoryImpl() {
+    public AuthRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 
@@ -130,7 +130,7 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
             try {
                 apiService.logout().execute();
             } catch (IOException e) {
-                android.util.Log.w("AuthRepositoryImpl", "Server logout request failed", e);
+                android.util.Log.w("AuthRepositoryImp", "Server logout request failed", e);
             }
             SessionManager.getInstance().logout();
             resultTarget.postValue(new ApiResult.Success<>(null));

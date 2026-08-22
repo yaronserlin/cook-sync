@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.dtos.response.PagedResponse;
 
-import com.cooksync_server.services.ITagService;
+import com.cooksync_server.services.TagService;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.tags.TagResponse;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TagsController {
 
-    private final ITagService tagService;
+    private final TagService tagService;
 
     /**
      * Retrieves all recipe tags available in the catalog.

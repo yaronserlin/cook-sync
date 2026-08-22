@@ -17,7 +17,7 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
  * @version 1.0
  * @since 04/08/2026
  */
-public class MediaRepositoryImpl extends BaseRepository implements MediaRepository {
+public class MediaRepositoryImp extends BaseRepository implements MediaRepository {
 
     private final ApiService apiService;
 
@@ -28,7 +28,7 @@ public class MediaRepositoryImpl extends BaseRepository implements MediaReposito
      * Time: O(1)
      * Space: O(1)
      */
-    public MediaRepositoryImpl() {
+    public MediaRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.services.IReviewService;
+import com.cooksync_server.services.ReviewService;
 import com.dtos.request.review.ReportReviewRequestDTO;
 import com.dtos.request.review.ReviewRequestDTO;
 import com.dtos.response.ApiResponse;
@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final IReviewService reviewService;
+    private final ReviewService reviewService;
 
     /**
      * Retrieves all review entries for a given recipe ID.

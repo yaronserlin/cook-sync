@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Unit test suite verifying the scheduled purge trigger delegates to AccountDeletionService.
+ * Unit test suite verifying the scheduled purge trigger delegates to AccountDeletionServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AccountPurgeSchedulerTest {
 
     @Mock
-    private IAccountDeletionService accountDeletionService;
+    private AccountDeletionService accountDeletionService;
 
     @InjectMocks
     private AccountPurgeScheduler accountPurgeScheduler;

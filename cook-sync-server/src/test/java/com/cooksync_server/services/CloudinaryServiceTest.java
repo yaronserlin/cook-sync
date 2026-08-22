@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CloudinaryServiceTest {
 
-    private CloudinaryService cloudinaryService;
+    private CloudinaryServiceImp cloudinaryService;
 
     @BeforeEach
     void setUp() {
@@ -28,7 +28,7 @@ class CloudinaryServiceTest {
                 "api_secret", "test-api-secret",
                 "secure", true
         ));
-        cloudinaryService = new CloudinaryService(cloudinary);
+        cloudinaryService = new CloudinaryServiceImp(cloudinary);
         ReflectionTestUtils.setField(cloudinaryService, "baseFolder", "CookSyncApp");
     }
 

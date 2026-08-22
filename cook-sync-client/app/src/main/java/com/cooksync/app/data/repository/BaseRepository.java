@@ -19,7 +19,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Common execution machinery shared by every {@code *RepositoryImpl} class: a background
+ * Common execution machinery shared by every {@code *RepositoryImp} class: a background
  * thread pool for network I/O, generic Retrofit call execution, and uniform error-message
  * extraction. Every repository extends this instead of re-implementing the same
  * try/execute/map-to-{@link ApiResult} boilerplate, so a fix or improvement here (e.g. richer

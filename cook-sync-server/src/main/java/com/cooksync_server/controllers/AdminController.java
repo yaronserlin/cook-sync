@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
-import com.cooksync_server.services.IAdminService;
+import com.cooksync_server.services.AdminService;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final IAdminService adminService;
+    private final AdminService adminService;
 
     /**
      * Retrieves aggregated system stats for the administrative dashboard.

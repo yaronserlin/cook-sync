@@ -28,7 +28,7 @@ import java.lang.ref.WeakReference;
  * {@link LoginActivity}.
  *
  * <p>Also exposes the process-wide {@link Context} via {@link #getAppContext()} so classes
- * outside the UI layer (e.g. {@code *RepositoryImpl}) can resolve string resources without
+ * outside the UI layer (e.g. {@code *RepositoryImp}) can resolve string resources without
  * needing a {@code Context} threaded through every call.</p>
  *
  * @author Yaron Serlin

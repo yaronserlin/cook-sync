@@ -33,7 +33,7 @@ import com.cooksync_server.repositories.ReviewRepository;
 import com.cooksync_server.repositories.UserRepository;
 
 /**
- * Unit test suite verifying account deletion request, restore, and permanent account purge in AccountDeletionService.
+ * Unit test suite verifying account deletion request, restore, and permanent account purge in AccountDeletionServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -57,17 +57,17 @@ class AccountDeletionServiceTest {
     @Mock
     private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock
-    private RefreshTokenService refreshTokenService;
+    private RefreshTokenServiceImp refreshTokenService;
     @Mock
-    private ICloudinaryService cloudinaryService;
+    private CloudinaryService cloudinaryService;
 
-    private AccountDeletionService accountDeletionService;
+    private AccountDeletionServiceImp accountDeletionService;
 
     private User sampleUser;
 
     @BeforeEach
     void setUp() {
-        accountDeletionService = new AccountDeletionService(
+        accountDeletionService = new AccountDeletionServiceImp(
                 userRepository,
                 recipeRepository,
                 reviewRepository,

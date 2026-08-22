@@ -11,11 +11,11 @@ import androidx.lifecycle.Observer;
 import com.cooksync.app.CookSyncApplication;
 import com.cooksync.app.data.datasource.local.RecipeDraftStore;
 import com.cooksync.app.data.repository.MediaRepository;
-import com.cooksync.app.data.repository.impl.MediaRepositoryImpl;
+import com.cooksync.app.data.repository.impl.MediaRepositoryImp;
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.impl.RecipeRepositoryImpl;
+import com.cooksync.app.data.repository.impl.RecipeRepositoryImp;
 import com.cooksync.app.data.repository.TagRepository;
-import com.cooksync.app.data.repository.impl.TagRepositoryImpl;
+import com.cooksync.app.data.repository.impl.TagRepositoryImp;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
@@ -89,9 +89,9 @@ public class RecipePublishManager {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private final MediaRepository mediaRepository = new MediaRepositoryImpl();
-    private final TagRepository tagRepository = new TagRepositoryImpl();
-    private final RecipeRepository recipeRepository = new RecipeRepositoryImpl();
+    private final MediaRepository mediaRepository = new MediaRepositoryImp();
+    private final TagRepository tagRepository = new TagRepositoryImp();
+    private final RecipeRepository recipeRepository = new RecipeRepositoryImp();
 
     private final MutableLiveData<PublishState> publishState = new MutableLiveData<>(PublishState.idle());
     private final MutableLiveData<Event<RecipeResponse>> recipePublishedEvent = new MutableLiveData<>();

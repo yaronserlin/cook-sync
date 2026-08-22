@@ -30,7 +30,7 @@ import com.dtos.request.review.ReviewRequestDTO;
 
 /**
  * Unit test suite verifying review creation, average rating recomputation, deletion authorization,
- * and moderation reporting in ReviewService.
+ * and moderation reporting in ReviewServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -49,7 +49,7 @@ class ReviewServiceTest {
     private ReviewReportRepository reviewReportRepository;
 
     @InjectMocks
-    private ReviewService reviewService;
+    private ReviewServiceImp reviewService;
 
     private User author;
     private User otherUser;

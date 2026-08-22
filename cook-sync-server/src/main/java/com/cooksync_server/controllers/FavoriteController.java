@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.services.IFavoriteService;
+import com.cooksync_server.services.FavoriteService;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FavoriteController {
 
-    private final IFavoriteService favoriteService;
+    private final FavoriteService favoriteService;
 
     /**
      * Retrieves all recipe preview entries bookmarked as favorite by the authenticated user.

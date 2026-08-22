@@ -31,7 +31,7 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 /**
- * Unit test suite verifying favorite bookmark additions, removals, and paginated retrieval in FavoriteService.
+ * Unit test suite verifying favorite bookmark additions, removals, and paginated retrieval in FavoriteServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -50,7 +50,7 @@ class FavoriteServiceTest {
     private PersonalInstructionNoteRepository personalInstructionNoteRepository;
 
     @InjectMocks
-    private FavoriteService favoriteService;
+    private FavoriteServiceImp favoriteService;
 
     private User sampleUser;
     private Recipe sampleRecipe;

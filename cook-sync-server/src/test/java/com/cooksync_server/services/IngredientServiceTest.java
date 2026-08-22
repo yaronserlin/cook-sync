@@ -28,7 +28,7 @@ import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.response.ingredient.IngredientResponse;
 
 /**
- * Unit test suite verifying ingredient creation, update, and deletion authorization in IngredientService.
+ * Unit test suite verifying ingredient creation, update, and deletion authorization in IngredientServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -47,7 +47,7 @@ class IngredientServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private IngredientService ingredientService;
+    private IngredientServiceImp ingredientService;
 
     private User owner;
     private User otherUser;

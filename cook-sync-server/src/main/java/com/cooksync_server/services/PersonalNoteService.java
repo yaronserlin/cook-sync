@@ -1,181 +1,61 @@
 package com.cooksync_server.services;
 
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
-import com.cooksync_server.entities.FavoriteRecipe;
-import com.cooksync_server.repositories.FavoriteRecipeRepository;
-import com.cooksync_server.entities.PersonalInstructionNote;
-import com.cooksync_server.entities.Recipe;
-import com.cooksync_server.entities.User;
-import com.cooksync_server.exceptions.ResourceNotFoundException;
-import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
-import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
-import com.cooksync_server.repositories.RecipeRepository;
-import com.cooksync_server.repositories.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 /**
- * Service class managing user private notes on recipes and step-by-step instructions.
+ * Service interface for managing a user's private notes on recipes and instruction steps.
  *
  * @author Yaron Serlin
  * @version 1.0
  * @since 02/08/2026
  */
-@Service
-@RequiredArgsConstructor
-public class PersonalNoteService implements IPersonalNoteService{
-
-    private final PersonalInstructionNoteRepository noteRepository;
-    private final RecipeRepository recipeRepository;
-    private final UserRepository userRepository;
-    private final FavoriteRecipeRepository favoriteRepository;
+public interface PersonalNoteService {
 
     /**
-     * Saves or updates a personal private note for a recipe or specific instruction step.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
+     * Saves or updates a personal private note for a recipe or a specific instruction step.
      *
      * @param request note creation or update request DTO
-     * @param userEmail user email address
+     * @param userEmail authenticated user email address
      */
-    @Transactional
-    public void saveNote(NoteRequestDTO request, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-        Recipe recipe = recipeRepository.findById(request.recipeId().toString())
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", request.recipeId().toString()));
-
-        String instructionId = request.instructionId() != null ? request.instructionId().toString() : null;
-        Optional<PersonalInstructionNote> existingNote = instructionId == null
-                ? noteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull(user.getId(), request.recipeId().toString())
-                : noteRepository.findByUserIdAndRecipeIdAndInstructionId(user.getId(), request.recipeId().toString(), instructionId);
-
-        PersonalInstructionNote note = existingNote.orElse(PersonalInstructionNote.builder()
-                .user(user)
-                .recipe(recipe)
-                .build());
-
-        note.setNote(request.note());
-        note.setInstructionId(instructionId);
-
-        noteRepository.save(note);
-
-        if (request.note() != null && !request.note().isBlank()) {
-            if (!favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipe.getId())) {
-                FavoriteRecipe favorite = FavoriteRecipe.builder()
-                        .user(user)
-                        .recipe(recipe)
-                        .build();
-                favoriteRepository.save(favorite);
-            }
-        }
-    }
+    void saveNote(NoteRequestDTO request, String userEmail);
 
     /**
-     * Retrieves general recipe-level personal note (where instruction IS NULL).
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
+     * Retrieves the general recipe-level personal note (not tied to a specific instruction step).
      *
      * @param recipeId target recipe ID
-     * @param userEmail user email address
-     * @return NoteResponse DTO or null if no note attached
+     * @param userEmail authenticated user email address
+     * @return NoteResponse DTO, or null if no note is attached
      */
-    @Transactional(readOnly = true)
-    public NoteResponse getNote(String recipeId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        return noteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull(user.getId(), recipeId)
-                .map(PersonalNoteService::toResponse)
-                .orElse(null);
-    }
+    NoteResponse getNote(String recipeId, String userEmail);
 
     /**
-     * Retrieves all personal notes created by user for a recipe (general + step-specific notes).
-     *
-     * Complexity:
-     * Time: O(N) where N is user note count for recipe
-     * Space: O(N)
+     * Retrieves all personal notes the user has created for a recipe (general and step-specific).
      *
      * @param recipeId target recipe ID
-     * @param userEmail user email address
-     * @param page page number
-     * @param size page size
+     * @param userEmail authenticated user email address
+     * @param page page number index
+     * @param size page size limit
      * @return PagedResponse of NoteResponse DTOs
      */
-    @Transactional(readOnly = true)
-    public PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        Page<PersonalInstructionNote> notesPage = noteRepository.findAllByUserIdAndRecipeId(
-                user.getId(), recipeId, PageRequest.of(page, size));
-
-        return PagedResponseMapper.toPagedResponse(notesPage, PersonalNoteService::toResponse);
-    }
+    PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size);
 
     /**
-     * Retrieves all personal notes created by the user.
+     * Retrieves all personal notes created by the authenticated user across every recipe.
      *
-     * Complexity:
-     * Time: O(N) where N is user note count
-     * Space: O(N)
-     *
-     * @param userEmail user email address
-     * @param page page number
-     * @param size page size
+     * @param userEmail authenticated user email address
+     * @param page page number index
+     * @param size page size limit
      * @return PagedResponse of NoteResponse DTOs
      */
-    @Transactional(readOnly = true)
-    public PagedResponse<NoteResponse> getMyNotes(String userEmail, int page, int size) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        Page<PersonalInstructionNote> notesPage = noteRepository.findAllByUserId(user.getId(), PageRequest.of(page, size));
-
-        return PagedResponseMapper.toPagedResponse(notesPage, PersonalNoteService::toResponse);
-    }
-
-    private static NoteResponse toResponse(PersonalInstructionNote n) {
-        return new NoteResponse(
-                n.getId(),
-                n.getRecipe().getId(),
-                n.getInstruction() != null ? n.getInstruction().getId() : null,
-                n.getNote());
-    }
+    PagedResponse<NoteResponse> getMyNotes(String userEmail, int page, int size);
 
     /**
      * Deletes a personal note following author verification.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param noteId target note ID
-     * @param userEmail user email address
+     * @param userEmail authenticated user email address
      */
-    @Transactional
-    public void deleteNote(String noteId, String userEmail) {
-        PersonalInstructionNote note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Note", noteId));
-
-        if (!note.getUser().getEmail().equals(userEmail)) {
-            throw new UnauthorizedActionException("You are not allowed to delete this note.");
-        }
-
-        noteRepository.delete(note);
-    }
+    void deleteNote(String noteId, String userEmail);
 }

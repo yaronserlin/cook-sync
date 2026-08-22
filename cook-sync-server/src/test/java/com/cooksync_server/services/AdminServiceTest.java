@@ -36,7 +36,7 @@ import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
- * Unit test suite verifying admin dashboard stats, user moderation, and tag deduplication in AdminService.
+ * Unit test suite verifying admin dashboard stats, user moderation, and tag deduplication in AdminServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -58,10 +58,10 @@ class AdminServiceTest {
     @Mock
     private JdbcTemplate jdbcTemplate;
     @Mock
-    private IAccountDeletionService accountDeletionService;
+    private AccountDeletionService accountDeletionService;
 
     @InjectMocks
-    private AdminService adminService;
+    private AdminServiceImp adminService;
 
     private User sampleUser;
 

@@ -20,7 +20,7 @@ import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
-import com.cooksync_server.services.IRecipeService;
+import com.cooksync_server.services.RecipeService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RecipeController {
 
-    private final IRecipeService recipeService;
+    private final RecipeService recipeService;
 
     /**
      * Retrieves a paginated slice of public recipes for feed infinite scrolling.

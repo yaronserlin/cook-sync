@@ -18,9 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
-import com.cooksync_server.services.IAdminService;
-import com.cooksync_server.services.ITagService;
-import com.cooksync_server.services.IUnitService;
+import com.cooksync_server.services.AdminService;
+import com.cooksync_server.services.TagService;
+import com.cooksync_server.services.UnitService;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -50,13 +50,13 @@ class AdminEndpointsSecurityTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private IAdminService adminService;
+    private AdminService adminService;
 
     @MockitoBean
-    private IUnitService unitService;
+    private UnitService unitService;
 
     @MockitoBean
-    private ITagService tagService;
+    private TagService tagService;
 
     /**
      * {@link com.cooksync_server.config.JwtAuthenticationFilter} is a servlet {@code Filter}, so

@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit test suite verifying user registration (pending state + OTP verification/resend) and
- * login/session authentication in AuthService. Password reset flow tests live in
+ * login/session authentication in AuthServiceImp. Password reset flow tests live in
  * {@link PasswordServiceTest}.
  *
  * @author Yaron Serlin
@@ -50,21 +50,21 @@ class AuthServiceTest {
     @Mock
     private JwtUtil jwtUtil;
     @Mock
-    private RefreshTokenService refreshTokenService;
+    private RefreshTokenServiceImp refreshTokenService;
     @Mock
     private PendingRegistrationRepository pendingRegistrationRepository;
     @Mock
-    private EmailService emailService;
+    private EmailServiceImp emailService;
     @Mock
-    private IAccountDeletionService accountDeletionService;
+    private AccountDeletionService accountDeletionService;
 
-    private AuthService authService;
+    private AuthServiceImp authService;
 
     @BeforeEach
     void setUp() {
         when(passwordEncoder.encode(anyString())).thenReturn("hashed-password");
 
-        authService = new AuthService(
+        authService = new AuthServiceImp(
                 userRepository,
                 passwordEncoder,
                 jwtUtil,

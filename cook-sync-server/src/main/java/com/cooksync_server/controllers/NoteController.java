@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.note.NoteResponse;
-import com.cooksync_server.services.IPersonalNoteService;
+import com.cooksync_server.services.PersonalNoteService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NoteController {
 
-    private final IPersonalNoteService noteService;
+    private final PersonalNoteService noteService;
 
     /**
      * Saves or updates a personal note for a recipe or instruction step.

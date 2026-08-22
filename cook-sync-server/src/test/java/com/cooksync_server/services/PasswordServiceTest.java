@@ -25,8 +25,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit test suite verifying the forgot/reset-password OTP flow in PasswordService. Split out of
- * the former combined AuthServiceTest when {@code AuthService} was divided by responsibility
+ * Unit test suite verifying the forgot/reset-password OTP flow in PasswordServiceImp. Split out of
+ * the former combined AuthServiceTest when {@code AuthServiceImp} was divided by responsibility
  * (registration/login stayed in {@link AuthServiceTest}, profile settings moved to
  * {@code UserProfileServiceTest}).
  *
@@ -44,12 +44,12 @@ class PasswordServiceTest {
     @Mock
     private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock
-    private RefreshTokenService refreshTokenService;
+    private RefreshTokenServiceImp refreshTokenService;
     @Mock
-    private EmailService emailService;
+    private EmailServiceImp emailService;
 
     @InjectMocks
-    private PasswordService passwordService;
+    private PasswordServiceImp passwordService;
 
     @BeforeEach
     void setUp() {

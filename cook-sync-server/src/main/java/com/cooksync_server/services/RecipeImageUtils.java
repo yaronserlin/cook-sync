@@ -11,7 +11,7 @@ import com.cooksync_server.entities.RecipeImage;
 /**
  * Utility class collecting every Cloudinary-hosted image URL referenced by a recipe entity
  * (primary/gallery images, instruction step images, and description block images). Shared by
- * {@link RecipeService} (update/delete) and {@link AccountDeletionService} (account purge), both
+ * {@link RecipeServiceImp} (update/delete) and {@link AccountDeletionServiceImp} (account purge), both
  * of which need the same URL set to clean up Cloudinary media.
  *
  * @author Yaron Serlin

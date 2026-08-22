@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.unit.UnitResponse;
-import com.cooksync_server.services.IUnitService;
+import com.cooksync_server.services.UnitService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UnitController {
 
-    private final IUnitService unitService;
+    private final UnitService unitService;
 
     /**
      * Retrieves all measurement units configured in the system.

@@ -20,11 +20,11 @@ import java.util.List;
  * @version 1.0
  * @since 04/08/2026
  */
-public class TagRepositoryImpl extends BaseRepository implements TagRepository {
+public class TagRepositoryImp extends BaseRepository implements TagRepository {
 
     private final ApiService apiService;
 
-    public TagRepositoryImpl() {
+    public TagRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 

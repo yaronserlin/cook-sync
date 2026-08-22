@@ -20,11 +20,11 @@ import java.util.List;
  * @version 1.0
  * @since 08/08/2026
  */
-public class UnitRepositoryImpl extends BaseRepository implements UnitRepository {
+public class UnitRepositoryImp extends BaseRepository implements UnitRepository {
 
     private final ApiService apiService;
 
-    public UnitRepositoryImpl() {
+    public UnitRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 

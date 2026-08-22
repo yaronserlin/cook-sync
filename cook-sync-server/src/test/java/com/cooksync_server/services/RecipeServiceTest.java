@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit test suite verifying recipe query, detail retrieval, and pagination in RecipeService.
+ * Unit test suite verifying recipe query, detail retrieval, and pagination in RecipeServiceImp.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -57,10 +57,10 @@ class RecipeServiceTest {
     @Mock
     private UnitRepository unitRepository;
     @Mock
-    private ICloudinaryService cloudinaryService;
+    private CloudinaryService cloudinaryService;
 
     @InjectMocks
-    private RecipeService recipeService;
+    private RecipeServiceImp recipeService;
 
     private Recipe sampleRecipe;
     private User sampleUser;
