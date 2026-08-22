@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".ui.admin.AdminConsoleActivity">
+
+    <!-- Dark chrome header: back nav, "MODERATION" eyebrow + dynamic heading + badge, tabs. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/color_neutral_900"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingTop="@dimen/dp_12"
+        android:paddingBottom="@dimen/dp_16">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/btn_admin_back"
+                android:layout_width="@dimen/dp_24"
+                android:layout_height="@dimen/dp_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_back"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/color_neutral_300" />
+
+            <LinearLayout
+                android:layout_width="@dimen/dp_0"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp_12"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_admin_eyebrow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.16"
+                    android:text="@string/admin_eyebrow"
+                    android:textColor="@color/color_accent_2_300"
+                    android:textSize="@dimen/sp_10"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_admin_heading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_2"
+                    android:fontFamily="@font/caprasimo"
+                    android:textColor="@color/color_neutral_100"
+                    android:textSize="@dimen/sp_20"
+                    tools:text="Reported reviews" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_admin_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_solid"
+                android:backgroundTint="@color/color_accent"
+                android:paddingHorizontal="@dimen/dp_11"
+                android:paddingVertical="@dimen/dp_5"
+                android:textColor="@color/color_bg"
+                android:textSize="@dimen/sp_11"
+                android:textStyle="bold"
+                tools:text="3 open" />
+
+        </LinearLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabs_admin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_18"
+            android:background="@android:color/transparent"
+            app:tabGravity="fill"
+            app:tabIndicatorHeight="@dimen/dp_0"
+            app:tabMode="fixed"
+            app:tabPaddingStart="@dimen/dp_0"
+            app:tabPaddingEnd="@dimen/dp_0"
+            app:tabRippleColor="@null" />
+
+    </LinearLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vp_admin_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_0"
+        android:layout_weight="1" />
+
+</LinearLayout>

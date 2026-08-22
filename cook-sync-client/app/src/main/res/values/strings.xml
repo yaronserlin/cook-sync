@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CookSync</string>
+    <string name="hint_email">you@example.com</string>
+    <string name="hint_password">••••••••</string>
+    <string name="password_toggle_show_desc">Show password</string>
+    <string name="password_toggle_hide_desc">Hide password</string>
+    <string name="hint_first_name">Jane</string>
+    <string name="hint_last_name">Smith</string>
+    <string name="error_invalid_request">Invalid request. Please check your input.</string>
+    <string name="error_invalid_credentials">Invalid credentials. Please try again.</string>
+    <string name="error_no_permission">You do not have permission to perform this action.</string>
+    <string name="error_not_found">The requested item could not be found.</string>
+    <string name="error_account_exists">An account with this email already exists.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_unexpected">Unexpected error (%1$d). Please try again.</string>
+    <string name="error_session_expired">Your session expired — please sign in again.</string>
+    <string name="error_load_image">Couldn\'t load image</string>
+
+    <!-- Validation Errors -->
+    <string name="error_validation_email_blank">Email cannot be blank</string>
+    <string name="error_validation_email_invalid">Please enter a valid email address</string>
+    <string name="error_validation_email_dangerous">Email contains invalid characters</string>
+    <string name="error_validation_password_blank">Password cannot be blank</string>
+    <string name="error_validation_password_dangerous">Password contains invalid characters</string>
+    <string name="error_validation_password_too_short">Password must be at least %1$d characters</string>
+    <string name="error_validation_password_too_long">Password must not exceed %1$d characters</string>
+    <string name="error_validation_password_policy">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&amp;)</string>
+    <string name="error_validation_name_blank">%1$s cannot be blank</string>
+    <string name="error_validation_name_dangerous">%1$s contains invalid characters</string>
+    <string name="error_validation_name_invalid_charset">%1$s may only contain letters, spaces, hyphens, and apostrophes</string>
+    <string name="error_validation_name_too_short">%1$s must be at least %2$d characters</string>
+    <string name="error_validation_name_too_long">%1$s must not exceed %2$d characters</string>
+    <string name="error_validation_passwords_mismatch">Passwords do not match</string>
+    <string name="error_validation_terms_required">You must accept the Terms of Use to continue</string>
+    <string name="error_validation_otp_blank">Verification code cannot be blank</string>
+    <string name="error_validation_otp_invalid">Enter the 6-digit code from your email</string>
+
+    <!-- Auth Titles & Subtitles -->
+    <string name="login_title">Welcome back</string>
+    <string name="login_subtitle">Sign in to sync your recipes and private notes across every device.</string>
+    <string name="register_title">Create account</string>
+    <string name="forgot_password_title">Forgot password</string>
+    <string name="forgot_password_subtitle">Enter your email and we\'ll send you a code to reset your password.</string>
+    <string name="forgot_password_sent_message">We\'ve sent a reset code to your email.</string>
+    <string name="verify_otp_title">Verify your email</string>
+    <string name="verify_otp_subtitle">Enter the 6-digit code we sent to %1$s to finish creating your account.</string>
+
+    <!-- Labels -->
+    <string name="label_email">Email address</string>
+    <string name="label_password">Password</string>
+    <string name="label_first_name">First name</string>
+    <string name="label_last_name">Last name</string>
+    <string name="label_repeat_password">Repeat password</string>
+    <string name="label_new_password">New password</string>
+    <string name="label_new_email">New email address</string>
+    <string name="label_current_password">Current password</string>
+    <string name="label_terms_accepted">I agree to the Terms of Use and Privacy Policy</string>
+    <string name="label_marketing_opt_in">Send me occasional recipe highlights and tips</string>
+    <string name="label_add_note_step_hint">Add a note for this step&#8230;</string>
+    <string name="label_optional_comment">Optional comment</string>
+    <string name="label_hours">H</string>
+    <string name="label_minutes">MM</string>
+    <string name="label_seconds">SS</string>
+    <string name="label_time_separator">:</string>
+    <string name="label_otp_code">Verification code</string>
+    <string name="hint_otp_code">000000</string>
+
+    <!-- Auth Actions -->
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_create_account">Create account</string>
+    <string name="action_create_account_submit">Create account</string>
+    <string name="action_already_have_account">Already have an account? Sign in</string>
+    <string name="action_forgot_password">Forgot password?</string>
+    <string name="action_send_reset_link">Send reset code</string>
+    <string name="action_dont_have_account">Don\'t have an account? Register</string>
+    <string name="action_reset_password">Reset password</string>
+    <string name="action_back">Back</string>
+    <string name="action_verify">Verify</string>
+    <string name="action_resend_code">Resend code</string>
+    <string name="action_resend_code_countdown">Resend code in %1$ds</string>
+    <string name="resend_otp_success">A new code has been sent to your email</string>
+
+    <!-- Common Actions -->
+    <string name="action_add">Add</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_set">Set</string>
+    <string name="action_got_it">Got it</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_exit">Exit</string>
+    <string name="action_prev">Prev</string>
+    <string name="action_apply_filters">Apply Filters</string>
+    <string name="action_write_review">Write one</string>
+    <string name="action_start_cooking">Start cooking</string>
+    <string name="action_show_all_reviews">Show all reviews</string>
+    <string name="action_close">Close</string>
+    <string name="action_add_note">Add a note</string>
+    <string name="action_make_public">Make public</string>
+    <string name="action_make_private">Make private</string>
+
+    <!-- Footer -->
+    <string name="footer_privacy">Your data is yours. We don\'t sell your recipes or private notes.</string>
+
+    <!-- Labels -->
+    <string name="label_prep">PREP</string>
+    <string name="label_cook">COOK</string>
+    <string name="label_serves">SERVES</string>
+    <string name="label_instructions">Instructions</string>
+    <string name="label_reviews">Reviews</string>
+    <string name="label_fullscreen_photo_description">Full-screen photo</string>
+
+    <!-- Filters -->
+    <string name="filter_all">All</string>
+    <string name="filter_public">Public</string>
+    <string name="filter_private">Private</string>
+    <string name="filters_count_format">Filters · %1$d</string>
+    <string name="filters_applied_time_format">Under %1$d min</string>
+    <string name="filters_applied_rating_format">%1$.1f+</string>
+    <string name="filters_none_applied">None applied</string>
+    <string name="filters_applied_summary_format">Showing · %1$s</string>
+
+    <!-- Filters Sheet -->
+    <string name="filters_title">Filters</string>
+    <string name="filters_tags_label">Tags</string>
+    <string name="filters_total_time_label">Total time</string>
+    <string name="filters_difficulty_label">Difficulty</string>
+    <string name="filters_min_rating_label">Minimum rating</string>
+    <string name="filters_sort_by_label">Sort by</string>
+    <string name="filter_tag_vegan">Vegan</string>
+    <string name="filter_tag_vegetarian">Vegetarian</string>
+    <string name="filter_tag_gluten_free">Gluten Free</string>
+    <string name="filter_time_any">Any</string>
+    <string name="filter_time_under_30">Under 30 min</string>
+    <string name="filter_time_under_60">Under 1h</string>
+    <string name="filter_difficulty_easy">Easy</string>
+    <string name="filter_difficulty_medium">Medium</string>
+    <string name="filter_difficulty_hard">Hard</string>
+    <string name="filter_rating_any">Any</string>
+    <string name="filter_rating_35">3.5+</string>
+    <string name="filter_rating_40">4.0+</string>
+    <string name="filter_rating_45">4.5+</string>
+    <string name="filter_sort_newest">Newest</string>
+    <string name="filter_sort_top_rated">Top Rated</string>
+    <string name="filter_sort_shortest_time">Shortest Time</string>
+    <string name="review_sort_newest">Newest</string>
+    <string name="review_sort_highest_rated">Highest rated</string>
+    <string name="review_sort_lowest_rated">Lowest rated</string>
+
+    <!-- Home -->
+    <string name="home_title">Discover</string>
+    <string name="home_search_hint">Search recipes&#8230;</string>
+    <string name="home_empty_title">No recipes yet</string>
+    <string name="home_empty_subtitle">Be the first to publish a recipe!</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_title">No favorites yet</string>
+    <string name="favorites_empty_subtitle">Tap the heart on any recipe. Your favorites keep private notes that nobody else can see.</string>
+    <string name="favorites_search_hint">Search your favorites&#8230;</string>
+    <string name="favorites_added">Added to favorites</string>
+    <string name="favorites_removed">Removed from favorites</string>
+    <string name="favorites_subtitle_format">%1$d recipes · %2$d with notes</string>
+    <string name="favorites_with_notes_chip_format">With notes %1$d</string>
+
+    <!-- My Recipes -->
+    <string name="my_recipes_title_format">My recipes · %1$d published</string>
+    <string name="my_recipes_empty_title">No recipes yet</string>
+    <string name="my_recipes_empty_subtitle">Recipes you publish will show up here.</string>
+    <string name="my_recipes_search_hint">Search your recipes&#8230;</string>
+    <string name="recipe_now_public">Recipe is now public</string>
+    <string name="recipe_now_private">Recipe is now private</string>
+    <string name="recipe_deleted">Recipe deleted</string>
+    <string name="dialog_delete_recipe_title">Delete this recipe?</string>
+    <string name="dialog_delete_recipe_message">\"%1$s\" will be permanently deleted. This can\'t be undone.</string>
+
+    <!-- Recipe Detail -->
+    <string name="recipe_kicker_format">%1$s · %2$s</string>
+    <string name="review_count_format">%1$d reviews</string>
+    <string name="review_count_plain_format">%1$d reviews</string>
+    <string name="time_format_short">%1$d min</string>
+    <string name="time_format">%1$d mins</string>
+    <string name="ingredients_header_format">Ingredients · %1$d servings</string>
+    <string name="star_chip_label_format">%1$d\u2605</string>
+    <string name="recipe_add_note_hint">Add a private note</string>
+    <string name="anonymous">Anonymous</string>
+    <string name="user_profile_no_bio">No bio available yet.</string>
+    <string name="user_profile_title">Profile</string>
+    <string name="user_profile_recipes_header">Recipes</string>
+    <string name="user_profile_favorites_header">Favorites</string>
+    <string name="user_profile_no_recipes">No public recipes yet.</string>
+    <string name="user_profile_no_favorites">No public favorites yet.</string>
+    <string name="reviews_count_summary">%1$d reviews</string>
+    <string name="reviews_count_filtered_summary">%1$d reviews · filtered by %2$d\u2605</string>
+    <string name="review_reported">Review reported</string>
+    <string name="review_deleted">Review deleted</string>
+    <string name="dialog_delete_review_title">Delete this review?</string>
+    <string name="dialog_delete_review_message">This can\'t be undone.</string>
+    <string name="reviews_empty_filter">No reviews match that filter</string>
+    <string name="recipe_options_description">Options</string>
+    <string name="recipe_note_strip_format">Private note · %1$s</string>
+    <string name="label_favorite">Favorite</string>
+    <string name="label_review_options">Review options</string>
+
+    <!-- Cooking Mode -->
+    <string name="cook_step_label_format">STEP %1$d OF %2$d</string>
+    <string name="cook_note_prefix_format">Your note: %1$s</string>
+    <string name="cook_uses_chip_format">%1$s %2$s %3$s</string>
+    <string name="cook_timer_clock_format_hours">%1$02d:%2$02d:%3$02d</string>
+    <string name="cook_timer_clock_format_minutes">%1$02d:%2$02d</string>
+    <string name="cook_timer_clock_format_seconds">00:%1$02d</string>
+    <string name="timer_start">Start</string>
+    <string name="timer_pause">Pause</string>
+    <string name="timer_resume">Resume</string>
+    <string name="cook_done_action">Done — rate it</string>
+    <string name="cook_next_action">Next step</string>
+    <string name="dialog_set_timer_title">Set timer</string>
+    <string name="dialog_timer_finished_title">Time\'s up!</string>
+    <string name="dialog_timer_finished_message">The timer for this step has finished.</string>
+    <string name="dialog_stop_cooking_title">Stop cooking?</string>
+    <string name="dialog_stop_cooking_message">You\'ll pick up right where you left off — your progress is saved.</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_keep_cooking">Keep cooking</string>
+    <string name="action_report">Report</string>
+    <string name="cook_this_step_uses">THIS STEP USES</string>
+    <string name="cook_remaining">REMAINING</string>
+    <string name="cook_timer_add_minute">+1 min</string>
+    <string name="cook_edit_timer_description">Edit timer</string>
+
+    <!-- Search -->
+    <string name="search_matching_tags_label">Matching tags</string>
+    <string name="search_hint">Search recipes&#8230;</string>
+    <string name="search_empty_prompt">Search for recipes, ingredients, or authors</string>
+    <string name="search_no_results_title">No results found</string>
+    <string name="search_no_results_subtitle">Try removing some filters or changing your search.</string>
+    <string name="search_action_clear_all">Clear all</string>
+    <string name="count_1_recipe">1 recipe</string>
+    <string name="count_n_recipes">%1$d recipes</string>
+    <string name="search_results_summary_format">%1$s · sorted by %2$s</string>
+    <string name="search_results_summary_with_query_format">%1$s for \"%2$s\" · sorted by %3$s</string>
+    <string name="search_result_subtitle_format">%1$s · %2$d reviews</string>
+
+    <!-- Review Submission -->
+    <string name="review_title">Rate &amp; review</string>
+    <string name="review_subtitle">How did it turn out? Your feedback helps the author and other cooks.</string>
+    <string name="review_star_content_description">Star</string>
+    <string name="review_tap_to_rate">Tap to rate</string>
+    <string name="review_label_title">Review title</string>
+    <string name="review_title_hint">e.g. Delicious and easy!</string>
+    <string name="review_label_comment">Comment (optional)</string>
+    <string name="review_comment_hint">Any tips or changes you made?</string>
+    <string name="review_action_submit">Submit review</string>
+    <string name="review_action_skip">Not now</string>
+    <string name="review_rating_selected_format">%1$d stars</string>
+    <string name="review_submitted">Review submitted</string>
+    <string name="report_review_title">Report review</string>
+    <string name="report_reason_spam">Spam</string>
+    <string name="report_reason_abusive">Abusive or harmful</string>
+    <string name="report_reason_off_topic">Off-topic</string>
+
+    <!-- Auth -->
+    <string name="reset_password_success">Password reset successfully</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_avatar_content_description">Profile avatar</string>
+    <string name="settings_updated">Profile updated</string>
+    <string name="settings_avatar_updated">Avatar updated</string>
+    <string name="settings_password_updated">Password updated</string>
+    <string name="settings_email_updated">Email updated</string>
+    <string name="settings_dialog_logout_title">Sign out?</string>
+    <string name="settings_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
+    <string name="settings_action_logout">Sign out</string>
+
+    <!-- Settings rows -->
+    <string name="settings_row_favorites_label">Favorites</string>
+    <string name="settings_row_favorites_sub_format">%1$d saved</string>
+    <string name="settings_row_my_recipes_label">My recipes</string>
+    <string name="settings_row_my_recipes_sub_format">%1$d published</string>
+    <string name="settings_row_notifications_label">Notifications</string>
+    <string name="settings_row_notifications_sub">Reviews on your recipes</string>
+    <string name="settings_row_cooking_preferences_label">Cooking preferences</string>
+    <string name="settings_row_cooking_preferences_sub_on">Screen awake: On</string>
+    <string name="settings_row_cooking_preferences_sub_off">Screen awake: Off</string>
+    <string name="settings_row_account_details_label">Account details</string>
+    <string name="settings_row_account_details_sub">Name, email, password, avatar</string>
+    <string name="settings_row_admin_console_label">Admin console</string>
+    <string name="settings_row_admin_console_sub">Moderation &amp; management tools</string>
+    <string name="settings_row_coming_soon_format">%1$s — coming soon</string>
+    <string name="settings_footer_legal_links">Terms of Use · Privacy Policy</string>
+
+    <!-- Account details -->
+    <string name="account_details_title">Account details</string>
+    <string name="account_details_upload_photo">Upload photo</string>
+    <string name="account_details_use_initials">Use initials instead</string>
+    <string name="label_city">City (shown on your profile)</string>
+    <string name="label_bio">About you</string>
+    <string name="account_details_email_helper">Changing this sends a confirmation link to the new address.</string>
+    <string name="account_details_password_section">Password</string>
+    <string name="label_repeat_new_password">Repeat new password</string>
+    <string name="account_details_password_mismatch">New passwords don\'t match.</string>
+    <string name="account_details_privacy_section">Privacy</string>
+    <string name="account_details_privacy_recipes">Show my published recipes on my public profile.</string>
+    <string name="account_details_privacy_favorites">Let other people see which recipes I favorited. Private notes always stay hidden.</string>
+    <string name="account_details_delete_account">Delete my account</string>
+    <string name="account_details_save">Save changes</string>
+    <string name="account_details_dialog_delete_title">Delete your account?</string>
+    <string name="account_details_dialog_delete_message">Your recipes and reviews will be hidden immediately. Your account is permanently deleted after 30 days unless you log back in.</string>
+    <string name="account_details_dialog_delete_password_hint">Enter your password to confirm</string>
+    <string name="account_details_action_delete">Delete everything</string>
+    <string name="account_details_deletion_requested">Account scheduled for deletion. Log back in within 30 days to cancel.</string>
+    <string name="account_details_avatar_pending">Photo selected — tap Save changes to apply it.</string>
+    <string name="account_details_avatar_cleared_pending">Avatar cleared — tap Save changes to apply it.</string>
+    <string name="account_details_discard_title">Discard changes?</string>
+    <string name="account_details_discard_message">Your changes have not been saved.</string>
+    <string name="account_details_discard_confirm">Discard</string>
+    <string name="account_details_discard_keep_editing">Keep editing</string>
+    <string name="account_details_dialog_change_email_title">Confirm your password</string>
+    <string name="account_details_dialog_change_email_message">Enter your password to confirm changing your email to %1$s.</string>
+    <string name="account_details_action_change_email">Change email</string>
+
+    <!-- Cooking preferences -->
+    <string name="cooking_preferences_title">Cooking preferences</string>
+    <string name="cooking_preferences_screen_awake_label">Keep screen awake</string>
+    <string name="cooking_preferences_screen_awake_sub">Prevents the screen from sleeping while cooking mode is open</string>
+    <string name="cooking_preferences_timer_sound_label">Timer sound &amp; vibration</string>
+    <string name="cooking_preferences_timer_sound_sub">Play a sound and vibrate when a step timer finishes</string>
+
+    <!-- Legal documents -->
+    <string name="legal_terms_of_use_title">Terms of Use</string>
+    <string name="legal_privacy_policy_title">Privacy Policy</string>
+    <string name="legal_last_updated_format">Last updated: %1$s</string>
+    <string name="legal_last_updated_date">August 11, 2026</string>
+    <string name="legal_terms_of_use_body">Welcome to CookSync. These Terms of Use (\"Terms\") govern your access to and use of the CookSync app. By creating an account or using the app, you agree to these Terms.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;1. Your account&lt;/b&gt;&lt;br/&gt; You must provide accurate information when creating an account and are responsible for keeping your login credentials confidential. You\'re responsible for all activity that happens under your account.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;2. Content you share&lt;/b&gt;&lt;br/&gt; Recipes, photos, comments, and ratings you post (\"your content\") remain yours. By posting it, you grant CookSync a non-exclusive, worldwide license to host, display, and distribute it within the app so other users can view it. You\'re responsible for making sure you have the right to share anything you upload.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;3. Acceptable use&lt;/b&gt;&lt;br/&gt; Don\'t post content that\'s unlawful, infringes someone else\'s rights, or is abusive or misleading. Don\'t attempt to disrupt the service, scrape it at scale, or interfere with other users\' accounts.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;4. Third-party services&lt;/b&gt;&lt;br/&gt; Recipe photos and avatars are stored using Cloudinary, a third-party media hosting provider. Uploading an image means it will be transmitted to and stored by Cloudinary on CookSync\'s behalf.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;5. Termination&lt;/b&gt;&lt;br/&gt; You may stop using CookSync and delete your account at any time from Account details. We may suspend or terminate accounts that violate these Terms.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;6. Disclaimer&lt;/b&gt;&lt;br/&gt; CookSync is provided \"as is.\" Recipes are submitted by the community; we don\'t guarantee their accuracy, safety, or nutritional content. Use your own judgment, especially around allergens and food safety.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;7. Changes to these Terms&lt;/b&gt;&lt;br/&gt; We may update these Terms from time to time. Continuing to use the app after a change means you accept the updated Terms.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;8. Contact&lt;/b&gt;&lt;br/&gt; Questions about these Terms can be sent to the app\'s support contact listed on your account page.</string>
+    <string name="legal_privacy_policy_body">This Privacy Policy explains what information CookSync collects, how it\'s used, and the choices you have.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;1. Information we collect&lt;/b&gt;&lt;br/&gt; Account information (name, email, password), profile details you choose to add (city, bio, avatar), the recipes, photos, favorites, and reviews you create, and your in-app cooking preferences (e.g. keep-screen-awake, timer sound).&lt;br/&gt;&lt;br/&gt; &lt;b&gt;2. How we use it&lt;/b&gt;&lt;br/&gt; To operate your account, show your content to other users where you\'ve chosen to make it public, personalize the app, and keep the service secure (for example, refreshing your login session).&lt;br/&gt;&lt;br/&gt; &lt;b&gt;3. Image storage via Cloudinary&lt;/b&gt;&lt;br/&gt; Photos you upload — avatars and recipe photos — are sent directly from your device to Cloudinary, our media hosting provider, using a short-lived signed upload link issued by our server. The image files themselves never pass through CookSync\'s own servers.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;4. Cookies &amp; local storage&lt;/b&gt;&lt;br/&gt; The app stores a session (access and refresh tokens) and a few local preferences on your device so you stay signed in and your device settings are remembered. These aren\'t used for third-party advertising.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;5. Sharing of information&lt;/b&gt;&lt;br/&gt; We don\'t sell your data. Your published recipes and favorites are shown to other users only according to the privacy choices you set in Account details; your private notes always stay hidden.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;6. Data retention &amp; deletion&lt;/b&gt;&lt;br/&gt; If you delete your account, your recipes and reviews are hidden immediately and your account is permanently deleted after 30 days, unless you log back in within that window to cancel the deletion.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;7. Your choices&lt;/b&gt;&lt;br/&gt; You can review and update your profile information, toggle what\'s visible on your public profile, and delete your account at any time from Account details.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;8. Changes to this policy&lt;/b&gt;&lt;br/&gt; We may update this Privacy Policy from time to time. Continuing to use the app after a change means you accept the updated policy.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;9. Contact us&lt;/b&gt;&lt;br/&gt; Questions about this policy can be sent to the app\'s support contact listed on your account page.</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_my_recipes">My Recipes</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Admin console -->
+    <string name="admin_eyebrow">ADMIN CONTROL</string>
+    <string name="admin_tab_reports">Reports</string>
+    <string name="admin_tab_tags">Tags</string>
+    <string name="admin_tab_users">Users</string>
+    <string name="admin_tab_units">Units</string>
+    <string name="admin_heading_reports">Reported reviews</string>
+    <string name="admin_heading_tags">Duplicate tags</string>
+    <string name="admin_heading_users">Users</string>
+    <string name="admin_heading_units">Measurement units</string>
+    <string name="admin_badge_reports">%1$d open</string>
+    <string name="admin_badge_tags">%1$d pairs</string>
+    <string name="admin_badge_users">%1$d total</string>
+    <string name="admin_badge_units">%1$d total</string>
+    <string name="admin_units_add_new">Add new measurement unit</string>
+    <string name="admin_units_validation_required">Name and code are required</string>
+    <string name="admin_units_create_success">Unit created successfully</string>
+    <string name="admin_units_deleted_format">Unit \"%1$s\" deleted</string>
+    <string name="error_resource_conflict">This item already exists</string>
+
+    <string name="admin_reason_all">All</string>
+    <string name="admin_reason_spam">Spam</string>
+    <string name="admin_reason_abuse">Abuse</string>
+    <string name="admin_reason_off_topic">Off-topic</string>
+    <string name="admin_reports_section_label">Oldest first</string>
+    <string name="admin_reports_empty">No reported reviews right now.</string>
+    <string name="admin_report_on_format">on %1$s</string>
+    <string name="admin_report_note_format">Reporter note: %1$s</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_keep">Keep</string>
+    <string name="admin_ban_user_desc">Suspend this reviewer\'s account</string>
+    <string name="admin_confirm_remove_title">Remove this review?</string>
+    <string name="admin_confirm_remove_message">This deletes the review and dismisses the report. This can\'t be undone.</string>
+    <string name="admin_toast_report_removed">Review removed</string>
+    <string name="admin_toast_report_kept">Report dismissed</string>
+    <string name="admin_toast_user_suspended_format">%1$s suspended</string>
+    <string name="admin_toast_user_reactivated_format">%1$s reactivated</string>
+    <string name="admin_toast_tags_merged_format">Merged into %1$s</string>
+
+    <string name="admin_tags_search_hint">Find a tag</string>
+    <string name="admin_tag_recipe_count_format">%1$d recipes</string>
+    <string name="admin_tags_section_label">Likely duplicates</string>
+    <string name="admin_tags_empty">No duplicate tags found.</string>
+    <string name="admin_merge_action">merge →</string>
+    <string name="admin_merge_dialog_title">Merge these two tags?</string>
+    <string name="admin_merge_dialog_message">Recipes using the removed tag will be moved to the tag you keep. This can\'t be undone.</string>
+    <string name="admin_merge_confirm_format">Merge into %1$s</string>
+    <string name="admin_merge_option_format">%1$s · %2$d recipes</string>
+
+    <string name="admin_users_search_hint">Name or email</string>
+    <string name="admin_email_user_desc">Email this user</string>
+    <string name="admin_users_filter_all">All</string>
+    <string name="admin_users_filter_active">Active</string>
+    <string name="admin_users_filter_deactivated">Deactivated</string>
+    <string name="admin_users_filter_suspended">Suspended</string>
+    <string name="admin_users_empty">No users found.</string>
+    <string name="admin_user_status_active">ACTIVE</string>
+    <string name="admin_user_status_deactivated">DEACTIVATED</string>
+    <string name="admin_user_status_suspended">SUSPENDED</string>
+    <string name="admin_user_admin_tag">ADMIN</string>
+    <string name="action_suspend">Suspend</string>
+    <string name="action_reactivate">Reactivate</string>
+    <string name="action_sort">Sort by join date</string>
+    <string name="admin_users_count_format">%1$d users</string>
+    <string name="admin_confirm_suspend_title">Suspend this account?</string>
+    <string name="admin_confirm_suspend_message">%1$s won\'t be able to sign in until reactivated.</string>
+    <string name="admin_confirm_delete_danger_title">Danger Zone — Delete User Permanently</string>
+    <string name="admin_confirm_delete_danger_message_format">Are you sure you want to delete %1$s? This permanently removes their account, recipes, and reviews. This cannot be undone.</string>
+    <string name="admin_confirm_delete_typed_title">Confirm permanent deletion</string>
+    <string name="admin_confirm_delete_typed_message_format">Type \"%1$s\" to confirm.</string>
+    <string name="admin_confirm_delete_typed_phrase_format">delete %1$s</string>
+    <string name="admin_toast_user_deleted_format">%1$s permanently deleted</string>
+    <string name="action_delete_permanently">Delete permanently</string>
+
+    <!-- Create Recipe wizard -->
+    <string name="wizard_title">New recipe</string>
+    <string name="wizard_step1_of4">STEP 1 OF 4</string>
+    <string name="wizard_step2_of4">STEP 2 OF 4</string>
+    <string name="wizard_step3_of4">STEP 3 OF 4</string>
+    <string name="wizard_step4_of4">STEP 4 OF 4</string>
+    <string name="wizard_step1_heading">The basics</string>
+    <string name="wizard_step2_heading">Ingredients</string>
+    <string name="wizard_step2_helper">Drag to reorder. Quantities show per serving in cooking mode.</string>
+    <string name="wizard_step3_heading">Instructions</string>
+    <string name="wizard_step3_helper">One action per step. Add a timer and the cooking screen will count it down.</string>
+    <string name="wizard_step4_heading">Check and publish</string>
+    <string name="wizard_ingredients_tip">Write quantities as \"800 g\" or \"3 tbsp\" — cooking mode will show each ingredient beside the step that uses it.</string>
+    <string name="wizard_popular_tags_label">POPULAR TAGS</string>
+    <string-array name="wizard_popular_tag_names">
+        <item>Quick</item>
+        <item>Baking</item>
+        <item>Vegan</item>
+        <item>Gluten free</item>
+        <item>One pan</item>
+    </string-array>
+    <string name="wizard_next_ingredients">Ingredients</string>
+    <string name="wizard_next_instructions">Instructions</string>
+    <string name="wizard_next_review">Review</string>
+    <string name="wizard_action_draft">Draft</string>
+    <string name="wizard_error_title_required">Required</string>
+    <string name="wizard_error_difficulty_required">Choose a difficulty</string>
+    <string name="wizard_checklist_ingredients_format">%1$d ingredients with quantities</string>
+    <string name="wizard_checklist_ingredients_missing">Add at least one ingredient with a quantity</string>
+    <string name="wizard_checklist_steps_format">%1$d steps, %2$d with timers</string>
+    <string name="wizard_checklist_steps_missing">Add at least one instruction step</string>
+    <string name="wizard_checklist_tags_format">%1$d tags · %2$s</string>
+    <string name="wizard_checklist_tags_none">No tags added yet</string>
+    <string name="wizard_checklist_cover_missing">No cover photo yet — recipes with photos get more views</string>
+    <string name="wizard_checklist_cover_added">Cover photo added</string>
+    <string name="wizard_draft_step_of_format">Draft · step %1$d of 4 · saved %2$s</string>
+    <string name="wizard_action_resume">Resume</string>
+    <string name="wizard_instruction_set_timer_title">Set a timer for this step</string>
+    <string name="wizard_instruction_no_timer_pill">⏱ no timer</string>
+    <string name="wizard_instruction_timer_pill_format">⏱ %1$d min</string>
+    <string name="wizard_instruction_add_ingredient_pill">+ ingredient</string>
+    <string name="wizard_instruction_link_ingredients_title">Which ingredients does this step use?</string>
+    <string name="wizard_photo_caption_label">Caption</string>
+    <string name="wizard_photo_caption_title">Add a caption</string>
+    <string name="wizard_prep_time_dialog_title">Prep time</string>
+    <string name="wizard_cook_time_dialog_title">Cook time</string>
+    <string name="wizard_duration_format">%1$dh %2$dm</string>
+    <string name="wizard_duration_minutes_only_format">%1$d min</string>
+    <string name="wizard_duration_hint">0h 0m</string>
+    <string name="wizard_action_save_draft">Save draft</string>
+    <string name="wizard_action_next">Next</string>
+    <string name="wizard_discard_title">Discard this recipe?</string>
+    <string name="wizard_discard_message">Your progress will be lost unless you save it as a draft first.</string>
+    <string name="wizard_action_discard">Discard</string>
+    <string name="wizard_action_keep_editing">Keep editing</string>
+    <string name="wizard_draft_saved_toast">Draft saved</string>
+    <string name="wizard_published_toast">Recipe published</string>
+
+    <!-- Publish progress card (layout_publish_progress_card.xml, driven by RecipePublishManager) -->
+    <string name="wizard_publish_title">Publishing recipe&#8230;</string>
+    <string name="wizard_publish_uploading_media">Uploading media&#8230;</string>
+    <string name="wizard_publish_processing_details">Processing recipe details&#8230;</string>
+    <string name="wizard_publish_percent_initial">0%</string>
+    <string name="wizard_publish_percent_format">%1$d%%</string>
+    <string name="wizard_publish_success_title">Recipe published!</string>
+    <string name="wizard_publish_success_subtitle">Available in My Recipes</string>
+    <string name="wizard_publish_failed_title">Publishing failed</string>
+    <string name="wizard_publish_failed_default_reason">Failed to publish recipe</string>
+    <string name="wizard_publish_failed_subtitle_format">%1$s — your recipe was saved as a draft, nothing was lost.</string>
+
+    <string name="wizard_basics_title_label">Recipe title</string>
+    <string name="wizard_basics_title_hint">e.g. Shakshuka with feta</string>
+    <string name="wizard_basics_description_label">Description</string>
+    <string name="wizard_basics_description_hint">A short description of your recipe&#8230;</string>
+    <string name="wizard_basics_description_helper">Drag a photo\'s handle to move it between paragraphs. Photos sit inline where you place them; the first one becomes the cover if you don\'t set one.</string>
+    <string name="wizard_basics_cover_label">Cover photo</string>
+    <string name="wizard_action_add_cover_photo">Add photo</string>
+    <string name="wizard_basics_description_photos_label">Description photos (optional)</string>
+    <string name="wizard_action_add_description_photo">Add photo</string>
+    <string name="wizard_basics_difficulty_label">Difficulty</string>
+    <string name="wizard_basics_tags_label">Tags</string>
+    <string name="wizard_basics_tags_hint">Add a tag&#8230;</string>
+    <string name="wizard_action_add_tag">Add tag</string>
+
+    <string name="wizard_ingredients_label">Ingredients</string>
+    <string name="wizard_ingredient_name_hint">Ingredient name</string>
+    <string name="wizard_ingredient_quantity_hint">Qty</string>
+    <string name="wizard_ingredient_unit_hint">Unit</string>
+    <string name="wizard_action_remove_ingredient">Remove ingredient</string>
+    <string name="wizard_action_add_ingredient">Add ingredient</string>
+
+    <string name="wizard_action_remove_step">Remove step</string>
+    <string name="wizard_step_number_format">Step %1$d</string>
+    <string name="wizard_instruction_description_hint">Describe this step&#8230;</string>
+    <string name="wizard_instruction_has_timer_label">Timer</string>
+    <string name="wizard_instruction_timer_seconds_hint">Seconds</string>
+    <string name="wizard_instruction_uses_ingredients_label">USES INGREDIENTS</string>
+    <string name="wizard_action_add_step_photo">Add photo</string>
+    <string name="wizard_action_add_step">Add step</string>
+
+    <string name="wizard_review_checklist_label">Before you publish</string>
+    <string name="wizard_checklist_title_missing">Recipe title is required</string>
+    <string name="wizard_checklist_difficulty_missing">Choose a difficulty</string>
+    <string name="wizard_checklist_times_format">%1$d min prep · %2$d min cook</string>
+    <string name="wizard_checklist_times_missing">Prep and cook time are required</string>
+    <string name="wizard_checklist_servings_format">Serves %1$d</string>
+    <string name="wizard_checklist_servings_missing">Servings is required</string>
+    <string name="wizard_review_visibility_label">Visibility</string>
+    <string name="wizard_review_untitled">Untitled recipe</string>
+    <string name="wizard_review_meta_format">%1$s · %2$d min prep · %3$d min cook · Serves %4$d</string>
+    <string name="wizard_action_publish">Publish</string>
+
+    <string name="wizard_resume_draft_subtitle">Tap to resume</string>
+    <string name="wizard_draft_badge">Draft</string>
+    <string name="my_recipes_draft_untitled">Untitled draft</string>
+</resources>

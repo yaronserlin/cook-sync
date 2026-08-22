@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Pulls in Spring Boot's standard conversion rules (%clr, %wEx) and property defaults. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Dims only DEBUG/TRACE message text; every other level's message stays regular/uncolored. -->
+    <conversionRule conversionWord="debugFaint" class="com.cooksync_server.config.FaintDebugMessageConverter"/>
+
+    <!--
+      Uniform console format: [time] [level] [thread] [logger] : message
+      Every field before ":" is a fixed width, so ":" lines up in the same column on every line:
+        thread -> right-justified, capped at 15 chars
+        logger -> logger{0} drops the package, leaving only the simple class ("file") name;
+                  left-justified, padded/truncated to 36 chars
+      Level tag uses Spring Boot's standard auto %clr coloring: ERROR red, WARN yellow, INFO/DEBUG green.
+      Color auto-disables when output isn't a real terminal (redirected to a file/CI), so
+      log files and prod capture stay plain text.
+    -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- NOTE: the space before %n is required — Logback mis-parses %n as literal text
+                 when it immediately follows a composite converter's closing paren with no
+                 separating character (reproducible with any %xxx(...)%n, not specific to
+                 debugFaint); the trailing space itself is invisible in terminal output. -->
+            <pattern>%clr([%d{yyyy-MM-dd HH:mm:ss}]){faint} %clr([%-5level]) %clr([%15.15thread]){faint} %clr([%-36.36logger{0}]){cyan} %clr(:){faint} %debugFaint(%msg) %n%wEx</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Levels are set dynamically from logging.level.* in application*.properties. -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

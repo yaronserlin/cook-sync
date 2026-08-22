@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_list_title"
+        style="@style/CookSync.Heading.H2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_20"
+        android:layout_marginEnd="@dimen/dp_16"
+        tools:text="My recipes · 3 published" />
+
+    <TextView
+        android:id="@+id/tv_list_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_2"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:alpha="0.65"
+        android:textColor="@color/color_text"
+        android:textSize="@dimen/sp_13"
+        android:visibility="gone"
+        tools:text="12 recipes · 4 with private notes"
+        tools:visibility="visible" />
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_12"
+        android:background="@drawable/bg_input"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@android:color/transparent" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_12"
+        android:clipToPadding="false"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/dp_16">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filters"
+                style="@style/CookSync.Button.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/dp_48"
+                android:paddingHorizontal="@dimen/dp_16"
+                android:text="@string/filters_count_format"
+                app:icon="@drawable/ic_filter"
+                app:iconPadding="@dimen/dp_8"
+                app:iconSize="@dimen/dp_18" />
+
+            <View
+                android:layout_width="@dimen/dp_10"
+                android:layout_height="@dimen/dp_0" />
+
+            <LinearLayout
+                android:id="@+id/chip_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <!-- Live background publish progress feedback card -->
+    <include
+        android:id="@+id/card_publish_progress"
+        layout="@layout/layout_publish_progress_card" />
+
+    <!-- Resumable local drafts (any number), pinned above the published/private list — My
+         Recipes only (see RecipeListActivity/MyRecipesActivity, which populate this by
+         inflating item_recipe_draft_card.xml once per draft; this layout is shared with
+         Favorites, which never has a draft to show and leaves this container empty). -->
+    <LinearLayout
+        android:id="@+id/drafts_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_12"
+        android:orientation="vertical" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_0"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="@dimen/dp_16"
+            android:paddingBottom="@dimen/dp_16"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_recipe_row_card" />
+
+        <include
+            android:id="@+id/skeleton_view"
+            layout="@layout/activity_recipe_list_skeleton"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/dp_40"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/iv_empty_icon"
+                android:layout_width="@dimen/dp_56"
+                android:layout_height="@dimen/dp_56"
+                app:tint="@color/color_accent_700"
+                tools:src="@drawable/ic_book" />
+
+            <TextView
+                android:id="@+id/tv_empty_title"
+                style="@style/CookSync.Heading.H2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_16"
+                tools:text="No recipes yet" />
+
+            <TextView
+                android:id="@+id/tv_empty_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_8"
+                android:alpha="0.7"
+                android:gravity="center"
+                android:textColor="@color/color_text"
+                android:textSize="@dimen/sp_14"
+                tools:text="Recipes you publish will show up here." />
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_no_results_state" />
+
+        <!-- "Create recipe" entry point — My Recipes only (see RecipeListActivity, which hides
+             this on Favorites since this layout is shared by both screens). -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_recipe"
+            style="@style/Widget.CookSync.Fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="@dimen/dp_16"
+            android:layout_marginBottom="@dimen/dp_16"
+            android:contentDescription="@string/wizard_title"
+            android:src="@drawable/ic_add"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        style="@style/Widget.CookSync.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        app:menu="@menu/bottom_nav_menu" />
+
+</LinearLayout>

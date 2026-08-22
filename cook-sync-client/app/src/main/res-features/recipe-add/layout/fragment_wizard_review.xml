@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    tools:context=".ui.recipe.wizard.WizardReviewFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingTop="@dimen/dp_8"
+        android:paddingBottom="@dimen/dp_24">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.12"
+            android:text="@string/wizard_step4_of4"
+            android:textColor="@color/color_accent_2_700"
+            android:textSize="@dimen/sp_11"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_4"
+            android:layout_marginBottom="@dimen/dp_16"
+            android:fontFamily="@font/caprasimo"
+            android:text="@string/wizard_step4_heading"
+            android:textColor="@color/color_text"
+            android:textSize="@dimen/sp_26" />
+
+        <com.google.android.material.card.MaterialCardView
+            app:cardBackgroundColor="@color/color_surface"
+            app:cardCornerRadius="@dimen/dp_20"
+            app:cardElevation="@dimen/dp_0"
+            app:strokeWidth="@dimen/dp_0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/dp_14">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_review_cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_150"
+                    android:visibility="gone"
+                    app:cardCornerRadius="@dimen/dp_14"
+                    app:cardElevation="@dimen/dp_0"
+                    app:strokeWidth="@dimen/dp_0"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/iv_review_cover"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tv_review_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_10"
+                    android:fontFamily="@font/caprasimo"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_20"
+                    tools:text="Shakshuka with feta" />
+
+                <TextView
+                    android:id="@+id/tv_review_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:alpha="0.8"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_13"
+                    android:visibility="gone"
+                    tools:text="Milk pudding set with cornflour, rosewater syrup, crushed pistachio."
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/tv_review_meta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_6"
+                    android:alpha="0.7"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_13"
+                    tools:text="Easy · 15 min prep · 20 min cook · Serves 4" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            style="@style/CookSync.FieldLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_20"
+            android:text="@string/wizard_review_checklist_label" />
+
+        <LinearLayout
+            android:id="@+id/ll_review_checklist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/CookSync.FieldLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_20"
+            android:text="@string/wizard_review_visibility_label" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp_44"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="@dimen/dp_16"
+            app:cardElevation="@dimen/dp_0"
+            app:strokeColor="@color/color_divider"
+            app:strokeWidth="@dimen/dp_1">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/chip_visibility_public"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/dp_18"
+                    android:text="@string/filter_public"
+                    android:textSize="@dimen/sp_13"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chip_visibility_private"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/dp_18"
+                    android:text="@string/filter_private"
+                    android:textSize="@dimen/sp_13"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

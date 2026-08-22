@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable star-rating filter chip for the Recipe Detail reviews section, matching the
+     design's "{{ rev.chips }}" row (a star value + how many reviews have that rating).
+     Included 5x from activity_recipe_detail.xml rather than duplicated, per the DRY
+     requirement for repeated UI. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/star_chip_card"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/dp_6"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/color_neutral_300"
+    app:cardCornerRadius="@dimen/dp_999"
+    app:cardElevation="@dimen/dp_0"
+    app:strokeWidth="@dimen/dp_0">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/dp_14"
+        android:paddingTop="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_14"
+        android:paddingBottom="@dimen/dp_8">
+
+        <TextView
+            android:id="@+id/star_chip_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_text"
+            android:textSize="@dimen/sp_12_5"
+            android:textStyle="bold"
+            tools:text="5★" />
+
+        <TextView
+            android:id="@+id/star_chip_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_6"
+            android:alpha="0.65"
+            android:textColor="@color/color_text"
+            android:textSize="@dimen/sp_12_5"
+            tools:text="2" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

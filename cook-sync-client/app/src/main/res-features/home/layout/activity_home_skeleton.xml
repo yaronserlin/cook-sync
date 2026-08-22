@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingVertical="@dimen/dp_16">
+
+        <View
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/dp_32"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/dp_12"
+            android:background="@drawable/bg_skeleton_bone" />
+
+        <View
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
+            android:background="@drawable/bg_skeleton_bone" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_48"
+        android:layout_marginHorizontal="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_16"
+        android:background="@drawable/bg_skeleton_bone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingBottom="@dimen/dp_16">
+
+        <View
+            android:layout_width="@dimen/dp_60"
+            android:layout_height="@dimen/dp_36"
+            android:layout_marginEnd="@dimen/dp_8"
+            android:background="@drawable/bg_skeleton_bone" />
+
+        <View
+            android:layout_width="@dimen/dp_80"
+            android:layout_height="@dimen/dp_36"
+            android:layout_marginEnd="@dimen/dp_8"
+            android:background="@drawable/bg_skeleton_bone" />
+
+        <View
+            android:layout_width="@dimen/dp_70"
+            android:layout_height="@dimen/dp_36"
+            android:background="@drawable/bg_skeleton_bone" />
+
+    </LinearLayout>
+
+    <include layout="@layout/skeleton_card" />
+    <include layout="@layout/skeleton_card" />
+    <include layout="@layout/skeleton_card" />
+
+</LinearLayout>

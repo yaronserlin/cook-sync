@@ -1,0 +1,16 @@
+# Ignore local secrets and generated files
+.env
+**/local.properties
+
+# IDE and OS files
+.idea/
+*.iml
+.DS_Store
+
+# Build outputs
+.gradle/
+**/build/
+**/target/
+
+# Maven wrapper binaries and local metadata
+.mvn/

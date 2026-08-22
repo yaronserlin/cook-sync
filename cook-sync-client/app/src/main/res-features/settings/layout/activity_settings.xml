@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    tools:context=".ui.settings.SettingsActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/dp_88">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/dp_16"
+            android:paddingTop="@dimen/dp_20">
+
+            <TextView
+                style="@style/CookSync.Heading.H2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_title" />
+
+            <!-- ── Avatar header ─────────────────────────────────────────────────── -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/dp_20">
+
+                <ImageView
+                    android:id="@+id/iv_avatar"
+                    android:layout_width="@dimen/dp_96"
+                    android:layout_height="@dimen/dp_96"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:contentDescription="@string/settings_avatar_content_description"
+                    android:scaleType="centerCrop" />
+
+                <TextView
+                    android:id="@+id/tv_avatar_initials"
+                    android:layout_width="@dimen/dp_96"
+                    android:layout_height="@dimen/dp_96"
+                    android:layout_gravity="center"
+                    android:fontFamily="@font/caprasimo"
+                    android:gravity="center"
+                    android:textColor="@color/color_accent_800"
+                    android:textSize="@dimen/sp_28"
+                    tools:text="YS" />
+
+
+
+                <ProgressBar
+                    android:id="@+id/avatar_progress"
+                    android:layout_width="@dimen/dp_96"
+                    android:layout_height="@dimen/dp_96"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/dp_12"
+                android:fontFamily="@font/caprasimo"
+                android:textColor="@color/color_text"
+                android:textSize="@dimen/sp_18"
+                tools:text="Yaron Serlin" />
+
+            <TextView
+                android:id="@+id/tv_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/dp_4"
+                android:alpha="0.6"
+                android:textColor="@color/color_text"
+                android:textSize="@dimen/sp_13_5"
+                tools:text="yaron@example.com" />
+
+            <!-- ── Settings rows ─────────────────────────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_24"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/row_favorites"
+                    layout="@layout/item_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/row_my_recipes"
+                    layout="@layout/item_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8" />
+
+                <include
+                    android:id="@+id/row_cooking_preferences"
+                    layout="@layout/item_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8" />
+
+                <include
+                    android:id="@+id/row_account_details"
+                    layout="@layout/item_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8" />
+
+                <include
+                    android:id="@+id/row_admin_console"
+                    layout="@layout/item_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <!-- ── Session ───────────────────────────────────────────────────────── -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_logout"
+                style="@style/CookSync.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_24"
+                android:text="@string/settings_action_logout" />
+
+            <TextView
+                android:id="@+id/tv_legal_links"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/dp_16"
+                android:gravity="center"
+                android:textColor="@color/color_text"
+                android:textSize="@dimen/sp_12"
+                tools:text="Terms of Use · Privacy Policy" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        style="@style/Widget.CookSync.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/color_surface"
+        app:menu="@menu/bottom_nav_menu" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_recipe"
+        style="@style/Widget.CookSync.Fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_88"
+        android:contentDescription="@string/wizard_title"
+        android:src="@drawable/ic_add" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

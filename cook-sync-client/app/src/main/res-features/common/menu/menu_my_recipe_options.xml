@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_edit_recipe"
+        android:title="Edit recipe" />
+    <item
+        android:id="@+id/action_toggle_visibility"
+        android:title="@string/action_make_private" />
+    <item
+        android:id="@+id/action_delete_recipe"
+        android:title="@string/action_delete" />
+</menu>

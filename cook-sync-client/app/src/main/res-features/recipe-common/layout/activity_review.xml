@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Rate & review" submission form, reached from Cooking Mode's "Done" button and from
+     Recipe Detail's "Write a review" button. -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/dp_24">
+
+        <TextView
+            style="@style/CookSync.Heading.H2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/review_title" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_6"
+            android:alpha="0.7"
+            android:text="@string/review_subtitle"
+            android:textColor="@color/color_text"
+            android:textSize="@dimen/sp_14" />
+
+        <!-- ── Star rating input ────────────────────────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/star_input_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/dp_24"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/star_1"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:contentDescription="@string/review_star_content_description"
+                android:padding="@dimen/dp_4"
+                android:src="@drawable/ic_star" />
+
+            <ImageView
+                android:id="@+id/star_2"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:contentDescription="@string/review_star_content_description"
+                android:padding="@dimen/dp_4"
+                android:src="@drawable/ic_star" />
+
+            <ImageView
+                android:id="@+id/star_3"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:contentDescription="@string/review_star_content_description"
+                android:padding="@dimen/dp_4"
+                android:src="@drawable/ic_star" />
+
+            <ImageView
+                android:id="@+id/star_4"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:contentDescription="@string/review_star_content_description"
+                android:padding="@dimen/dp_4"
+                android:src="@drawable/ic_star" />
+
+            <ImageView
+                android:id="@+id/star_5"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:contentDescription="@string/review_star_content_description"
+                android:padding="@dimen/dp_4"
+                android:src="@drawable/ic_star" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_rating_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/dp_4"
+            android:alpha="0.6"
+            android:text="@string/review_tap_to_rate"
+            android:textColor="@color/color_text"
+            android:textSize="@dimen/sp_12_5" />
+
+        <!-- ── Title ─────────────────────────────────────────────────────────────── -->
+        <TextView
+            style="@style/CookSync.FieldLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_24"
+            android:text="@string/review_label_title" />
+
+        <EditText
+            android:id="@+id/et_review_title"
+            style="@style/CookSync.Input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/review_title_hint"
+            android:inputType="textCapSentences" />
+
+        <!-- ── Comment ───────────────────────────────────────────────────────────── -->
+        <TextView
+            style="@style/CookSync.FieldLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_14"
+            android:text="@string/review_label_comment" />
+
+        <EditText
+            android:id="@+id/et_review_comment"
+            style="@style/CookSync.Input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top|start"
+            android:hint="@string/review_comment_hint"
+            android:inputType="textMultiLine|textCapSentences"
+            android:minLines="3"
+            android:paddingVertical="@dimen/dp_12" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_submit_review"
+            style="@style/CookSync.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_24"
+            android:text="@string/review_action_submit" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_review_close"
+            style="@style/CookSync.Button.Ghost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_4"
+            android:text="@string/review_action_skip" />
+
+        <ProgressBar
+            android:id="@+id/review_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/dp_12"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

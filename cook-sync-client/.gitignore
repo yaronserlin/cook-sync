@@ -1,0 +1,26 @@
+# Gradle caches and generated build outputs
+.gradle/
+build/
+**/build/
+
+# Local Android SDK path (machine-specific)
+local.properties
+
+# Android Studio / IntelliJ IDE project files
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Proguard-generated files
+proguard/
+
+# APK / AAB outputs
+*.apk
+*.aab
+
+# Release signing key and credentials — never commit
+keystore/
+keystore.properties
+*.jks

@@ -1,0 +1,220 @@
+package com.cooksync.app.data.repository;
+
+import androidx.lifecycle.MutableLiveData;
+
+import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.response.PagedResponse;
+import com.dtos.response.note.NoteResponse;
+import com.dtos.response.recipe.RecipePreviewResponse;
+import com.dtos.response.recipe.RecipeResponse;
+
+import java.util.List;
+
+/**
+ * Interface contract for recipe-related data operations.
+ * Handles fetching the public feed, searching, tag-based filtering, and recipe details.
+ * Also manages the user's personal favorites and private notes.
+ *
+ * @author Yaron Serlin
+ * @version 1.0
+ * @since 04/08/2026
+ */
+public interface RecipeRepository {
+
+    /**
+     * Fetches a paginated page of public recipes for the home discovery feed.
+     *
+     * @param page page index (0-based)
+     * @param size number of items per page
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPublicFeed(int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Searches for a page of public recipes matching a query.
+     *
+     * @param query search text
+     * @param page page index (0-based)
+     * @param size number of items per page
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void searchRecipes(String query, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Fetches a page of public recipes filtered by a specific tag.
+     *
+     * @param tagName name of the tag
+     * @param page page index (0-based)
+     * @param size number of items per page
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getRecipesByTag(String tagName, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Fetches full details for a specific recipe.
+     *
+     * @param recipeId unique ID of the recipe
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
+     * Creates a new recipe authored by the current user.
+     *
+     * @param request the complete recipe payload
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void createRecipe(RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
+     * Updates an existing recipe authored by the current user.
+     *
+     * @param recipeId target recipe unique identifier
+     * @param request the complete updated recipe payload
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void updateRecipe(String recipeId, RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
+     * Fetches the complete set of the user's personal recipes marked as favorites. The server
+     * paginates this endpoint, but the client loops through every page internally (see
+     * {@link RecipeRepositoryImpl}) since callers rely on the full set for membership checks,
+     * accurate counts, and instant client-side search/filter.
+     *
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getFavorites(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Adds a recipe to the user's favorites.
+     *
+     * @param recipeId recipe ID to favorite
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void addFavorite(String recipeId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Removes a recipe from the user's favorites.
+     *
+     * @param recipeId recipe ID to unfavorite
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void removeFavorite(String recipeId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Fetches the personal private note for a specific recipe if it exists.
+     *
+     * @param recipeId recipe ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPersonalNote(String recipeId, MutableLiveData<ApiResult<NoteResponse>> resultTarget);
+
+    /**
+     * Fetches every private note for a recipe, both the general recipe-wide note and any
+     * notes attached to individual instruction steps. The server paginates this endpoint, but
+     * the client loops through every page internally (see {@link RecipeRepositoryImpl}) since
+     * callers build a complete per-step note lookup rather than rendering a scrollable list.
+     *
+     * @param recipeId recipe ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getAllPersonalNotes(String recipeId, MutableLiveData<ApiResult<List<NoteResponse>>> resultTarget);
+
+    /**
+     * Creates or updates a personal note on a recipe, or on one of its instruction steps.
+     *
+     * @param recipeId the recipe the note belongs to
+     * @param instructionId the instruction step the note is attached to, or {@code null} for
+     *                      a recipe-wide note
+     * @param note the note text
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void saveNote(String recipeId, String instructionId, String note, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Deletes a personal note.
+     *
+     * @param noteId the ID of the note to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteNote(String noteId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Fetches every recipe (published or private) authored by the current user. The server
+     * paginates this endpoint, but the client loops through every page internally (see
+     * {@link RecipeRepositoryImpl}) since callers rely on the full set for accurate counts and
+     * instant client-side search/filter.
+     *
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getMyRecipes(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Fetches the complete set of a given user's publicly visible recipes, for their public
+     * profile page. Empty if that user has disabled {@code showRecipesPublicly}. Loops through
+     * every server page internally the same way {@link #getMyRecipes} does.
+     *
+     * @param userId target user ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPublicRecipesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Fetches the complete set of a given user's publicly visible favorites, for their public
+     * profile page. Empty if that user has disabled {@code showFavoritesPublicly}. Loops through
+     * every server page internally the same way {@link #getFavorites} does.
+     *
+     * @param userId target user ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPublicFavoritesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Deletes one of the current user's own recipes.
+     *
+     * @param recipeId the ID of the recipe to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteRecipe(String recipeId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Changes a recipe's visibility between public and private.
+     *
+     * @param recipeId the ID of the recipe to update
+     * @param visibility the new visibility ("PUBLIC" or "PRIVATE")
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void updateRecipeVisibility(String recipeId, String visibility, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
+     * Submits a new rating/review for a recipe.
+     *
+     * @param recipeId the ID of the recipe being reviewed
+     * @param rating the numeric rating (1.0–5.0)
+     * @param title the review's headline title
+     * @param comment optional detailed commentary
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void submitReview(String recipeId, double rating, String title, String comment,
+                       MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Deletes a review the current user authored.
+     *
+     * @param reviewId the ID of the review to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteReview(String reviewId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Flags a review for moderator review.
+     *
+     * @param reviewId the ID of the review being reported
+     * @param reason the report reason ("SPAM", "ABUSE", or "OFF_TOPIC")
+     * @param comment optional supplementary notes
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void reportReview(String reviewId, String reason, String comment,
+                       MutableLiveData<ApiResult<Void>> resultTarget);
+}

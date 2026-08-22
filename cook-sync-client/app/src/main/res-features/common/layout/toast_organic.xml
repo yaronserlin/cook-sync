@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Content view for OrganicToast, inflated into a Snackbar's SnackbarLayout once its default
+  background/padding have been stripped. Matches the design system's ".toast" component: a
+  dark pill with a leading icon, message and an optional uppercase trailing action.
+
+  The default background is bg_pill_solid tinted color_neutral_900. For undo-capable toasts,
+  OrganicToast swaps it for bg_toast_fill_pill and animates that drawable's level instead of
+  touching this view hierarchy at all — a background drawable never affects a view's measured
+  size, so this can't reintroduce the height bugs an earlier extra-View/ConstraintLayout
+  approach caused here.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toast_organic_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_pill_solid"
+    android:backgroundTint="@color/color_neutral_900"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/dp_16"
+    android:paddingTop="@dimen/dp_14"
+    android:paddingEnd="@dimen/dp_12"
+    android:paddingBottom="@dimen/dp_14">
+
+    <ImageView
+        android:id="@+id/iv_toast_icon"
+        android:layout_width="@dimen/dp_17"
+        android:layout_height="@dimen/dp_17"
+        android:layout_marginEnd="@dimen/dp_10"
+        android:contentDescription="@null"
+        android:visibility="gone"
+        app:tint="@color/color_accent_300" />
+
+    <TextView
+        android:id="@+id/tv_toast_message"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/color_neutral_100"
+        android:textSize="@dimen/sp_13"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_toast_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_10"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:letterSpacing="0.02"
+        android:padding="@dimen/dp_4"
+        android:textAllCaps="true"
+        android:textColor="@color/color_accent_300"
+        android:textSize="@dimen/sp_12"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+</LinearLayout>
