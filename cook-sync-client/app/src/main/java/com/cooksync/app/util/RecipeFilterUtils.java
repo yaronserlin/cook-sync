@@ -82,7 +82,7 @@ public class RecipeFilterUtils {
             displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < minRating);
         }
         if (maxTotalTimeMinutes != null) {
-            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > maxTotalTimeMinutes);
+            displayed.removeIf(r -> totalTimeMinutes(r) > maxTotalTimeMinutes);
         }
         if (selectedTags != null && !selectedTags.isEmpty()) {
             displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->
@@ -96,8 +96,7 @@ public class RecipeFilterUtils {
                     (RecipePreviewResponse r) -> r.averageRating() == null ? 0.0 : r.averageRating(),
                     Comparator.reverseOrder());
         } else if (Objects.equals(sort, "Shortest Time")) {
-            comparator = Comparator.comparingInt(
-                    r -> r.prepTimeMinutes() + r.cookTimeMinutes());
+            comparator = Comparator.comparingInt(RecipeFilterUtils::totalTimeMinutes);
         } else {
             comparator = Comparator.comparing(
                     (RecipePreviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(),
@@ -106,5 +105,40 @@ public class RecipeFilterUtils {
         displayed.sort(comparator);
 
         return displayed;
+    }
+
+    /**
+     * Sums a recipe preview's prep and cook time into its total display/filter duration.
+     * Extracted from duplicated logic that previously lived independently in
+     * {@code RecipeCardAdapter} and {@code SearchResultAdapter}, in addition to this class's
+     * own filter and sort branches above.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param recipe the recipe preview to measure
+     * @return {@link RecipePreviewResponse#prepTimeMinutes()} plus {@link RecipePreviewResponse#cookTimeMinutes()}
+     */
+    public static int totalTimeMinutes(RecipePreviewResponse recipe) {
+        return recipe.prepTimeMinutes() + recipe.cookTimeMinutes();
+    }
+
+    /**
+     * Formats a recipe preview's average rating for display, matching the one-decimal style
+     * used by every recipe card across the app. Extracted from duplicated logic that previously
+     * lived independently in {@code RecipeCardAdapter}, {@code SearchResultAdapter}, and
+     * {@code RecipeRowCardAdapter}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param averageRating the recipe's computed average rating, or {@code null} if unrated
+     * @return {@code "0.0"} if {@code averageRating} is {@code null}, otherwise its value
+     *         formatted to one decimal place
+     */
+    public static String formatRating(Double averageRating) {
+        return averageRating == null ? "0.0" : String.format(Locale.US, "%.1f", averageRating);
     }
 }

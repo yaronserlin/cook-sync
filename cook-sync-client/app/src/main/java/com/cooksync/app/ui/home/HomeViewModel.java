@@ -23,16 +23,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Manages the data state for the {@link HomeActivity}, including paginated recipe
- * feed loading and tag/difficulty/rating/time filtering. Keyword search lives on the
- * dedicated search screen instead.
+ * Client-layer (Android) ViewModel backing {@link HomeActivity}: owns the Home/Discover feed's
+ * data state, including paginated recipe-feed loading against the server's browse and
+ * tag-filtered endpoints (via {@link RecipeRepository}, returning {@link RecipePreviewResponse}
+ * DTOs shared with the server), the available-tags catalog (via {@link TagRepository}), the
+ * favorites set with an optimistic add / deferred-remove-with-undo flow, and the
+ * sort/difficulty/rating/time/tag filtering inherited from {@link AbstractFilterableListViewModel}.
+ * Keyword search lives on the dedicated search screen instead.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 04/08/2026
  */
 public class HomeViewModel extends AbstractFilterableListViewModel {
 
+    /** Recipes requested per page from both the general browse feed and the tag-filtered feed. */
     private static final int PAGE_SIZE = 10;
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
@@ -76,8 +81,13 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
         RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(recipePublishedObserver);
     }
 
+    /** @return the current feed loading/success/error state */
     public LiveData<FeedState> getFeedState() { return feedState; }
+
+    /** @return the tag catalog load result, used to populate the tag chip row */
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
+
+    /** @return the current favorites set, kept in sync with {@link #toggleFavorite} */
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() { return favoritesResult; }
 
     /**
@@ -131,10 +141,15 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
         refresh();
     }
 
+    /** Fetches the full tag catalog for {@link #getTagsResult()}, used to populate the tag chip row. */
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
 
+    /**
+     * Fetches the current favorites set for {@link #getFavoritesResult()}, used by
+     * {@link HomeActivity} to render each feed card's heart icon filled or outlined.
+     */
     public void loadFavorites() {
         recipeRepository.getFavorites(favoritesResult);
     }

@@ -34,12 +34,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Main entry point of the app after login. Displays a paginated feed of recipes and
- * tag-based filtering. Tapping the search field navigates to the dedicated
+ * Client-layer (Android) entry-point screen of the Home/Discover feature: the first screen
+ * shown after login, displaying a paginated feed of public recipes fetched from the server's
+ * browse and tag-filtered endpoints and rendered through {@code RecipePreviewResponse} DTOs
+ * shared with the server. Owns the screen's view wiring only; all feed/filter/favorite data
+ * state lives in {@link HomeViewModel}. Tapping the search field navigates to the dedicated
  * {@link com.cooksync.app.ui.recipe.search.SearchActivity} rather than filtering in place.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public class HomeActivity extends BaseActivity {
@@ -55,7 +58,15 @@ public class HomeActivity extends BaseActivity {
     private List<String> loadedTagNames = new ArrayList<>();
     private BottomNavigationView bottomNav;
     private RecyclerView.OnScrollListener feedScrollListener;
+    private View emptyStateView;
 
+    /**
+     * Inflates the Home layout, binds {@link HomeViewModel} via {@link ViewModelFactory}, wires
+     * up the feed/tag adapters and their observers, kicks off the initial tag-catalog load, and
+     * attaches the filter button's listener to launch {@link FilterSheetLauncher}.
+     *
+     * @param savedInstanceState unused; this screen restores no instance state of its own
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +88,12 @@ public class HomeActivity extends BaseActivity {
                         }));
     }
 
+    /**
+     * Refreshes the profile avatar and re-fetches both the recipe feed and the favorites set
+     * from scratch, so returning from another screen (e.g. after publishing a recipe or
+     * changing the avatar) always shows current data, then re-selects the Home tab in the
+     * bottom navigation.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -91,8 +108,11 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    private View emptyStateView;
-
+    /**
+     * Finds and wires every static view in {@code activity_home.xml}: the feed/no-results/empty
+     * states, the profile avatar, the search bar tap target, the "Add recipe" FAB, and the
+     * bottom navigation's inter-screen routing.
+     */
     private void initViews() {
         rvFeed = findViewById(R.id.rv_feed);
         noResultsState = findViewById(R.id.no_results_state);
@@ -137,6 +157,12 @@ public class HomeActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Constructs {@link #recipeAdapter} and {@link #tagAdapter}, wires their click listeners to
+     * {@link #viewModel} and to navigation, and attaches
+     * {@link com.cooksync.app.ui.common.PaginatingScrollListener} to {@link #rvFeed} so
+     * scrolling to the bottom triggers {@link HomeViewModel#loadNextPage()}.
+     */
     private void setupAdapters() {
         recipeAdapter = new RecipeCardAdapter();
         recipeAdapter.setOnRecipeClickListener(new RecipeCardAdapter.OnRecipeClickListener() {
@@ -176,6 +202,11 @@ public class HomeActivity extends BaseActivity {
         rvTags.setAdapter(tagAdapter);
     }
 
+    /**
+     * Subscribes to every {@link HomeViewModel} LiveData stream: the feed state (driving the
+     * skeleton, the recipe list, and the filter button/no-results state), the tag catalog, the
+     * favorites set, and one-off error events.
+     */
     private void setupObservers() {
         viewModel.getFeedState().observe(this, state -> {
             if (state instanceof FeedState.Loading loading) {
@@ -262,6 +293,15 @@ public class HomeActivity extends BaseActivity {
         summary.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Extends the base skeleton toggle to also hide/show the search bar, filter button, and tag
+     * row while the initial feed page is loading, since those controls act on data that isn't
+     * available yet.
+     *
+     * @param show {@code true} to show the skeleton (and hide {@code contentView}), {@code false}
+     *             to hide it and reveal {@code contentView}
+     * @param contentView the real content view the skeleton temporarily replaces
+     */
     @Override
     protected void showSkeleton(boolean show, View contentView) {
         super.showSkeleton(show, contentView);
@@ -317,6 +357,10 @@ public class HomeActivity extends BaseActivity {
         noResultsState.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Detaches {@link #feedScrollListener} from {@link #rvFeed} so the listener doesn't outlive
+     * this Activity.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

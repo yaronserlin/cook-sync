@@ -14,10 +14,10 @@ import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.util.GlideUtils;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Shared horizontal recipe row adapter for both "My Recipes" and "Favorites", which use
@@ -94,7 +94,7 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
 
         holder.title.setText(recipe.title());
         holder.subtitle.setText(context.getString(R.string.review_count_format, recipe.reviewCount()));
-        holder.rating.setText(recipe.averageRating() == null ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
+        holder.rating.setText(RecipeFilterUtils.formatRating(recipe.averageRating()));
 
         if (showVisibilityBadge) {
             boolean isPublic = "PUBLIC".equalsIgnoreCase(recipe.visibility());

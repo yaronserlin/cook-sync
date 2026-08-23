@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 import java.util.HashSet;
@@ -20,10 +21,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for the main recipe feed RecyclerView. Renders high-fidelity recipe cards.
+ * Client-layer (Android) {@code RecyclerView} adapter rendering the Home feed's recipe cards
+ * from {@link RecipePreviewResponse} DTOs shared with the server — the same preview shape used
+ * across the feed, search results, and recipe-row lists. Renders the app's high-fidelity card
+ * format (large image, title, author, blurb, difficulty/rating/time, and a favorite toggle),
+ * distinct from the compact row format {@code SearchResultAdapter}/{@code RecipeRowCardAdapter}
+ * use elsewhere.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, RecipeCardAdapter.ViewHolder> {
@@ -31,7 +37,9 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
     private final Set<String> favoriteIds = new HashSet<>();
     private OnRecipeClickListener listener;
 
+    /** Notified of row taps and favorite-icon taps on the bound recipe cards. */
     public interface OnRecipeClickListener {
+        /** @param recipeId the tapped card's recipe id */
         void onRecipeClick(String recipeId);
 
         /**
@@ -43,14 +51,22 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
         void onFavoriteClick(String recipeId, boolean wasFavorite);
     }
 
+    /** @param listener notified of row taps and favorite-icon taps */
     public void setOnRecipeClickListener(OnRecipeClickListener listener) {
         this.listener = listener;
     }
 
+    /** @param newRecipes the full replacement feed page/accumulated list to render */
     public void setRecipes(List<RecipePreviewResponse> newRecipes) {
         setItems(newRecipes);
     }
 
+    /**
+     * Replaces the set of recipe ids considered favorited, used to render each card's heart
+     * icon filled or outlined, then refreshes every bound row.
+     *
+     * @param favorites the user's current favorites, as returned by {@code GET /api/favorites}
+     */
     public void setFavorites(List<RecipePreviewResponse> favorites) {
         favoriteIds.clear();
         for (RecipePreviewResponse favorite : favorites) {
@@ -74,8 +90,8 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
         holder.author.setText(recipe.authorName());
         holder.blurb.setText(recipe.description());
         holder.difficulty.setText(recipe.difficulty());
-        holder.rating.setText(recipe.averageRating() == null ? "0.0" : String.format(java.util.Locale.US, "%.1f", recipe.averageRating()));
-        holder.time.setText(holder.itemView.getContext().getString(R.string.time_format, recipe.prepTimeMinutes() + recipe.cookTimeMinutes()));
+        holder.rating.setText(RecipeFilterUtils.formatRating(recipe.averageRating()));
+        holder.time.setText(holder.itemView.getContext().getString(R.string.time_format, RecipeFilterUtils.totalTimeMinutes(recipe)));
 
         Glide.with(holder.itemView.getContext())
                 .load(recipe.primaryImageUrl())

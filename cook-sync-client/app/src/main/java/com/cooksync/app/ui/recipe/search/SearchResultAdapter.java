@@ -13,10 +13,10 @@ import com.bumptech.glide.Glide;
 import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Adapter for the dedicated {@link SearchActivity}'s result list. Renders the compact row
@@ -57,10 +57,9 @@ public class SearchResultAdapter extends BaseAdapter<RecipePreviewResponse, Sear
         holder.title.setText(recipe.title());
         holder.subtitle.setText(holder.itemView.getContext()
                 .getString(R.string.search_result_subtitle_format, recipe.authorName(), recipe.reviewCount()));
-        holder.rating.setText(recipe.averageRating() == null
-                ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
+        holder.rating.setText(RecipeFilterUtils.formatRating(recipe.averageRating()));
         holder.time.setText(holder.itemView.getContext()
-                .getString(R.string.time_format, recipe.prepTimeMinutes() + recipe.cookTimeMinutes()));
+                .getString(R.string.time_format, RecipeFilterUtils.totalTimeMinutes(recipe)));
 
         GlideUtils.loadThumbnail(Glide.with(holder.itemView.getContext()), recipe.primaryImageUrl(), holder.image);
 

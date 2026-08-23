@@ -20,14 +20,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for a horizontal tag chip row. Used in two contexts: as an interactive multi-select
- * filter bar on {@link com.cooksync.app.ui.home.HomeActivity} (with a leading "All" option
- * that clears every selected tag), and as a read-only display of a single recipe's own tags
- * on {@link com.cooksync.app.ui.recipe.detail.RecipeDetailActivity} (no "All" option, since there is
- * nothing to filter there).
+ * Client-layer (Android) {@code RecyclerView} adapter for a horizontal tag chip row, rendering
+ * {@link TagResponse} DTOs fetched from the server's tag catalog endpoint. Used in two contexts:
+ * as an interactive multi-select filter bar on {@link com.cooksync.app.ui.home.HomeActivity}
+ * (with a leading "All" option that clears every selected tag), and as a read-only display of a
+ * single recipe's own tags on {@link com.cooksync.app.ui.recipe.detail.RecipeDetailActivity} (no
+ * "All" option, since there is nothing to filter there).
  *
  * @author Yaron Serlin
- * @version 1.2
+ * @version 1.3
  * @since 04/08/2026
  */
 public class TagChipAdapter extends BaseAdapter<TagResponse, TagChipAdapter.ViewHolder> {
@@ -36,7 +37,9 @@ public class TagChipAdapter extends BaseAdapter<TagResponse, TagChipAdapter.View
     private final Set<String> selectedTagNames = new HashSet<>();
     private OnTagClickListener listener;
 
+    /** Notified when a chip in the row is tapped. */
     public interface OnTagClickListener {
+        /** @param tagName the tapped chip's tag name, or {@code null} if the "All" chip was tapped */
         void onTagClick(String tagName);
     }
 
@@ -58,14 +61,23 @@ public class TagChipAdapter extends BaseAdapter<TagResponse, TagChipAdapter.View
         this.includeAllOption = includeAllOption;
     }
 
+    /** @param listener notified when a chip (including the synthetic "All" chip) is tapped */
     public void setOnTagClickListener(OnTagClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Replaces the tag set, prepending a synthetic "All" entry first when {@link #includeAllOption}
+     * is set. That entry is a {@link TagResponse} with every field {@code null} — a sentinel
+     * {@link #onBindViewHolder} recognizes via {@code tag.id() == null}, rather than a real tag —
+     * so it renders the localized "All" label and clears the selection when tapped.
+     *
+     * @param newTags the full tag catalog to display, excluding the "All" entry
+     */
     public void setTags(List<TagResponse> newTags) {
         List<TagResponse> combined = new ArrayList<>();
         if (includeAllOption) {
-            combined.add(new TagResponse(null, null, null, null)); // name is null, will be handled in onBindViewHolder
+            combined.add(new TagResponse(null, null, null, null));
         }
         combined.addAll(newTags);
         setItems(combined);
