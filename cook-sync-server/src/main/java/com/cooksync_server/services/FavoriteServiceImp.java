@@ -101,10 +101,9 @@ public class FavoriteServiceImp implements FavoriteService{
         Page<FavoriteRecipe> favoritesPage = favoriteRepository.findByUserId(user.getId(), PageRequest.of(page, size));
 
         return PagedResponseMapper.toPagedResponse(favoritesPage, fav -> {
-            boolean hasNote = personalInstructionNoteRepository.existsByUserIdAndRecipeId(user.getId(), fav.getRecipe().getId());
             Optional<PersonalInstructionNote> note = personalInstructionNoteRepository
                     .findByUserIdAndRecipeIdAndInstructionIdIsNull(user.getId(), fav.getRecipe().getId());
-            return RecipeMapper.toPreview(fav.getRecipe(), hasNote, note.map(PersonalInstructionNote::getNote).orElse(null));
+            return RecipeMapper.toPreview(fav.getRecipe(), note.isPresent(), note.map(PersonalInstructionNote::getNote).orElse(null));
         });
     }
 

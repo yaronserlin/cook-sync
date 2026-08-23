@@ -1,7 +1,10 @@
 package com.cooksync_server.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.cooksync_server.entities.FavoriteRecipe;
+import com.cooksync_server.entities.PersonalInstructionNote;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
@@ -109,7 +113,6 @@ class FavoriteServiceTest {
         Page<FavoriteRecipe> page = new PageImpl<>(List.of(favorite), PageRequest.of(0, 10), 1);
         when(favoriteRepository.findByUserId(org.mockito.ArgumentMatchers.eq("user-1"), org.mockito.ArgumentMatchers.any(Pageable.class)))
                 .thenReturn(page);
-        when(personalInstructionNoteRepository.existsByUserIdAndRecipeId("user-1", "recipe-1")).thenReturn(false);
         when(personalInstructionNoteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull("user-1", "recipe-1"))
                 .thenReturn(java.util.Optional.empty());
 
@@ -117,5 +120,78 @@ class FavoriteServiceTest {
 
         assertEquals(1, response.content().size());
         assertEquals("Beef Wellington", response.content().get(0).title());
+        assertFalse(response.content().get(0).hasPersonalNote());
+        assertNull(response.content().get(0).personalNoteText());
+    }
+
+    @Test
+    void getUserFavorites_ShouldReportNoNote_WhenOnlyAPerStepNoteExists() {
+        // A per-step note (instructionId set) must not surface as a general "hasPersonalNote"
+        // flag: findByUserIdAndRecipeIdAndInstructionIdIsNull only matches the recipe-wide note,
+        // and hasPersonalNote/personalNoteText must stay consistent with each other.
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(java.util.Optional.of(sampleUser));
+        FavoriteRecipe favorite = FavoriteRecipe.builder().user(sampleUser).recipe(sampleRecipe).build();
+        Page<FavoriteRecipe> page = new PageImpl<>(List.of(favorite), PageRequest.of(0, 10), 1);
+        when(favoriteRepository.findByUserId(org.mockito.ArgumentMatchers.eq("user-1"), org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(page);
+        when(personalInstructionNoteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull("user-1", "recipe-1"))
+                .thenReturn(java.util.Optional.empty());
+
+        PagedResponse<RecipePreviewResponse> response = favoriteService.getUserFavorites("gordon@cooksync.com", 0, 10);
+
+        assertFalse(response.content().get(0).hasPersonalNote());
+        assertNull(response.content().get(0).personalNoteText());
+    }
+
+    @Test
+    void getUserFavorites_ShouldReportNote_WhenGeneralNoteExists() {
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(java.util.Optional.of(sampleUser));
+        FavoriteRecipe favorite = FavoriteRecipe.builder().user(sampleUser).recipe(sampleRecipe).build();
+        Page<FavoriteRecipe> page = new PageImpl<>(List.of(favorite), PageRequest.of(0, 10), 1);
+        when(favoriteRepository.findByUserId(org.mockito.ArgumentMatchers.eq("user-1"), org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(page);
+        PersonalInstructionNote generalNote = PersonalInstructionNote.builder().note("Use less salt").build();
+        when(personalInstructionNoteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull("user-1", "recipe-1"))
+                .thenReturn(java.util.Optional.of(generalNote));
+
+        PagedResponse<RecipePreviewResponse> response = favoriteService.getUserFavorites("gordon@cooksync.com", 0, 10);
+
+        assertTrue(response.content().get(0).hasPersonalNote());
+        assertEquals("Use less salt", response.content().get(0).personalNoteText());
+    }
+
+    @Test
+    void getPublicFavoritesByUser_ShouldReturnFavorites_WhenUserOptedIntoPublicVisibility() {
+        User publicUser = User.builder().id("user-2").email("julia@cooksync.com").showFavoritesPublicly(true).build();
+        when(userRepository.findById("user-2")).thenReturn(java.util.Optional.of(publicUser));
+        FavoriteRecipe favorite = FavoriteRecipe.builder().user(publicUser).recipe(sampleRecipe).build();
+        Page<FavoriteRecipe> page = new PageImpl<>(List.of(favorite), PageRequest.of(0, 10), 1);
+        when(favoriteRepository.findByUserId(org.mockito.ArgumentMatchers.eq("user-2"), org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(page);
+
+        PagedResponse<RecipePreviewResponse> response = favoriteService.getPublicFavoritesByUser("user-2", 0, 10);
+
+        assertEquals(1, response.content().size());
+        assertEquals("Beef Wellington", response.content().get(0).title());
+        assertFalse(response.content().get(0).hasPersonalNote());
+    }
+
+    @Test
+    void getPublicFavoritesByUser_ShouldReturnEmptyPage_WhenUserOptedOutOfPublicVisibility() {
+        User privateUser = User.builder().id("user-3").email("marco@cooksync.com").showFavoritesPublicly(false).build();
+        when(userRepository.findById("user-3")).thenReturn(java.util.Optional.of(privateUser));
+
+        PagedResponse<RecipePreviewResponse> response = favoriteService.getPublicFavoritesByUser("user-3", 0, 10);
+
+        assertEquals(0, response.content().size());
+        verify(favoriteRepository, never()).findByUserId(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void getPublicFavoritesByUser_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        when(userRepository.findById("missing-id")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> favoriteService.getPublicFavoritesByUser("missing-id", 0, 10));
     }
 }

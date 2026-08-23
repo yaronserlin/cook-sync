@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Spring Data JPA Repository interface for FavoriteRecipe entity management.
@@ -27,15 +26,6 @@ public interface FavoriteRecipeRepository extends JpaRepository<FavoriteRecipe, 
      * @return page of favorite recipe entities
      */
     org.springframework.data.domain.Page<FavoriteRecipe> findByUserId(String userId, org.springframework.data.domain.Pageable pageable);
-
-    /**
-     * Finds a favorite recipe relation by user ID and recipe ID.
-     *
-     * @param userId unique user identifier
-     * @param recipeId unique recipe identifier
-     * @return optional containing favorite recipe if bookmarked
-     */
-    Optional<FavoriteRecipe> findByUserIdAndRecipeId(String userId, String recipeId);
 
     /**
      * Checks if a user has bookmarked a specific recipe.
