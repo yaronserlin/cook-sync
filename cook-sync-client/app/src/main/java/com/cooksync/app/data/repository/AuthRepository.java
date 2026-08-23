@@ -17,6 +17,7 @@ import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -155,7 +156,7 @@ public interface AuthRepository {
      * @param userId       target user ID
      * @param resultTarget live data target the result will be posted to
      */
-    void getUserProfile(String userId, MutableLiveData<ApiResult<UserResponse>> resultTarget);
+    void getUserProfile(String userId, MutableLiveData<ApiResult<PublicUserProfileResponse>> resultTarget);
 
     /**
      * Requests a password-reset email for the given account, if one exists. Always succeeds from

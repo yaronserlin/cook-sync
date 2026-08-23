@@ -18,6 +18,7 @@ import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -60,18 +61,19 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     /**
-     * Fetches a specific user's public profile by user ID.
+     * Fetches a specific user's public profile by user ID, deliberately excluding fields
+     * (email, admin status, account status) not appropriate to disclose to another user.
      *
      * @param userId target user's unique identifier
-     * @return the matching user's profile
+     * @return the matching user's public profile
      * @throws ResourceNotFoundException if no user matches {@code userId}
      */
     @Transactional(readOnly = true)
     @Override
-    public UserResponse getUserProfileById(String userId) {
+    public PublicUserProfileResponse getUserProfileById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
-        return UserMapper.toResponse(user);
+        return UserMapper.toPublicProfileResponse(user);
     }
 
     /**

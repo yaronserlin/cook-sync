@@ -24,6 +24,7 @@ import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
 import java.io.IOException;
@@ -214,7 +215,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      * {@inheritDoc}
      */
     @Override
-    public void getUserProfile(String userId, MutableLiveData<ApiResult<UserResponse>> resultTarget) {
+    public void getUserProfile(String userId, MutableLiveData<ApiResult<PublicUserProfileResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getUserProfile(userId))));
     }

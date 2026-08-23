@@ -8,18 +8,20 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.dtos.response.recipe.RecipePreviewResponse;
-import com.dtos.response.user.UserResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 
 import java.util.List;
 
 /**
- * ViewModel for {@link UserProfileActivity}. Fetches another user's public profile (avatar,
- * name, city, bio) by ID, then conditionally loads their public recipes/favorites once the
+ * Client-layer (Android) ViewModel backing {@link UserProfileActivity}. Fetches another user's
+ * public profile (avatar, name, city, bio) by ID from the server's {@code UserController} via
+ * {@link AuthRepository#getUserProfile}, returning a {@code PublicUserProfileResponse} DTO, then
+ * conditionally loads their public recipes/favorites via {@link RecipeRepository} once the
  * profile itself confirms which of the two privacy toggles are enabled — never firing a network
  * call for a section that will render as hidden anyway.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 12/08/2026
  */
 public class UserProfileViewModel extends BaseViewModel {
@@ -27,7 +29,7 @@ public class UserProfileViewModel extends BaseViewModel {
     private final AuthRepository authRepository;
     private final RecipeRepository recipeRepository;
 
-    private final MutableLiveData<ApiResult<UserResponse>> profileResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<PublicUserProfileResponse>> profileResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> recipesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
 
@@ -51,8 +53,8 @@ public class UserProfileViewModel extends BaseViewModel {
      */
     public void loadProfile(String userId) {
         observeOnce(profileResult, result -> {
-            if (result instanceof ApiResult.Success<UserResponse> success) {
-                UserResponse user = success.getData();
+            if (result instanceof ApiResult.Success<PublicUserProfileResponse> success) {
+                PublicUserProfileResponse user = success.getData();
                 if (user.showRecipesPublicly()) {
                     recipeRepository.getPublicRecipesForUser(userId, recipesResult);
                 }
@@ -65,7 +67,7 @@ public class UserProfileViewModel extends BaseViewModel {
     }
 
     /** @return observable public-profile fetch result (Loading → Success/Error) */
-    public LiveData<ApiResult<UserResponse>> getProfileResult() { return profileResult; }
+    public LiveData<ApiResult<PublicUserProfileResponse>> getProfileResult() { return profileResult; }
     /** @return observable public-recipes fetch result, only ever fired if the profile allows it */
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }
     /** @return observable public-favorites fetch result, only ever fired if the profile allows it */

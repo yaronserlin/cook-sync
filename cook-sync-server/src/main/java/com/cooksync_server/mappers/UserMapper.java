@@ -1,6 +1,7 @@
 package com.cooksync_server.mappers;
 
 import com.cooksync_server.entities.User;
+import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -39,6 +40,30 @@ public final class UserMapper {
                 updated,
                 user.isEnabled(),
                 user.getStatus().name(),
+                user.getCity(),
+                user.getBio(),
+                user.isShowRecipesPublicly(),
+                user.isShowFavoritesPublicly()
+        );
+    }
+
+    /**
+     * Converts a {@link User} entity into its {@link PublicUserProfileResponse} DTO
+     * representation, excluding fields ({@code email}, {@code isAdmin}, {@code enabled},
+     * {@code status}) that are not appropriate to disclose to another user.
+     *
+     * @param user source User entity, may be {@code null}
+     * @return the populated PublicUserProfileResponse, or {@code null} if {@code user} is {@code null}
+     */
+    public static PublicUserProfileResponse toPublicProfileResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new PublicUserProfileResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getAvatarUrl(),
                 user.getCity(),
                 user.getBio(),
                 user.isShowRecipesPublicly(),

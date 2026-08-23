@@ -18,16 +18,19 @@ import com.cooksync.app.ui.common.AvatarView;
 import com.cooksync.app.ui.recipe.common.RecipeRowCardAdapter;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
-import com.dtos.response.user.UserResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 
 import java.util.List;
 
 /**
- * Full-screen page displaying another user's public profile: avatar, name, city, bio, and — when
- * the viewed user's privacy preferences allow it — a "Recipes" section (their published recipes)
- * and a "Favorites" section (the recipes they've favorited), each row clickable through to
- * {@link RecipeDetailActivity}. Replaces the earlier {@code UserProfileDialogFragment} popup,
- * which had no room for these list sections.
+ * Client-layer (Android) full-screen page displaying another user's public profile: avatar,
+ * name, city, bio, and — when the viewed user's privacy preferences allow it — a "Recipes"
+ * section (their published recipes) and a "Favorites" section (the recipes they've favorited),
+ * each row clickable through to {@link RecipeDetailActivity}. Backed by the server's
+ * {@code UserController} endpoints via {@link UserProfileViewModel}, and renders
+ * {@code PublicUserProfileResponse}/{@code RecipePreviewResponse} DTOs shared with the server.
+ * Replaces the earlier {@code UserProfileDialogFragment} popup, which had no room for these list
+ * sections.
  *
  * <p>Both sections are gated purely by what {@link UserProfileViewModel#loadProfile} reports for
  * this specific user ({@code showRecipesPublicly}/{@code showFavoritesPublicly}); the server
@@ -35,7 +38,7 @@ import java.util.List;
  * stale cached name.</p>
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 12/08/2026
  */
 public class UserProfileActivity extends BaseActivity {
@@ -173,7 +176,7 @@ public class UserProfileActivity extends BaseActivity {
         viewModel.getProfileResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
                 progressBar.setVisibility(View.VISIBLE);
-            } else if (result instanceof ApiResult.Success<UserResponse> success) {
+            } else if (result instanceof ApiResult.Success<PublicUserProfileResponse> success) {
                 progressBar.setVisibility(View.GONE);
                 renderUser(success.getData());
             } else if (result instanceof ApiResult.Error<?> error) {
@@ -189,7 +192,7 @@ public class UserProfileActivity extends BaseActivity {
      *
      * @param user the fetched public profile to render
      */
-    private void renderUser(UserResponse user) {
+    private void renderUser(PublicUserProfileResponse user) {
         String fullName = (user.firstName() + " " + user.lastName()).trim();
         if (fullName.isEmpty()) fullName = getString(R.string.anonymous);
 

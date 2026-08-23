@@ -125,4 +125,39 @@ class RecipeServiceTest {
         assertEquals(1, response.totalElements());
         assertEquals(1, response.totalPages());
     }
+
+    @Test
+    void getPublicRecipesByUser_ShouldReturnRecipes_WhenUserOptedIntoPublicVisibility() {
+        sampleUser.setShowRecipesPublicly(true);
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+        Page<Recipe> recipePage = new PageImpl<>(List.of(sampleRecipe), PageRequest.of(0, 10), 1);
+        when(recipeRepository.findByCreatedByIdAndVisibility("user-1", Recipe.Visibility.PUBLIC, PageRequest.of(0, 10)))
+                .thenReturn(recipePage);
+
+        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser("user-1", 0, 10);
+
+        assertNotNull(response);
+        assertEquals(1, response.content().size());
+        assertEquals("Classic Beef Wellington", response.content().get(0).title());
+    }
+
+    @Test
+    void getPublicRecipesByUser_ShouldReturnEmptyPage_WhenUserOptedOutOfPublicVisibility() {
+        sampleUser.setShowRecipesPublicly(false);
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+
+        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser("user-1", 0, 10);
+
+        assertNotNull(response);
+        assertTrue(response.content().isEmpty());
+        verify(recipeRepository, never()).findByCreatedByIdAndVisibility(
+                any(String.class), any(Recipe.Visibility.class), any(Pageable.class));
+    }
+
+    @Test
+    void getPublicRecipesByUser_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> recipeService.getPublicRecipesByUser("missing", 0, 10));
+    }
 }

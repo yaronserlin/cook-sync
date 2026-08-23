@@ -5,6 +5,7 @@ import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -29,13 +30,14 @@ public interface UserProfileService {
     UserResponse getCurrentUserProfile(String userEmail);
 
     /**
-     * Fetches a specific user's public profile by user ID.
+     * Fetches a specific user's public profile by user ID, deliberately excluding fields
+     * (email, admin status, account status) not appropriate to disclose to another user.
      *
      * @param userId target user's unique identifier
-     * @return the matching user's profile
+     * @return the matching user's public profile
      * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userId}
      */
-    UserResponse getUserProfileById(String userId);
+    PublicUserProfileResponse getUserProfileById(String userId);
 
     /**
      * Updates the user's avatar picture URL.

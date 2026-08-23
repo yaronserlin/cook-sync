@@ -13,16 +13,21 @@ import com.cooksync_server.services.UserProfileService;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
-import com.dtos.response.user.UserResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * REST Controller providing public user profile retrieval operations.
+ * Server-layer REST controller providing public user profile retrieval operations: another
+ * user's public profile summary and their public recipes/favorites, both gated by that user's
+ * own privacy preferences. Consumed on the Android client by {@code UserProfileActivity} via
+ * {@code UserProfileViewModel}. Returns {@code PublicUserProfileResponse} — a narrower DTO than
+ * {@code UserResponse} — since these endpoints are reachable by any authenticated user, not just
+ * the profile's owner.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 10/08/2026
  */
 @Slf4j
@@ -36,15 +41,16 @@ public class UserController {
     private final FavoriteService favoriteService;
 
     /**
-     * Fetches public user profile information by user ID.
+     * Fetches public user profile information by user ID, deliberately excluding fields
+     * (email, admin status, account status) not appropriate to disclose to another user.
      *
      * @param id target user ID
-     * @return response entity containing UserResponse DTO
+     * @return response entity containing a PublicUserProfileResponse DTO
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUserProfile(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PublicUserProfileResponse>> getUserProfile(@PathVariable String id) {
         log.debug("Fetching public profile for user ID: {}", id);
-        UserResponse response = userProfileService.getUserProfileById(id);
+        PublicUserProfileResponse response = userProfileService.getUserProfileById(id);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User profile retrieved successfully"));
     }
 

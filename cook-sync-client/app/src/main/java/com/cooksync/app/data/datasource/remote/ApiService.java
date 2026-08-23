@@ -34,6 +34,7 @@ import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
 import com.dtos.response.unit.UnitResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
 import java.util.List;
@@ -135,7 +136,7 @@ public interface ApiService {
      * @return call yielding the user's public profile
      */
     @GET("api/users/{id}")
-    Call<ApiResponse<UserResponse>> getUserProfile(@Path("id") String id);
+    Call<ApiResponse<PublicUserProfileResponse>> getUserProfile(@Path("id") String id);
 
     /**
      * Fetches a page of a user's publicly visible recipes, for their public profile page. Empty
