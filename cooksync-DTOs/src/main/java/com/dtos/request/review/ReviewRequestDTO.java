@@ -1,3 +1,8 @@
+/**
+ * Shared DTO-layer component of the Reviews feature. Defines the request payload the Android
+ * client's {@code RecipeRepository.submitReview} sends and {@code ReviewController.addReview}
+ * validates and consumes on the server.
+ */
 package com.dtos.request.review;
 
 import jakarta.validation.constraints.DecimalMax;

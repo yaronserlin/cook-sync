@@ -1,4 +1,10 @@
+/**
+ * Client-layer (Android) component of the Reviews feature. Backs {@link ReviewActivity}: applies
+ * client-side rating/title validation, then delegates the actual submission to
+ * {@code RecipeRepository}, which calls the server's {@code ReviewController.addReview} endpoint.
+ */
 package com.cooksync.app.ui.recipe.review;
+
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
@@ -61,8 +67,17 @@ public class ReviewViewModel extends BaseViewModel {
         repository.submitReview(recipeId, rating, title, comment.isEmpty() ? null : comment, submitResult);
     }
 
-    /** @return observable submit result (Loading → Success/Error) */
-    public LiveData<ApiResult<Void>> getSubmitResult() { return submitResult; }
-    /** @return one-shot client-side validation errors, to surface as a Toast */
-    public LiveData<Event<String>> getValidationError() { return validationError; }
+    /**
+     * @return observable submit result (Loading → Success/Error)
+     */
+    public LiveData<ApiResult<Void>> getSubmitResult() {
+        return submitResult;
+    }
+
+    /**
+     * @return one-shot client-side validation errors, to surface as a Toast
+     */
+    public LiveData<Event<String>> getValidationError() {
+        return validationError;
+    }
 }

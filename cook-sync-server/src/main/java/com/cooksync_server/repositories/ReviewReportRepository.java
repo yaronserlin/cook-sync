@@ -1,3 +1,9 @@
+/**
+ * Server-side persistence-layer component of the Reviews feature. Defines the Spring Data JPA
+ * query surface over {@code ReviewReport} entities, used by {@code ReviewServiceImp} to persist
+ * individual moderation reports and by the recipe/review/account-deletion cleanup paths to
+ * bulk-remove reports whose parent review, recipe, or reporter is being deleted.
+ */
 package com.cooksync_server.repositories;
 
 import java.util.List;
@@ -71,6 +77,13 @@ public interface ReviewReportRepository extends JpaRepository<ReviewReport, Stri
     @Query("DELETE FROM ReviewReport r WHERE r.reporter.id = :reporterId")
     void deleteByReporterId(@Param("reporterId") String reporterId);
 
+    /**
+     * Bulk-deletes every report filed against any review belonging to a given recipe, in a
+     * single statement. Called ahead of deleting the recipe itself, which cascades to delete its
+     * reviews and would otherwise leave orphaned report rows behind.
+     *
+     * @param recipeId target recipe unique identifier
+     */
     @Modifying
     @Query("DELETE FROM ReviewReport r WHERE r.review.recipe.id = :recipeId")
     void deleteByRecipeId(@Param("recipeId") String recipeId);

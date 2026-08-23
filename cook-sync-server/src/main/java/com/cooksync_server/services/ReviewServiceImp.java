@@ -1,6 +1,13 @@
+/**
+ * Server-side business-layer component of the Reviews feature. Implements review creation,
+ * deletion, moderation reporting, and average-rating recomputation, orchestrating
+ * {@code ReviewRepository}, {@code ReviewReportRepository}, {@code RecipeRepository}, and
+ * {@code UserRepository} on behalf of {@code ReviewController}.
+ */
 package com.cooksync_server.services;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -29,7 +36,7 @@ import lombok.RequiredArgsConstructor;
  * Service class managing user reviews, rating recomputations, and moderation report submissions.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 02/08/2026
  */
 @Service
@@ -168,16 +175,18 @@ public class ReviewServiceImp implements ReviewService{
         reviewRepository.save(review);
     }
 
+    /**
+     * Recomputes and applies a recipe's denormalized average rating from its full review set
+     * (including reviews currently hidden by the account-deletion grace-period flow — see
+     * {@link ReviewMapper#averageRating} for the visible-only variant used by the recipe-detail
+     * response).
+     *
+     * @param recipe the recipe whose {@code averageRating} is recomputed and set in place
+     */
     private void recomputeAverageRating(Recipe recipe) {
         Set<Review> reviews = recipe.getReviews();
-        if (reviews == null || reviews.isEmpty()) {
-            recipe.setAverageRating(null);
-            return;
-        }
-        double average = reviews.stream()
-                .mapToDouble(r -> r.getRating().doubleValue())
-                .average()
-                .orElse(0.0);
-        recipe.setAverageRating(average);
+        List<BigDecimal> ratings = reviews == null ? List.of()
+                : reviews.stream().map(Review::getRating).toList();
+        recipe.setAverageRating(ReviewMapper.averageRating(ratings));
     }
 }

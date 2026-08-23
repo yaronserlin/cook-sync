@@ -1,3 +1,9 @@
+/**
+ * Client-layer (Android) component of the Reviews feature. RecyclerView adapter rendering
+ * {@code ReviewResponse} DTOs (as returned by the server's {@code ReviewController} and embedded
+ * by {@code RecipeMapper}) within Recipe Detail's reviews list; its overflow menu drives
+ * {@code RecipeDetailViewModel.deleteReview}/{@code reportReview}.
+ */
 package com.cooksync.app.ui.recipe.detail;
 
 import android.view.LayoutInflater;
@@ -13,17 +19,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.ui.common.AvatarView;
+import com.cooksync.app.util.DateFormatUtils;
 import com.dtos.response.review.ReviewResponse;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
  * Adapter for the recipe reviews list.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 04/08/2026
  */
 public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.ViewHolder> {
@@ -63,6 +68,11 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
     private OnAvatarClickListener avatarClickListener;
     private OnAuthorClickListener authorClickListener;
 
+    /**
+     * Replaces the adapter's backing list with a new set of reviews to display.
+     *
+     * @param newReviews the reviews to display, in display order
+     */
     public void setReviews(List<ReviewResponse> newReviews) {
         setItems(newReviews);
     }
@@ -77,18 +87,34 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         this.currentUserId = currentUserId;
     }
 
+    /**
+     * @param listener callback notified when the viewer deletes or reports a review
+     */
     public void setOnReviewActionListener(OnReviewActionListener listener) {
         this.actionListener = listener;
     }
 
+    /**
+     * @param listener callback notified when the viewer taps a review author's avatar
+     */
     public void setOnAvatarClickListener(OnAvatarClickListener listener) {
         this.avatarClickListener = listener;
     }
 
+    /**
+     * @param listener callback notified when the viewer taps a review author's name or avatar
+     */
     public void setOnAuthorClickListener(OnAuthorClickListener listener) {
         this.authorClickListener = listener;
     }
 
+    /**
+     * Inflates the review row layout and wraps it in a new {@link ViewHolder}.
+     *
+     * @param parent the RecyclerView the row is being attached to
+     * @param viewType the view type, unused (this adapter has a single row layout)
+     * @return a new, unbound {@link ViewHolder}
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -96,6 +122,13 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds one review's author, rating, title, comment, and relative date onto the row, and
+     * wires the overflow menu with the correct Delete/Report action for the signed-in viewer.
+     *
+     * @param holder the row's view holder
+     * @param position the review's position in the adapter's backing list
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ReviewResponse review = getItem(position);
@@ -114,12 +147,20 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         holder.rating.setText(review.rating() != null ? review.rating().toString() : "0.0");
         holder.title.setText(review.title());
         holder.content.setText(review.comment());
-        holder.date.setText(formatRelativeDate(review.createdAt()));
+        holder.date.setText(DateFormatUtils.formatRelativeDay(review.createdAt()));
 
         boolean isAuthor = currentUserId != null && currentUserId.equals(review.userId());
         holder.overflow.setOnClickListener(v -> showOverflowMenu(v, review, isAuthor));
     }
 
+    /**
+     * Shows the row's overflow popup with a single action — "Delete" if the viewer authored the
+     * review, "Report" otherwise — and forwards the choice to {@link #actionListener}.
+     *
+     * @param anchor the overflow button the popup is anchored to
+     * @param review the review the popup's action applies to
+     * @param isAuthor {@code true} if the signed-in viewer authored {@code review}
+     */
     private void showOverflowMenu(View anchor, ReviewResponse review, boolean isAuthor) {
         PopupMenu popup = new PopupMenu(anchor.getContext(), anchor);
         popup.getMenu().add(0, 1, 0, isAuthor ? anchor.getContext().getString(R.string.action_delete) : anchor.getContext().getString(R.string.action_report));
@@ -138,33 +179,8 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
     }
 
     /**
-     * Formats an ISO-8601 timestamp into a short relative label ("Today", "3 days ago",
-     * "2 months ago", ...), matching the design's "{{ v.when }}" review timestamp.
-     *
-     * @param isoTimestamp the review's {@code createdAt} value
-     * @return a human-readable relative-time label, or "" if unparseable
+     * View holder caching the review row's child view references.
      */
-    private String formatRelativeDate(String isoTimestamp) {
-        LocalDate date = com.cooksync.app.util.DateFormatUtils.parseIsoDate(isoTimestamp);
-        if (date == null) {
-            return "";
-        }
-        long days = ChronoUnit.DAYS.between(date, LocalDate.now());
-        if (days <= 0) {
-            return "Today";
-        } else if (days == 1) {
-            return "1 day ago";
-        } else if (days < 30) {
-            return days + " days ago";
-        } else if (days < 365) {
-            long months = days / 30;
-            return months + (months == 1 ? " month ago" : " months ago");
-        } else {
-            long years = days / 365;
-            return years + (years == 1 ? " year ago" : " years ago");
-        }
-    }
-
     static class ViewHolder extends RecyclerView.ViewHolder {
         AvatarView avatar;
         TextView authorName;
@@ -174,6 +190,11 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         TextView content;
         ImageButton overflow;
 
+        /**
+         * Resolves every child view reference from the inflated review row.
+         *
+         * @param view the inflated {@code item_review} row root view
+         */
         ViewHolder(View view) {
             super(view);
             avatar = view.findViewById(R.id.review_author_avatar);

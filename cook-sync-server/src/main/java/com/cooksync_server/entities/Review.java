@@ -1,3 +1,9 @@
+/**
+ * Server-side persistence-layer component of the Reviews feature. Defines the JPA entity at the
+ * root of the review lifecycle: written by {@code ReviewServiceImp}, queried through
+ * {@code ReviewRepository}, translated to the client-facing {@code ReviewResponse} DTO by
+ * {@code ReviewMapper}, and ultimately rendered by the Android client's {@code ReviewAdapter}.
+ */
 package com.cooksync_server.entities;
 
 import java.math.BigDecimal;

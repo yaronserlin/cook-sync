@@ -1,4 +1,11 @@
+/**
+ * Client-layer (Android) component of the Reviews feature. Hosts the rating/review submission
+ * screen, reached from Cooking Mode's completion flow and from Recipe Detail's "Write a review"
+ * button, and submits through {@link ReviewViewModel} and {@code RecipeRepository} to the
+ * server's {@code ReviewController.addReview} endpoint.
+ */
 package com.cooksync.app.ui.recipe.review;
+
 import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
@@ -40,6 +47,12 @@ public class ReviewActivity extends BaseActivity {
 
     private int selectedRating = 0;
 
+    /**
+     * Reads the target recipe ID from the launching intent, finishing immediately if it is
+     * missing, then wires up the view model and view state.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +70,10 @@ public class ReviewActivity extends BaseActivity {
         setupObservers();
     }
 
+    /**
+     * Resolves every view reference, wires the five star buttons and the close/submit buttons,
+     * and initializes the rating display to its zero-star state.
+     */
     private void initViews() {
         tvRatingLabel = findViewById(R.id.tv_rating_label);
         etTitle = findViewById(R.id.et_review_title);
@@ -88,6 +105,11 @@ public class ReviewActivity extends BaseActivity {
         updateRating(0);
     }
 
+    /**
+     * Subscribes to the view model's submit result (toggling the loading state, closing the
+     * screen on success, or surfacing a server error) and to its one-shot client-side
+     * validation errors.
+     */
     private void setupObservers() {
         viewModel.getSubmitResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {

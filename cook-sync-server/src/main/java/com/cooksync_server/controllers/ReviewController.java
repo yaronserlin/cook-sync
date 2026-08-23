@@ -1,3 +1,9 @@
+/**
+ * Server-side API-layer component of the Reviews feature. Exposes the REST endpoints the Android
+ * client's {@code RecipeRepository} calls (via {@code ApiService}) to list, submit, delete, and
+ * report recipe reviews, delegating all business logic to {@code ReviewService} and relying on
+ * {@code GlobalExceptionHandler} to translate its thrown exceptions into HTTP error responses.
+ */
 package com.cooksync_server.controllers;
 
 import org.springframework.http.HttpStatus;
@@ -12,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.services.ReviewService;
 import com.dtos.request.review.ReportReviewRequestDTO;
 import com.dtos.request.review.ReviewRequestDTO;
@@ -47,6 +54,7 @@ public class ReviewController {
      * @param page page number
      * @param size page size
      * @return response entity containing paged ReviewResponse DTOs
+     * @throws ResourceNotFoundException if no recipe with the given ID exists
      */
     @GetMapping("/recipes/{recipeId}/reviews")
     public ResponseEntity<ApiResponse<PagedResponse<ReviewResponse>>> getReviewsForRecipe(
@@ -64,11 +72,12 @@ public class ReviewController {
      * @param request review creation request DTO
      * @param authentication active user authentication token
      * @return response entity acknowledging review addition
+     * @throws ResourceNotFoundException if the user or recipe cannot be found
      */
     @PostMapping("/recipes/{recipeId}/reviews")
     public ResponseEntity<ApiResponse<Void>> addReview(
-            @PathVariable String recipeId, 
-            @Valid @RequestBody ReviewRequestDTO request, 
+            @PathVariable String recipeId,
+            @Valid @RequestBody ReviewRequestDTO request,
             Authentication authentication) {
         String userEmail = authentication.getName();
         reviewService.addReview(recipeId, request, userEmail);
@@ -82,6 +91,8 @@ public class ReviewController {
      * @param reviewId target review ID
      * @param authentication active user authentication token
      * @return response entity acknowledging review deletion
+     * @throws ResourceNotFoundException if the review or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the review's author nor an administrator
      */
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<ApiResponse<Void>> deleteReview(

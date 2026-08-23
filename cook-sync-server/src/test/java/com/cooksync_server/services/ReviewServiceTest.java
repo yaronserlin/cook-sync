@@ -1,3 +1,9 @@
+/**
+ * Server-side test-layer component of the Reviews feature. Unit-tests {@code ReviewServiceImp}
+ * in isolation from {@code ReviewRepository}, {@code RecipeRepository}, {@code UserRepository},
+ * and {@code ReviewReportRepository} via Mockito, verifying review creation, average-rating
+ * recomputation, deletion authorization, and moderation-report submission.
+ */
 package com.cooksync_server.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,6 +61,10 @@ class ReviewServiceTest {
     private User otherUser;
     private Recipe sampleRecipe;
 
+    /**
+     * Builds a review author, an unrelated second user, and an empty sample recipe shared as a
+     * fixture across every test in this suite.
+     */
     @BeforeEach
     void setUp() {
         author = User.builder().id("user-1").email("gordon@cooksync.com").build();
@@ -63,6 +73,10 @@ class ReviewServiceTest {
                 .reviewCount(0).reviews(new HashSet<>()).build();
     }
 
+    /**
+     * Verifies that listing reviews for a recipe ID with no matching recipe fails fast with
+     * {@link ResourceNotFoundException} rather than returning an empty page.
+     */
     @Test
     void getReviewsForRecipe_ShouldThrowResourceNotFoundException_WhenRecipeMissing() {
         when(recipeRepository.existsById("missing")).thenReturn(false);
@@ -70,6 +84,10 @@ class ReviewServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> reviewService.getReviewsForRecipe("missing", 0, 10));
     }
 
+    /**
+     * Verifies that submitting a review persists the entity and recomputes the recipe's review
+     * count and average rating in the same call.
+     */
     @Test
     void addReview_ShouldPersistReviewAndRecomputeAverageRating() {
         ReviewRequestDTO request = new ReviewRequestDTO(4.0, "Fantastic", "Loved it");
@@ -84,6 +102,10 @@ class ReviewServiceTest {
         verify(recipeRepository).save(sampleRecipe);
     }
 
+    /**
+     * Verifies that deleting a review authored by someone else is rejected with
+     * {@link UnauthorizedActionException}.
+     */
     @Test
     void deleteReview_ShouldThrowUnauthorizedActionException_WhenUserIsNotAuthorOrAdmin() {
         Review review = Review.builder().id("review-1").user(author).recipe(sampleRecipe)
@@ -95,6 +117,10 @@ class ReviewServiceTest {
                 () -> reviewService.deleteReview("review-1", "other@cooksync.com"));
     }
 
+    /**
+     * Verifies that the review's own author can delete it, that any moderation reports against it
+     * are cleared first, and that the recipe's review count drops accordingly.
+     */
     @Test
     void deleteReview_ShouldRemoveReviewAndClearReports_WhenUserIsAuthor() {
         Review review = Review.builder().id("review-1").user(author).recipe(sampleRecipe)
@@ -111,6 +137,10 @@ class ReviewServiceTest {
         assertEquals(0, sampleRecipe.getReviewCount());
     }
 
+    /**
+     * Verifies that reporting a review persists a {@code ReviewReport} record and flags the
+     * review's own {@code reported}/{@code reportReason} fields to match.
+     */
     @Test
     void reportReview_ShouldPersistReportAndFlagReview() {
         Review review = Review.builder().id("review-1").user(author).recipe(sampleRecipe)

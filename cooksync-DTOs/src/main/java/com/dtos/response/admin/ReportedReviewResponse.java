@@ -1,3 +1,9 @@
+/**
+ * Shared DTO-layer component of the Reviews feature's admin moderation surface. Defines the
+ * response shape {@code AdminServiceImp}/{@code AdminMapper} populate from {@code Review}/
+ * {@code ReviewReport} data for {@code AdminController}'s reported-reviews endpoint, rendered on
+ * the Android client by {@code AdminReportAdapter}.
+ */
 package com.dtos.response.admin;
 
 import java.math.BigDecimal;

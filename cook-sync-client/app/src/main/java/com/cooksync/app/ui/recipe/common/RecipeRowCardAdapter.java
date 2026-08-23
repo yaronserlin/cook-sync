@@ -93,7 +93,7 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
         android.content.Context context = holder.itemView.getContext();
 
         holder.title.setText(recipe.title());
-        holder.subtitle.setText(context.getString(R.string.review_count_plain_format, recipe.reviewCount()));
+        holder.subtitle.setText(context.getString(R.string.review_count_format, recipe.reviewCount()));
         holder.rating.setText(recipe.averageRating() == null ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
 
         if (showVisibilityBadge) {

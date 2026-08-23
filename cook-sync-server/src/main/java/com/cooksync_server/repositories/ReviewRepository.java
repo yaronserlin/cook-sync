@@ -1,3 +1,9 @@
+/**
+ * Server-side persistence-layer component of the Reviews feature. Defines the Spring Data JPA
+ * query surface over {@code Review} entities that {@code ReviewServiceImp} builds its business
+ * logic on, and that the account-deletion subsystem uses to hide, restore, or permanently purge a
+ * departing user's reviews.
+ */
 package com.cooksync_server.repositories;
 
 import java.util.List;
@@ -40,7 +46,8 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
      * If the reviewer is later un-suspended (unhiding their reviews), the report reappears here
      * rather than being silently lost, since {@code reported}/{@code reportReason} are untouched.
      *
-     * @return list of reported, currently-visible review entities
+     * @param pageable pagination parameters
+     * @return page of reported, currently-visible review entities
      */
     Page<Review> findByReportedTrueAndHiddenFalse(Pageable pageable);
 

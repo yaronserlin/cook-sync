@@ -1,3 +1,9 @@
+/**
+ * Server-side persistence-layer component of the Reviews feature. Defines the JPA entity backing
+ * one moderation report filed against a {@link Review}, written by {@code ReviewServiceImp} and
+ * queried through {@code ReviewReportRepository}; its data reaches the Android client only in
+ * aggregate, admin-only form via the {@code ReportedReviewResponse} DTO.
+ */
 package com.cooksync_server.entities;
 
 import java.time.LocalDateTime;

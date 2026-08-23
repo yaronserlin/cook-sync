@@ -2,6 +2,7 @@ package com.cooksync.app.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Parsing helper for the ISO-8601 timestamp strings ({@code createdAt}/{@code updatedAt}) the
@@ -36,6 +37,40 @@ public final class DateFormatUtils {
             return LocalDate.parse(isoTimestamp.substring(0, 10));
         } catch (DateTimeParseException | IndexOutOfBoundsException e) {
             return null;
+        }
+    }
+
+    /**
+     * Formats an ISO-8601 timestamp into a short, day-granularity relative label ("Today",
+     * "3 days ago", "2 months ago", ...). Unlike {@link RelativeTimeFormatter}, which formats an
+     * epoch-millis instant down to minute/hour precision, this compares calendar dates only, since
+     * the server's {@code createdAt}/{@code updatedAt} strings carry no timezone offset.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param isoTimestamp the timestamp string, e.g. a DTO's {@code createdAt} value
+     * @return a human-readable relative-time label, or "" if {@code isoTimestamp} is unparseable
+     */
+    public static String formatRelativeDay(String isoTimestamp) {
+        LocalDate date = parseIsoDate(isoTimestamp);
+        if (date == null) {
+            return "";
+        }
+        long days = ChronoUnit.DAYS.between(date, LocalDate.now());
+        if (days <= 0) {
+            return "Today";
+        } else if (days == 1) {
+            return "1 day ago";
+        } else if (days < 30) {
+            return days + " days ago";
+        } else if (days < 365) {
+            long months = days / 30;
+            return months + (months == 1 ? " month ago" : " months ago");
+        } else {
+            long years = days / 365;
+            return years + (years == 1 ? " year ago" : " years ago");
         }
     }
 }

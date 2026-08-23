@@ -184,13 +184,7 @@ public final class RecipeMapper {
      * @return the average rating, or null if there are no visible reviews
      */
     private static Double averageRating(List<ReviewResponse> visibleReviews) {
-        if (visibleReviews.isEmpty()) {
-            return null;
-        }
-        return visibleReviews.stream()
-                .mapToDouble(review -> review.rating().doubleValue())
-                .average()
-                .orElse(0.0);
+        return ReviewMapper.averageRating(visibleReviews.stream().map(ReviewResponse::rating).toList());
     }
 
     private static List<TagResponse> mapTags(Recipe recipe) {
