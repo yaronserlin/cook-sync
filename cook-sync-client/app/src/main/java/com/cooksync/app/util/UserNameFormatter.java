@@ -1,0 +1,30 @@
+package com.cooksync.app.util;
+
+/**
+ * Utility for building a user's display name from their first and last name fields.
+ *
+ * @author Yaron Serlin
+ * @version 1.0
+ * @since 23/08/2026
+ */
+public final class UserNameFormatter {
+
+    private UserNameFormatter() {
+        // Utility class
+    }
+
+    /**
+     * Joins a first and last name into a single trimmed display name, tolerating either being null.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param firstName the user's first name, or null
+     * @param lastName the user's last name, or null
+     * @return the trimmed "first last" display name, or "" if both are null
+     */
+    public static String fullName(String firstName, String lastName) {
+        return ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
+    }
+}

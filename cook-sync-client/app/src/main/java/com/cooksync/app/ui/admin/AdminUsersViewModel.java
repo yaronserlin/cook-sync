@@ -9,6 +9,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.UserNameFormatter;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.user.UserResponse;
 
@@ -37,6 +38,14 @@ import java.util.Objects;
  */
 public class AdminUsersViewModel extends BaseViewModel {
 
+    /** Account-status value for an active account, matching the server's {@code User.AccountStatus} enum name. */
+    public static final String STATUS_ACTIVE = "ACTIVE";
+    /** Account-status value for an admin-suspended account, matching the server's {@code User.AccountStatus} enum name. */
+    public static final String STATUS_SUSPENDED = "SUSPENDED";
+    /** Account-status value for a self-deactivated account, matching the server's {@code User.AccountStatus} enum name. */
+    public static final String STATUS_DEACTIVATED = "DEACTIVATED";
+
+    /** Page size requested from {@code GET /api/admin/users}. */
     private static final int USERS_PAGE_SIZE = 20;
 
     private final AdminRepository adminRepository;
@@ -166,7 +175,7 @@ public class AdminUsersViewModel extends BaseViewModel {
      * @param enabled the new enabled state to apply
      */
     public void setUserEnabled(UserResponse user, boolean enabled) {
-        patchUserEnabled(user.id(), enabled, enabled ? "ACTIVE" : "SUSPENDED");
+        patchUserEnabled(user.id(), enabled, enabled ? STATUS_ACTIVE : STATUS_SUSPENDED);
         if (!enabled) {
             userDisabledEvent.postValue(new Event<>(user.id()));
         }
@@ -182,7 +191,7 @@ public class AdminUsersViewModel extends BaseViewModel {
             if (enabled) {
                 adminRepository.enableUser(user.id(), result);
             } else {
-                adminRepository.disableUser(user.id(), result);
+                adminRepository.suspendUser(user.id(), result);
             }
         });
     }
@@ -211,8 +220,7 @@ public class AdminUsersViewModel extends BaseViewModel {
      * @param user the user row to permanently delete
      */
     public void deleteUser(UserResponse user) {
-        String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
-                + (user.lastName() == null ? "" : user.lastName())).trim();
+        String fullName = UserNameFormatter.fullName(user.firstName(), user.lastName());
         MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
         observeOnce(result, apiResult -> {
             if (apiResult instanceof ApiResult.Success<Void>) {

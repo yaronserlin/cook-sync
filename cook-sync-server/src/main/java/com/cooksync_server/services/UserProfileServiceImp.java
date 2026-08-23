@@ -6,12 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cooksync_server.config.JwtUtil;
-import com.dtos.request.auth.DeleteAccountRequestDTO;
-import com.dtos.request.auth.EmailUpdateRequestDTO;
-import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
-import com.dtos.request.auth.ProfileUpdateRequestDTO;
-import com.dtos.response.auth.AuthResponse;
-import com.dtos.response.user.UserResponse;
 import com.cooksync_server.entities.RefreshToken;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
@@ -19,6 +13,12 @@ import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
 import com.cooksync_server.exceptions.auth.UserAlreadyExistsException;
 import com.cooksync_server.mappers.UserMapper;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
+import com.dtos.request.auth.EmailUpdateRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
+import com.dtos.request.auth.ProfileUpdateRequestDTO;
+import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.user.UserResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +51,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @return the user's full profile
      */
     @Transactional(readOnly = true)
+    @Override
     public UserResponse getCurrentUserProfile(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
@@ -64,6 +65,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @return UserResponse DTO
      */
     @Transactional(readOnly = true)
+    @Override
     public UserResponse getUserProfileById(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
@@ -77,6 +79,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @param avatarUrl new profile picture URL
      */
     @Transactional
+    @Override
     public void updateAvatar(String userEmail, String avatarUrl) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
@@ -97,6 +100,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @param request profile update request DTO
      */
     @Transactional
+    @Override
     public void updateProfile(String userEmail, ProfileUpdateRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
@@ -114,6 +118,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @param request privacy settings update request DTO
      */
     @Transactional
+    @Override
     public void updatePrivacySettings(String userEmail, PrivacySettingsUpdateRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
@@ -130,6 +135,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @return AuthResponse containing updated tokens reflecting new email address
      */
     @Transactional
+    @Override
     public AuthResponse updateEmail(String userEmail, EmailUpdateRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
@@ -161,6 +167,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @param userEmail target user email
      */
     @Transactional
+    @Override
     public void deactivateAccount(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
@@ -181,6 +188,7 @@ public class UserProfileServiceImp implements UserProfileService {
      * @param request delete-account request DTO carrying the current password for verification
      */
     @Transactional
+    @Override
     public void requestAccountDeletion(String userEmail, DeleteAccountRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));

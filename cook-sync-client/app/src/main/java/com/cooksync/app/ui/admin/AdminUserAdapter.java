@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.ui.common.AvatarView;
+import com.cooksync.app.util.UserNameFormatter;
 import com.dtos.response.user.UserResponse;
 import com.google.android.material.button.MaterialButton;
 
@@ -65,8 +66,7 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         UserResponse user = getItem(position);
-        String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
-                + (user.lastName() == null ? "" : user.lastName())).trim();
+        String fullName = UserNameFormatter.fullName(user.firstName(), user.lastName());
 
         holder.name.setText(fullName);
         holder.avatar.setAvatar(user.avatarUrl(), fullName);
@@ -83,15 +83,15 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
         holder.name.setOnClickListener(openProfile);
 
         holder.email.setText(user.email());
-        holder.adminTag.setVisibility(Boolean.TRUE.equals(user.isAdmin()) ? View.VISIBLE : View.GONE);
+        holder.adminTag.setVisibility(user.isAdmin() ? View.VISIBLE : View.GONE);
 
         Resources resources = holder.itemView.getResources();
-        if ("SUSPENDED".equals(user.status())) {
+        if (AdminUsersViewModel.STATUS_SUSPENDED.equals(user.status())) {
             holder.status.setText(R.string.admin_user_status_suspended);
             holder.status.setBackgroundTintList(ColorStateList.valueOf(
                     resources.getColor(R.color.color_accent_200, null)));
             holder.status.setTextColor(resources.getColor(R.color.color_accent_800, null));
-        } else if ("DEACTIVATED".equals(user.status())) {
+        } else if (AdminUsersViewModel.STATUS_DEACTIVATED.equals(user.status())) {
             holder.status.setText(R.string.admin_user_status_deactivated);
             holder.status.setBackgroundTintList(ColorStateList.valueOf(
                     resources.getColor(R.color.color_neutral_300, null)));

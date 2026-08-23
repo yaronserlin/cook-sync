@@ -46,6 +46,7 @@ public class AdminReportsViewModel extends BaseViewModel {
     /** Reason-filter value meaning "no filter", matching the design's "All" chip. */
     public static final String REASON_ALL = "ALL";
 
+    /** Page size requested from {@code GET /api/admin/reviews/reported}. */
     private static final int REPORTS_PAGE_SIZE = 20;
 
     private final AdminRepository adminRepository;
@@ -59,6 +60,7 @@ public class AdminReportsViewModel extends BaseViewModel {
     private String reasonFilter = REASON_ALL;
     private int reportsPage = 0;
     private boolean reportsLastPage = false;
+    private boolean reportsFetchInFlight = false;
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -103,7 +105,7 @@ public class AdminReportsViewModel extends BaseViewModel {
 
     /** Fetches the next page of reported reviews, a no-op if the last page is loaded or a fetch is in flight. */
     public void loadNextReportsPage() {
-        if (reportsLastPage) {
+        if (reportsLastPage || reportsFetchInFlight) {
             return;
         }
         reportsPage++;
@@ -111,8 +113,10 @@ public class AdminReportsViewModel extends BaseViewModel {
     }
 
     private void fetchReportsPage() {
+        reportsFetchInFlight = true;
         MutableLiveData<ApiResult<PagedResponse<ReportedReviewResponse>>> result = new MutableLiveData<>();
         observeOnce(result, apiResult -> {
+            reportsFetchInFlight = false;
             if (apiResult instanceof ApiResult.Success<PagedResponse<ReportedReviewResponse>> success) {
                 PagedResponse<ReportedReviewResponse> page = success.getData();
                 allReports.addAll(page.content());
@@ -268,7 +272,7 @@ public class AdminReportsViewModel extends BaseViewModel {
                     statsResyncNeeded.postValue(new Event<>(true));
                 }
             });
-            adminRepository.disableUser(report.reviewerId(), result);
+            adminRepository.suspendUser(report.reviewerId(), result);
         });
     }
 

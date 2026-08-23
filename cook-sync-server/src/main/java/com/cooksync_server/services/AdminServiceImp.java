@@ -38,7 +38,8 @@ import com.dtos.response.user.UserResponse;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Service class implementing business logic for administrative moderation, user management, and tag deduplication.
+ * Service class implementing business logic for administrative moderation, user
+ * management, and tag deduplication.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -46,7 +47,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class AdminServiceImp implements AdminService{
+public class AdminServiceImp implements AdminService {
 
     private final ReviewRepository reviewRepository;
     private final ReviewReportRepository reviewReportRepository;
@@ -59,11 +60,10 @@ public class AdminServiceImp implements AdminService{
     /**
      * Calculates system-wide aggregate stats for admin dashboard monitoring.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
+     * Complexity: Time: O(1) Space: O(1)
      *
-     * @return AdminStatsResponse containing counts of reported reviews, recipes, reviews, tags, and users
+     * @return AdminStatsResponse containing counts of reported reviews,
+     * recipes, reviews, tags, and users
      */
     @Override
     public AdminStatsResponse getStats() {
@@ -76,20 +76,23 @@ public class AdminServiceImp implements AdminService{
         );
     }
 
+    /** Fields the admin user directory may be sorted by; any other value falls back to {@code createdAt}. */
     private static final Set<String> SORTABLE_USER_FIELDS = Set.of("firstName", "lastName", "email", "createdAt");
 
     /**
-     * Retrieves paginated, optionally search-filtered and sorted list of registered users.
+     * Retrieves paginated, optionally search-filtered and sorted list of
+     * registered users.
      *
-     * Complexity:
-     * Time: O(S) where S is page size limit
-     * Space: O(S)
+     * Complexity: Time: O(S) where S is page size limit Space: O(S)
      *
      * @param page page number index
      * @param size page size limit
-     * @param q optional search fragment matched against first name, last name, or email
-     * @param enabled optional account status filter (true = active, false = disabled, null = both)
-     * @param sortBy field to sort by; must be one of firstName, lastName, email, createdAt
+     * @param q optional search fragment matched against first name, last name,
+     * or email
+     * @param enabled optional account status filter (true = active, false =
+     * disabled, null = both)
+     * @param sortBy field to sort by; must be one of firstName, lastName,
+     * email, createdAt
      * @param direction sort direction, "asc" or "desc" (default desc)
      * @return PagedResponse containing UserResponse DTO list
      */
@@ -106,12 +109,11 @@ public class AdminServiceImp implements AdminService{
     /**
      * Retrieves all review entries currently flagged as reported.
      *
-     * Complexity:
-     * Time: O(R) where R is reported review count
-     * Space: O(R)
+     * Complexity: Time: O(R) where R is reported review count Space: O(R)
      *
      * @return list of ReportedReviewResponse DTOs
      */
+    @Override
     public PagedResponse<ReportedReviewResponse> getReportedReviews(int page, int size) {
         Page<Review> result = reviewRepository.findByReportedTrueAndHiddenFalse(PageRequest.of(page, size, Sort.by("createdAt").descending()));
         return PagedResponseMapper.toPagedResponse(result, review -> {
@@ -125,13 +127,12 @@ public class AdminServiceImp implements AdminService{
     /**
      * Dismisses moderation report flag on a specific review ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
+     * Complexity: Time: O(1) Space: O(1)
      *
      * @param reviewId target review ID
      */
     @Transactional
+    @Override
     public void dismissReport(String reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
@@ -142,28 +143,30 @@ public class AdminServiceImp implements AdminService{
     }
 
     /**
-     * Suspends a user account, preventing login and hiding both authored recipes and authored
-     * reviews from public listings. Recipes are hidden implicitly, the same way as a
-     * self-deactivation or self-deletion request: public recipe listings already filter on
-     * {@code createdBy.enabled}. Reviews need an explicit bulk flip since there's no equivalent
-     * join-based filter for review authorship.
+     * Suspends a user account, preventing login and hiding both authored
+     * recipes and authored reviews from public listings. Recipes are hidden
+     * implicitly, the same way as a self-deactivation or self-deletion request:
+     * public recipe listings already filter on {@code createdBy.enabled}.
+     * Reviews need an explicit bulk flip since there's no equivalent join-based
+     * filter for review authorship.
      * <p>
-     * A suspended account is never picked up by the scheduled purge job — that job only ever
-     * matches {@code status == DEACTIVATED} rows, never {@code SUSPENDED} ones — so suspension
-     * is indefinite and reversible solely by an admin, regardless of how long it lasts. Also
-     * clears any leftover {@code deletionRequestedAt} timestamp: if a user had self-requested
-     * deletion and an admin suspended them mid-grace-period, that timestamp is now meaningless
-     * (the account is admin-suspended, not self-deletion-pending) and left set would misleadingly
-     * suggest an active countdown that in fact no longer applies to this account.
+     * A suspended account is never picked up by the scheduled purge job — that
+     * job only ever matches {@code status == DEACTIVATED} rows, never
+     * {@code SUSPENDED} ones — so suspension is indefinite and reversible
+     * solely by an admin, regardless of how long it lasts. Also clears any
+     * leftover {@code deletionRequestedAt} timestamp: if a user had
+     * self-requested deletion and an admin suspended them mid-grace-period,
+     * that timestamp is now meaningless (the account is admin-suspended, not
+     * self-deletion-pending) and left set would misleadingly suggest an active
+     * countdown that in fact no longer applies to this account.
      *
-     * Complexity:
-     * Time: O(R) where R is the user's review count
-     * Space: O(1)
+     * Complexity: Time: O(R) where R is the user's review count Space: O(1)
      *
      * @param userId target user ID
      */
     @Transactional
-    public void disableUser(String userId) {
+    @Override
+    public void suspendUser(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         user.setEnabled(false);
@@ -174,20 +177,21 @@ public class AdminServiceImp implements AdminService{
     }
 
     /**
-     * Reactivates a previously suspended or deactivated user account, restoring both authored
-     * recipes and authored reviews to public visibility. Delegates to
-     * {@link AccountDeletionServiceImp#restoreFromPendingDeletion(User)}, the same restoration
-     * logic the self-service login-restore path uses: it re-enables the account, resets its
-     * status to {@code ACTIVE}, clears any pending deletion timestamp (harmless no-op if the
-     * account was only suspended, never mid-deletion), and un-hides its reviews.
+     * Reactivates a previously suspended or deactivated user account, restoring
+     * both authored recipes and authored reviews to public visibility.
+     * Delegates to
+     * {@link AccountDeletionServiceImp#restoreFromPendingDeletion(User)}, the
+     * same restoration logic the self-service login-restore path uses: it
+     * re-enables the account, resets its status to {@code ACTIVE}, clears any
+     * pending deletion timestamp (harmless no-op if the account was only
+     * suspended, never mid-deletion), and un-hides its reviews.
      *
-     * Complexity:
-     * Time: O(R) where R is the user's review count
-     * Space: O(1)
+     * Complexity: Time: O(R) where R is the user's review count Space: O(1)
      *
      * @param userId target user ID
      */
     @Transactional
+    @Override
     public void enableUser(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
@@ -195,20 +199,21 @@ public class AdminServiceImp implements AdminService{
     }
 
     /**
-     * Permanently deletes a user account and everything it owns, bypassing the normal 30-day
-     * self-service deletion grace period entirely by delegating straight to
-     * {@link AccountDeletionService#purgeAccountImmediately(User)}. Refuses to touch the acting
-     * admin's own account (self-lockout guard) or any other admin account (prevents admins from
-     * removing one another through this console).
+     * Permanently deletes a user account and everything it owns, bypassing the
+     * normal 30-day self-service deletion grace period entirely by delegating
+     * straight to {@link AccountDeletionService#purgeAccountImmediately(User)}.
+     * Refuses to touch the acting admin's own account (self-lockout guard) or
+     * any other admin account (prevents admins from removing one another
+     * through this console).
      *
-     * Complexity:
-     * Time: O(P) where P is the account's combined recipe/review/note/favorite graph size
-     * Space: O(P)
+     * Complexity: Time: O(P) where P is the account's combined
+     * recipe/review/note/favorite graph size Space: O(P)
      *
      * @param userId target user ID
      * @param actingAdminEmail email of the admin performing the deletion
      */
     @Transactional
+    @Override
     public void deleteUserPermanently(String userId, String actingAdminEmail) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
@@ -224,14 +229,14 @@ public class AdminServiceImp implements AdminService{
     }
 
     /**
-     * Scans catalog tags to detect duplicate tag groups based on normalized name formatting.
+     * Scans catalog tags to detect duplicate tag groups based on normalized
+     * name formatting.
      *
-     * Complexity:
-     * Time: O(T) where T is total tag count
-     * Space: O(T)
+     * Complexity: Time: O(T) where T is total tag count Space: O(T)
      *
      * @return list of DuplicateTagGroupResponse DTOs
      */
+    @Override
     public PagedResponse<DuplicateTagGroupResponse> getDuplicateTagGroups(int page, int size) {
         Page<Tag> tagPage = tagRepository.findAll(PageRequest.of(page, size));
         Map<String, List<Tag>> byNormalizedName = new LinkedHashMap<>();
@@ -255,15 +260,16 @@ public class AdminServiceImp implements AdminService{
     }
 
     /**
-     * Merges source duplicate tag into canonical target tag using direct SQL and deletes source tag.
+     * Merges source duplicate tag into canonical target tag using direct SQL
+     * and deletes source tag.
      *
-     * Complexity:
-     * Time: O(R) where R is count of recipes tagged with source tag
+     * Complexity: Time: O(R) where R is count of recipes tagged with source tag
      * Space: O(1)
      *
      * @param request tag merge request DTO containing source and target tag IDs
      */
     @Transactional
+    @Override
     public void mergeTags(TagMergeRequestDTO request) {
         if (request.sourceTagId().equals(request.targetTagId())) {
             throw new IllegalArgumentException("Source and target tags must be different.");
@@ -276,8 +282,8 @@ public class AdminServiceImp implements AdminService{
         }
 
         jdbcTemplate.update(
-                "DELETE rt FROM recipe_tags rt JOIN recipe_tags rt2 ON rt.recipe_id = rt2.recipe_id " +
-                        "WHERE rt.tag_id = ? AND rt2.tag_id = ?",
+                "DELETE rt FROM recipe_tags rt JOIN recipe_tags rt2 ON rt.recipe_id = rt2.recipe_id "
+                + "WHERE rt.tag_id = ? AND rt2.tag_id = ?",
                 request.sourceTagId(), request.targetTagId());
 
         jdbcTemplate.update(

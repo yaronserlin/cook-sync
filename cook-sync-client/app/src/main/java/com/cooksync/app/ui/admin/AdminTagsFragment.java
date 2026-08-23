@@ -32,7 +32,7 @@ import java.util.Locale;
 /**
  * The Admin Console's Tags tab: a client-side search over the loaded duplicate-tag groups
  * (there is no full-catalog tag search endpoint) and the merge flow for each group. Shares
- * {@link AdminTagsViewModel} with the other two tabs via an activity-scoped
+ * {@link AdminTagsViewModel} with the other three tabs via an activity-scoped
  * {@link ViewModelProvider}.
  *
  * @author Yaron Serlin

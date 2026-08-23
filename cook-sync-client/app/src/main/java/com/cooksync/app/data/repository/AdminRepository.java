@@ -68,12 +68,12 @@ public interface AdminRepository {
     void enableUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
-     * Disables a user account, blocking sign-in.
+     * Suspends a user account, blocking sign-in.
      *
-     * @param userId the ID of the user to disable
+     * @param userId the ID of the user to suspend
      * @param resultTarget LiveData target to post the outcome
      */
-    void disableUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget);
+    void suspendUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
      * Permanently deletes a user account and everything it owns, bypassing the normal 30-day

@@ -658,13 +658,13 @@ public interface ApiService {
     Call<ApiResponse<Void>> enableUser(@Path("id") String userId);
 
     /**
-     * Disables a user account, blocking sign-in (the "ban user" action).
+     * Suspends a user account, blocking sign-in (the "ban user" action).
      *
-     * @param userId the ID of the user to disable
+     * @param userId the ID of the user to suspend
      * @return call yielding an empty acknowledgement
      */
-    @PATCH("api/admin/users/{id}/disable")
-    Call<ApiResponse<Void>> disableUser(@Path("id") String userId);
+    @PATCH("api/admin/users/{id}/suspend")
+    Call<ApiResponse<Void>> suspendUser(@Path("id") String userId);
 
     /**
      * Permanently deletes a user account and everything it owns (recipes, reviews, favorites,

@@ -27,8 +27,8 @@ import java.util.Map;
 
 /**
  * The Admin Console's Reports tab: reason-filter chips and the queued report cards with
- * Remove/Keep/ban-user actions. Shares {@link AdminReportsViewModel} with the other two tabs via an
- * activity-scoped {@link ViewModelProvider}.
+ * Remove/Keep/ban-user actions. Shares {@link AdminReportsViewModel} with the other three tabs
+ * via an activity-scoped {@link ViewModelProvider}.
  *
  * @author Yaron Serlin
  * @version 1.0

@@ -57,7 +57,7 @@ public interface AdminService {
      *
      * @param userId target user ID
      */
-    void disableUser(String userId);
+    void suspendUser(String userId);
 
     /**
      * Reactivates a previously suspended or deactivated user account.

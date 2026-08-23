@@ -33,60 +33,50 @@ public class AdminRepositoryImp extends BaseRepository implements AdminRepositor
 
     @Override
     public void getStats(MutableLiveData<ApiResult<AdminStatsResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getAdminStats())));
+        executeAsync(apiService.getAdminStats(), resultTarget);
     }
 
     @Override
     public void getUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction,
                           MutableLiveData<ApiResult<PagedResponse<UserResponse>>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(
-                executeCall(apiService.getAdminUsers(page, size, q, enabled, sortBy, direction))));
+        executeAsync(apiService.getAdminUsers(page, size, q, enabled, sortBy, direction), resultTarget);
     }
 
     @Override
     public void getReportedReviews(int page, int size,
                                     MutableLiveData<ApiResult<PagedResponse<ReportedReviewResponse>>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getReportedReviews(page, size))));
+        executeAsync(apiService.getReportedReviews(page, size), resultTarget);
     }
 
     @Override
     public void dismissReport(String reviewId, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.dismissReport(reviewId))));
+        executeAsync(apiService.dismissReport(reviewId), resultTarget);
     }
 
     @Override
     public void enableUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.enableUser(userId))));
+        executeAsync(apiService.enableUser(userId), resultTarget);
     }
 
     @Override
-    public void disableUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.disableUser(userId))));
+    public void suspendUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
+        executeAsync(apiService.suspendUser(userId), resultTarget);
     }
 
     @Override
     public void deleteUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteUser(userId))));
+        executeAsync(apiService.deleteUser(userId), resultTarget);
     }
 
     @Override
     public void getDuplicateTagGroups(int page, int size,
                                        MutableLiveData<ApiResult<PagedResponse<DuplicateTagGroupResponse>>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getDuplicateTagGroups(page, size))));
+        executeAsync(apiService.getDuplicateTagGroups(page, size), resultTarget);
     }
 
     @Override
     public void mergeTags(String sourceTagId, String targetTagId, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
         TagMergeRequestDTO request = new TagMergeRequestDTO(sourceTagId, targetTagId);
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.mergeTags(request))));
+        executeAsync(apiService.mergeTags(request), resultTarget);
     }
 }

@@ -115,19 +115,19 @@ public class AdminController {
     }
 
     /**
-     * Disables user account with specified ID.
+     * Suspends user account with specified ID.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
      *
      * @param id target user ID
-     * @return response entity acknowledging account disabling
+     * @return response entity acknowledging account suspension
      */
-    @PatchMapping("/users/{id}/disable")
-    public ResponseEntity<ApiResponse<Void>> disableUser(@PathVariable String id) {
-        adminService.disableUser(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User disabled"));
+    @PatchMapping("/users/{id}/suspend")
+    public ResponseEntity<ApiResponse<Void>> suspendUser(@PathVariable String id) {
+        adminService.suspendUser(id);
+        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User suspended"));
     }
 
     /**

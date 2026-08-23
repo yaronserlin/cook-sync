@@ -106,17 +106,17 @@ class AdminServiceTest {
     }
 
     @Test
-    void disableUser_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+    void suspendUser_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> adminService.disableUser("missing"));
+        assertThrows(ResourceNotFoundException.class, () -> adminService.suspendUser("missing"));
     }
 
     @Test
-    void disableUser_ShouldSuspendAccountAndHideReviews() {
+    void suspendUser_ShouldSuspendAccountAndHideReviews() {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
 
-        adminService.disableUser("user-1");
+        adminService.suspendUser("user-1");
 
         assertFalse(sampleUser.isEnabled());
         assertEquals(User.AccountStatus.SUSPENDED, sampleUser.getStatus());

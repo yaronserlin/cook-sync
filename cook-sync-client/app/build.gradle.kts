@@ -25,7 +25,7 @@ android {
 
         resValue("string", "app_name", "CookSync")
         // Local dev server address. Update to your machine's LAN IP when testing on a device.
-        buildConfigField("String", "BASE_URL", "\"http://192.168.0.22:8080/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

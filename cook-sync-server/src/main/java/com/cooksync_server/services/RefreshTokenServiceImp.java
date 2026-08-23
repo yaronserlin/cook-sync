@@ -39,6 +39,7 @@ public class RefreshTokenServiceImp implements RefreshTokenService{
      * @param token refresh token string
      * @return Optional containing RefreshToken if found
      */
+    @Override
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
     }
@@ -50,6 +51,7 @@ public class RefreshTokenServiceImp implements RefreshTokenService{
      * @return created RefreshToken entity
      */
     @Transactional
+    @Override
     public RefreshToken createRefreshToken(String userId) {
         refreshTokenRepository.deleteByUserId(userId);
 

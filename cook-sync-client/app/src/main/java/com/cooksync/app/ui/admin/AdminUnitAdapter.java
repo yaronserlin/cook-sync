@@ -24,7 +24,9 @@ import java.util.List;
  */
 public class AdminUnitAdapter extends BaseAdapter<UnitResponse, AdminUnitAdapter.ViewHolder> {
 
+    /** Notified when the moderator taps a unit row's delete action. */
     public interface Listener {
+        /** @param unit the row whose deletion was requested */
         void onDeleteUnit(UnitResponse unit);
     }
 

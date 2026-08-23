@@ -13,9 +13,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @version 1.0
  * @since 02/08/2026
  */
-
-
-
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
@@ -24,13 +21,15 @@ public class RecipeApplication {
     /**
      * Main execution method launching the Spring Boot framework instance.
      *
-     * Complexity:
-     * Time: O(N)
-     * Space: O(N)
+     * Complexity: Time: O(N) Space: O(N)
      *
      * @param args command-line input arguments
      */
     public static void main(String[] args) {
         SpringApplication.run(RecipeApplication.class, args);
+        //TODO: 30-days deleted users check
+        //TODO: change "diactiveUser" to "suspendUser" in admin service and user profile service
+        //TODO: fix duplicate tag merge issue (some duplicate names not recugnauze)
     }
+
 }

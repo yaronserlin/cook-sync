@@ -84,14 +84,14 @@ public class AdminUsersViewModelTest {
         UserResponse restored = firstUser();
         assertTrue(restored.enabled());
         assertEquals("ACTIVE", restored.status());
-        verify(adminRepository, never()).disableUser(any(), any());
+        verify(adminRepository, never()).suspendUser(any(), any());
     }
 
     @Test
     public void setUserEnabled_disable_serverErrorAfterFlush_rollsBackAndSignalsResync() {
         loadOnePageContainingActiveUser();
         doAnswer(ApiResultAnswers.<Void>error("network error"))
-                .when(adminRepository).disableUser(eq("u1"), any());
+                .when(adminRepository).suspendUser(eq("u1"), any());
 
         viewModel.setUserEnabled(activeUser, false);
         viewModel.onCleared();

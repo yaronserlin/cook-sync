@@ -25,6 +25,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
+import com.cooksync.app.util.UserNameFormatter;
 import com.dtos.response.user.UserResponse;
 import com.google.android.material.button.MaterialButton;
 
@@ -34,7 +35,7 @@ import java.util.List;
 /**
  * The Admin Console's Users tab: search + enabled-filter chips over a paginated user
  * directory, with per-row enable/disable actions. Shares {@link AdminUsersViewModel} with the
- * other two tabs via an activity-scoped {@link ViewModelProvider}.
+ * other three tabs via an activity-scoped {@link ViewModelProvider}.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -99,8 +100,8 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
 
         chipAll.setOnClickListener(v -> selectFilter(null, null));
         chipActive.setOnClickListener(v -> selectFilter(true, null));
-        chipDeactivated.setOnClickListener(v -> selectFilter(false, "DEACTIVATED"));
-        chipSuspended.setOnClickListener(v -> selectFilter(false, "SUSPENDED"));
+        chipDeactivated.setOnClickListener(v -> selectFilter(false, AdminUsersViewModel.STATUS_DEACTIVATED));
+        chipSuspended.setOnClickListener(v -> selectFilter(false, AdminUsersViewModel.STATUS_SUSPENDED));
         sortButton.setOnClickListener(v -> viewModel.toggleUsersSortDirection());
 
         searchInput.addTextChangedListener(new TextWatcher() {
@@ -181,14 +182,13 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
     private void styleChips() {
         com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAll, selectedEnabledFilter == null);
         com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipActive, Boolean.TRUE.equals(selectedEnabledFilter));
-        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipDeactivated, Boolean.FALSE.equals(selectedEnabledFilter) && "DEACTIVATED".equals(selectedStatusFilter));
-        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSuspended, Boolean.FALSE.equals(selectedEnabledFilter) && "SUSPENDED".equals(selectedStatusFilter));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipDeactivated, Boolean.FALSE.equals(selectedEnabledFilter) && AdminUsersViewModel.STATUS_DEACTIVATED.equals(selectedStatusFilter));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSuspended, Boolean.FALSE.equals(selectedEnabledFilter) && AdminUsersViewModel.STATUS_SUSPENDED.equals(selectedStatusFilter));
     }
 
     @Override
     public void onToggleEnabled(UserResponse user, boolean enabled) {
-        String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
-                + (user.lastName() == null ? "" : user.lastName())).trim();
+        String fullName = UserNameFormatter.fullName(user.firstName(), user.lastName());
         if (enabled) {
             viewModel.setUserEnabled(user, true);
             OrganicToast.showWithAction(requireActivity(), null, R.drawable.ic_check,
@@ -212,8 +212,7 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
 
     @Override
     public void onDeleteUser(UserResponse user) {
-        String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
-                + (user.lastName() == null ? "" : user.lastName())).trim();
+        String fullName = UserNameFormatter.fullName(user.firstName(), user.lastName());
 
         OrganicConfirmDialog.show(requireContext(),
                 OrganicConfirmDialog.dangerHeading(requireContext(), getString(R.string.admin_confirm_delete_danger_title)),

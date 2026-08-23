@@ -32,6 +32,7 @@ import java.util.Objects;
  */
 public class AdminTagsViewModel extends BaseViewModel {
 
+    /** Page size requested from {@code GET /api/admin/tags/duplicates}. */
     private static final int TAG_GROUPS_PAGE_SIZE = 20;
 
     private final AdminRepository adminRepository;
@@ -68,9 +69,9 @@ public class AdminTagsViewModel extends BaseViewModel {
         fetchTagGroupsPage();
     }
 
-    /** Fetches the next page of duplicate tag groups, a no-op if the last page is loaded. */
+    /** Fetches the next page of duplicate tag groups, a no-op if the last page is loaded or a fetch is in flight. */
     public void loadNextTagGroupsPage() {
-        if (tagGroupsLastPage) {
+        if (tagGroupsLastPage || tagGroupsResult.getValue() instanceof ApiResult.Loading) {
             return;
         }
         tagGroupsPage++;

@@ -110,13 +110,13 @@ public class AdminReportsViewModelTest {
     public void banReporter_removesReporterQueuedReports_andDisablesThemOnFlush() {
         loadOnePageWithAllThreeReports();
         doAnswer(ApiResultAnswers.<Void>success(null))
-                .when(adminRepository).disableUser(eq("user-bob"), any());
+                .when(adminRepository).suspendUser(eq("user-bob"), any());
 
         viewModel.banReporter(spamReport);
         assertEquals(List.of(otherUserReport), viewModel.getFilteredReports().getValue());
 
         viewModel.onCleared();
-        verify(adminRepository).disableUser(eq("user-bob"), any());
+        verify(adminRepository).suspendUser(eq("user-bob"), any());
     }
 
     private void loadOnePageWithAllThreeReports() {

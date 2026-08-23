@@ -80,10 +80,20 @@ public class User {
     @Column(name = "avatar_url", length = 2000)
     private String avatarUrl;
 
+    /**
+     * Whether the user accepted the terms of use at registration. Write-only by design: this is
+     * a consent record captured for legal/audit purposes, not a value any server or client logic
+     * reads back afterward.
+     */
     @Builder.Default
     @Column(name = "terms_accepted", nullable = false)
     private boolean termsAccepted = false;
 
+    /**
+     * Whether the user opted into marketing communications at registration. Write-only by
+     * design, same as {@link #termsAccepted}: retained as a consent record, not read back by any
+     * server or client logic.
+     */
     @Builder.Default
     @Column(name = "marketing_opt_in", nullable = false)
     private boolean marketingOptIn = false;

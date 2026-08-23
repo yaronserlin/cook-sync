@@ -27,7 +27,7 @@ public record UserResponse(
         String firstName,
         String lastName,
         String email,
-        Boolean isAdmin,
+        boolean isAdmin,
         String avatarUrl,
         String createdAt,
         String updatedAt,
