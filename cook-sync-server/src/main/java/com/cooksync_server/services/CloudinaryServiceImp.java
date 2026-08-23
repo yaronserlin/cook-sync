@@ -1,3 +1,10 @@
+/**
+ * Server-side business-layer component of the Cloudinary image-upload feature. Wraps the
+ * Cloudinary Java SDK: signs short-lived upload authorizations so the API secret never leaves
+ * the server, resolves per-user upload folder paths, and performs asynchronous asset/folder
+ * deletion on behalf of {@code RecipeServiceImp}, {@code UserProfileServiceImp}, and
+ * {@code AccountDeletionServiceImp}.
+ */
 package com.cooksync_server.services;
 
 import java.util.List;
@@ -20,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * Ensures the API secret remains securely on the backend server.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 @Slf4j
@@ -30,23 +37,13 @@ public class CloudinaryServiceImp implements CloudinaryService {
 
     private final Cloudinary cloudinary;
 
+    /** Root Cloudinary folder for the active environment, e.g. {@code "cooksync-dev"} locally. */
     @Value("${cloudinary.upload.base-folder}")
     private String baseFolder;
 
     /**
-     * Generates a signed upload signature payload for client direct uploads.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @return CloudinarySignatureResponse DTO containing signature details and timestamp
+     * {@inheritDoc}
      */
-    @Override
-    public CloudinarySignatureResponse generateUploadSignature() {
-        return generateUploadSignature(null, null);
-    }
-
     @Override
     public CloudinarySignatureResponse generateUploadSignature(String folder, String publicId) {
         long timestamp = System.currentTimeMillis() / 1000;
@@ -192,4 +189,3 @@ public class CloudinaryServiceImp implements CloudinaryService {
         return pathAfterUpload.isEmpty() ? null : pathAfterUpload;
     }
 }
-

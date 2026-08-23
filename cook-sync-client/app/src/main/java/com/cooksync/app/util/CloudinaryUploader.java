@@ -1,9 +1,17 @@
+/**
+ * Client-layer (Android) component of the Cloudinary image-upload feature. Wraps the Cloudinary
+ * Android SDK to perform the actual direct-to-Cloudinary upload once a screen holds a signed
+ * {@code CloudinarySignatureResponse} from the server's {@code CloudinaryController}; also hosts
+ * {@link #buildUserFolder} so every client upload call site shares one per-user folder-path
+ * format instead of reimplementing it.
+ */
 package com.cooksync.app.util;
 
 import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
@@ -20,7 +28,7 @@ import java.util.Map;
  * eventually recipe photos) doesn't need to worry about re-initialization.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public final class CloudinaryUploader {
@@ -48,8 +56,8 @@ public final class CloudinaryUploader {
     }
 
     /**
-     * Uploads the file at {@code fileUri} to Cloudinary using a freshly issued signature,
-     * initializing the SDK against the signature's cloud name on first use.
+     * Uploads the file at {@code fileUri} to Cloudinary's default folder/public-ID assignment
+     * using a freshly issued signature.
      *
      * Complexity:
      * Time: O(1) plus one asynchronous network upload
@@ -65,6 +73,21 @@ public final class CloudinaryUploader {
         upload(context, fileUri, null, null, signature, callback);
     }
 
+    /**
+     * Uploads the file at {@code fileUri} to Cloudinary using a freshly issued signature,
+     * initializing the SDK against the signature's cloud name on first use.
+     *
+     * Complexity:
+     * Time: O(1) plus one asynchronous network upload
+     * Space: O(1)
+     *
+     * @param context the calling screen's context
+     * @param fileUri content/file URI of the image to upload (e.g. from a photo picker)
+     * @param folder target Cloudinary folder, or {@code null}/blank to use the signature's default
+     * @param publicId target Cloudinary public ID, or {@code null}/blank to let Cloudinary auto-generate one
+     * @param signature signed upload credentials issued by the server
+     * @param callback invoked on the main thread with the outcome
+     */
     public static void upload(@NonNull Context context, @NonNull Uri fileUri,
                                String folder, String publicId,
                                @NonNull CloudinarySignatureResponse signature, @NonNull Callback callback) {
@@ -113,6 +136,28 @@ public final class CloudinaryUploader {
                     }
                 })
                 .dispatch();
+    }
+
+    /**
+     * Builds a per-user Cloudinary folder path rooted at {@code baseFolder}, in the form
+     * {@code "<baseFolder>/<userEmail>[/<subPath>]"}. Mirrors the server's
+     * {@code CloudinaryServiceImp#buildUserFolder}, so every client call site that needs a
+     * per-user upload folder shares one implementation instead of reimplementing the format.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param baseFolder the environment-specific root folder, from {@code MediaRepository#getBaseFolder}
+     * @param userEmail the owning user's email address
+     * @param subPath optional trailing path segment (e.g. {@code "avatar"} or a recipe title), or
+     *                {@code null}/blank to target the user's root folder
+     * @return the fully qualified Cloudinary folder path
+     */
+    @NonNull
+    public static String buildUserFolder(@NonNull String baseFolder, @NonNull String userEmail, @Nullable String subPath) {
+        String folder = baseFolder + "/" + userEmail;
+        return (subPath == null || subPath.isBlank()) ? folder : folder + "/" + subPath;
     }
 
     /**

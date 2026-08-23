@@ -1,3 +1,8 @@
+/**
+ * Client-layer (Android) component of the Cloudinary image-upload feature. Builds Cloudinary
+ * URL-transform thumbnail URLs and avatar-initials fallbacks for display, purely by string
+ * manipulation on an already-uploaded asset's URL — performs no upload or network call itself.
+ */
 package com.cooksync.app.util;
 
 import androidx.annotation.NonNull;
@@ -17,6 +22,7 @@ import androidx.annotation.Nullable;
  */
 public final class CloudinaryImageUtils {
 
+    /** Marks where a Cloudinary transformation segment is inserted in a delivery URL. */
     private static final String UPLOAD_SEGMENT = "/upload/";
 
     private CloudinaryImageUtils() {

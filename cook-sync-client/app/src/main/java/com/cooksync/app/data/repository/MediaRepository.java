@@ -1,3 +1,9 @@
+/**
+ * Client-layer (Android) component of the Cloudinary image-upload feature. Declares the contract
+ * for fetching upload prerequisites from the server's {@code CloudinaryController} — a signed
+ * upload signature and the environment-specific base folder — consumed by both the recipe wizard
+ * ({@code RecipePublishManager}) and the account-details avatar upload flow.
+ */
 package com.cooksync.app.data.repository;
 
 import androidx.lifecycle.MutableLiveData;
@@ -10,17 +16,10 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
  * that needs to upload an image directly from the client (profile avatar, recipe photos).
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public interface MediaRepository {
-
-    /**
-     * Fetches a fresh signed upload signature from the server.
-     *
-     * @param resultTarget live data target the result will be posted to
-     */
-    void getUploadSignature(MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget);
 
     /**
      * Fetches a fresh signed upload signature from the server for a specific folder and public ID.

@@ -1,5 +1,12 @@
+/**
+ * Client-layer (Android) component of the Cloudinary image-upload feature. The recipe wizard's
+ * upload orchestrator: fetches a Cloudinary signature per pending image via {@code MediaRepository},
+ * uploads each through {@code CloudinaryUploader}, then posts the finished recipe DTO — all as a
+ * background job the user can navigate away from, surfaced via {@link #getPublishState()}.
+ */
 package com.cooksync.app.data.service;
 
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -21,6 +28,7 @@ import com.cooksync.app.domain.Event;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
 import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
+import com.cooksync.app.ui.recipe.wizard.RecipeImagePicker;
 import com.cooksync.app.util.CloudinaryUploader;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
@@ -40,7 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * and view live background progress while Cloudinary images and the backend payload are posted.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 09/08/2026
  */
 public class RecipePublishManager {
@@ -49,6 +57,7 @@ public class RecipePublishManager {
 
     /** Current state of a background publishing job. */
     public static class PublishState {
+        /** Stage of a publish job, in the order a successful run passes through them. */
         public enum Status { IDLE, UPLOADING, PUBLISHING, SUCCESS, ERROR }
 
         public final Status status;
@@ -57,6 +66,13 @@ public class RecipePublishManager {
         public final RecipeResponse recipe;
         public final String error;
 
+        /**
+         * @param status the publish job's current stage
+         * @param progress completion percentage, 0-100
+         * @param message a short status line for the current stage, or {@code null} if not applicable
+         * @param recipe the published recipe, set only once {@code status} is {@code SUCCESS}
+         * @param error a user-facing error description, set only once {@code status} is {@code ERROR}
+         */
         public PublishState(Status status, int progress, String message, RecipeResponse recipe, String error) {
             this.status = status;
             this.progress = progress;
@@ -65,22 +81,40 @@ public class RecipePublishManager {
             this.error = error;
         }
 
+        /** @return the initial, no-job-running state */
         public static PublishState idle() {
             return new PublishState(Status.IDLE, 0, null, null, null);
         }
 
+        /**
+         * @param progress completion percentage, 0-100
+         * @param message a short status line describing which image is uploading
+         * @return an {@code UPLOADING}-stage state
+         */
         public static PublishState uploading(int progress, String message) {
             return new PublishState(Status.UPLOADING, progress, message, null, null);
         }
 
+        /**
+         * @param message a short status line describing the in-progress server call
+         * @return a {@code PUBLISHING}-stage state, fixed at 90% complete
+         */
         public static PublishState publishing(String message) {
             return new PublishState(Status.PUBLISHING, 90, message, null, null);
         }
 
+        /**
+         * @param recipe the successfully published recipe
+         * @return a terminal {@code SUCCESS} state at 100% complete
+         */
         public static PublishState success(RecipeResponse recipe) {
             return new PublishState(Status.SUCCESS, 100, "Published successfully", recipe, null);
         }
 
+        /**
+         * @param error a user-facing description of what went wrong
+         * @return a terminal {@code ERROR} state
+         */
         public static PublishState error(String error) {
             return new PublishState(Status.ERROR, 0, null, null, error);
         }
@@ -147,8 +181,8 @@ public class RecipePublishManager {
         executor.execute(() -> {
             try {
                 // 1. Upload pending media to Cloudinary
-                List<com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload> pending =
-                        com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.collectPendingImageUploads(draft);
+                List<RecipeDraftMediaHelper.PendingImageUpload> pending =
+                        RecipeDraftMediaHelper.collectPendingImageUploads(draft);
                 int totalImages = pending.size();
 
                 String userId = SessionManager.getInstance().getUserId();
@@ -159,10 +193,10 @@ public class RecipePublishManager {
                     publishState.postValue(PublishState.error("Failed to resolve upload folder"));
                     return;
                 }
-                String folder = baseFolder + "/" + userEmail + "/" + recipeTitle;
+                String folder = CloudinaryUploader.buildUserFolder(baseFolder, userEmail, recipeTitle);
 
                 for (int i = 0; i < totalImages; i++) {
-                    com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload item = pending.get(i);
+                    RecipeDraftMediaHelper.PendingImageUpload item = pending.get(i);
                     int itemNum = i + 1;
                     int percent = (int) (((double) i / totalImages) * 70) + 5;
                     publishState.postValue(PublishState.uploading(percent,
@@ -170,9 +204,9 @@ public class RecipePublishManager {
 
                     long currentTime = System.currentTimeMillis();
                     String publicId;
-                    if (item.getKind() == com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload.Kind.COVER) {
+                    if (item.getKind() == RecipeDraftMediaHelper.PendingImageUpload.Kind.COVER) {
                         publicId = "main_" + userId + "_" + currentTime;
-                    } else if (item.getKind() == com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload.Kind.DESCRIPTION_BLOCK) {
+                    } else if (item.getKind() == RecipeDraftMediaHelper.PendingImageUpload.Kind.DESCRIPTION_BLOCK) {
                         publicId = "description_" + userId + "_" + currentTime;
                     } else {
                         int stepNum = (item.getInstruction() != null && draft.instructions != null) ? (draft.instructions.indexOf(item.getInstruction()) + 1) : 1;
@@ -194,7 +228,7 @@ public class RecipePublishManager {
                         return;
                     }
 
-                    com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.resolvePendingImageUpload(draft, item, uploadedUrl);
+                    RecipeDraftMediaHelper.resolvePendingImageUpload(draft, item, uploadedUrl);
                 }
 
                 // 2. Create custom tags if any
@@ -209,7 +243,7 @@ public class RecipePublishManager {
                 // 3. Post recipe creation or update DTO to server
                 boolean isEditing = draft.editingRecipeId != null;
                 publishState.postValue(PublishState.publishing(isEditing ? "Updating recipe..." : "Publishing recipe..."));
-                RecipeCreateRequestDTO dto = com.cooksync.app.data.model.recipe.RecipeDraftMapper.toDto(draft);
+                RecipeCreateRequestDTO dto = RecipeDraftMapper.toDto(draft);
                 RecipeResponse response = isEditing
                         ? updateRecipeSync(draft.editingRecipeId, dto)
                         : createRecipeSync(dto);
@@ -219,7 +253,7 @@ public class RecipePublishManager {
                     // now that the recipe safely exists server-side. On any failure below or in
                     // the catch block, it stays put so the user's work is never lost.
                     RecipeDraftStore.remove(draft.draftId);
-                    com.cooksync.app.ui.recipe.wizard.RecipeImagePicker.clearCache(CookSyncApplication.getAppContext());
+                    RecipeImagePicker.clearCache(CookSyncApplication.getAppContext());
                     publishState.postValue(PublishState.success(response));
                     recipePublishedEvent.postValue(new Event<>(response));
                 } else {
@@ -232,12 +266,24 @@ public class RecipePublishManager {
         });
     }
 
+    /**
+     * Uploads a single local image to Cloudinary and blocks the calling (background) thread
+     * until the upload settles, since {@link CloudinaryUploader#upload} is itself asynchronous
+     * and callback-based but this method's caller iterates images one at a time.
+     *
+     * @param localUri the picked/cached local ({@code file://}) URI to upload
+     * @param folder target Cloudinary folder
+     * @param publicId target Cloudinary public ID
+     * @param signature signed upload credentials for this attempt
+     * @return the uploaded asset's secure HTTPS URL, or {@code null} if the upload failed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
     private String uploadImageSync(String localUri, String folder, String publicId, CloudinarySignatureResponse signature) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<String> result = new AtomicReference<>();
         mainHandler.post(() -> CloudinaryUploader.upload(
                 CookSyncApplication.getAppContext(),
-                android.net.Uri.parse(localUri),
+                Uri.parse(localUri),
                 folder,
                 publicId,
                 signature,
@@ -310,22 +356,48 @@ public class RecipePublishManager {
         return result.get();
     }
 
+    /**
+     * @return the environment-specific root Cloudinary folder, or {@code null} if the call did not succeed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
     private String fetchBaseFolderSync() throws InterruptedException {
         return runSync(mediaRepository::getBaseFolder);
     }
 
+    /**
+     * @param folder target Cloudinary folder
+     * @param publicId target Cloudinary public ID
+     * @return a signed upload signature, or {@code null} if the call did not succeed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
     private CloudinarySignatureResponse fetchSignatureSync(String folder, String publicId) throws InterruptedException {
         return runSync(target -> mediaRepository.getUploadSignature(folder, publicId, target));
     }
 
+    /**
+     * @param tag the tag name to create
+     * @return the created tag, or {@code null} if the call did not succeed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
     private TagResponse createTagSync(String tag) throws InterruptedException {
         return runSync(target -> tagRepository.createTag(tag, target));
     }
 
+    /**
+     * @param dto the recipe to create
+     * @return the created recipe, or {@code null} if the call did not succeed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
     private RecipeResponse createRecipeSync(RecipeCreateRequestDTO dto) throws InterruptedException {
         return runSync(target -> recipeRepository.createRecipe(dto, target));
     }
 
+    /**
+     * @param recipeId the recipe being edited
+     * @param dto the recipe's updated content
+     * @return the updated recipe, or {@code null} if the call did not succeed
+     * @throws InterruptedException if the calling thread is interrupted while awaiting the result
+     */
     private RecipeResponse updateRecipeSync(String recipeId, RecipeCreateRequestDTO dto) throws InterruptedException {
         return runSync(target -> recipeRepository.updateRecipe(recipeId, dto, target));
     }

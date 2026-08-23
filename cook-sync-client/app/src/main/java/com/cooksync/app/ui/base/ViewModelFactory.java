@@ -125,7 +125,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(AdminUnitsViewModel.class)) {
             return (T) new AdminUnitsViewModel(unitRepository);
         } else if (modelClass.isAssignableFrom(AddRecipeViewModel.class)) {
-            return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository, mediaRepository);
+            return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository);
         } else if (modelClass.isAssignableFrom(UserProfileViewModel.class)) {
             return (T) new UserProfileViewModel(authRepository, recipeRepository);
         }

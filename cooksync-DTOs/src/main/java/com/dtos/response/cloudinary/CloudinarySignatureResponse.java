@@ -1,3 +1,9 @@
+/**
+ * Shared DTO-layer component of the Cloudinary image-upload feature. Defines the response shape
+ * {@code CloudinaryController.getSignature} returns and the Android client's
+ * {@code CloudinaryUploader} consumes to authorize a direct-to-Cloudinary upload without the
+ * client ever holding the account's API secret.
+ */
 package com.dtos.response.cloudinary;
 
 /**

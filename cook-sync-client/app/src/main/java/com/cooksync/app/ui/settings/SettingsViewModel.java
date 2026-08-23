@@ -1,4 +1,5 @@
 package com.cooksync.app.ui.settings;
+
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
@@ -10,7 +11,9 @@ import com.cooksync.app.data.repository.MediaRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
+import com.cooksync.app.util.CloudinaryUploader;
 import com.cooksync.app.util.InputValidator;
+import com.cooksync.app.util.SessionManager;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.DeleteAccountRequestDTO;
@@ -141,11 +144,11 @@ public class SettingsViewModel extends BaseViewModel {
                 return;
             }
 
-            String userId = com.cooksync.app.util.SessionManager.getInstance().getUserId();
-            String userEmail = com.cooksync.app.util.SessionManager.getInstance().getEmail();
-            String first = com.cooksync.app.util.SessionManager.getInstance().getFirstName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getFirstName().trim();
-            String last = com.cooksync.app.util.SessionManager.getInstance().getLastName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getLastName().trim();
-            pendingFolder = success.getData() + "/" + userEmail + "/avatar";
+            String userId = SessionManager.getInstance().getUserId();
+            String userEmail = SessionManager.getInstance().getEmail();
+            String first = SessionManager.getInstance().getFirstName() == null ? "" : SessionManager.getInstance().getFirstName().trim();
+            String last = SessionManager.getInstance().getLastName() == null ? "" : SessionManager.getInstance().getLastName().trim();
+            pendingFolder = CloudinaryUploader.buildUserFolder(success.getData(), userEmail, "avatar");
             pendingPublicId = first + "_" + last + "_" + userId + "_" + System.currentTimeMillis();
             mediaRepository.getUploadSignature(pendingFolder, pendingPublicId, signatureResult);
         });

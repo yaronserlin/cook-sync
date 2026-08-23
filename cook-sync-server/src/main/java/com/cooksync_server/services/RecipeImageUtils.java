@@ -1,3 +1,9 @@
+/**
+ * Server-side utility-layer component of the Cloudinary image-upload feature. Walks a
+ * {@code Recipe} entity's associations to collect every Cloudinary-hosted URL it references, so
+ * {@code RecipeServiceImp} and {@code AccountDeletionServiceImp} can hand that same URL set to
+ * {@code CloudinaryService#deleteImages} when the recipe (or its owning account) is removed.
+ */
 package com.cooksync_server.services;
 
 import java.util.ArrayList;

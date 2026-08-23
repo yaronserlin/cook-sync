@@ -1,4 +1,5 @@
 package com.cooksync.app.ui.settings;
+
 import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
@@ -25,6 +26,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.CloudinaryUploader;
+import com.cooksync.app.util.LocalImageCache;
 import com.cooksync.app.util.SessionManager;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
@@ -70,6 +72,9 @@ public class AccountDetailsActivity extends BaseActivity {
     private MaterialCheckBox cbShowFavoritesPublicly;
     private View footer;
 
+    /** Prefix for this screen's cached avatar picks, distinguishing them in the shared app cache. */
+    private static final String AVATAR_CACHE_PREFIX = "avatar_pick_";
+
     private ActivityResultLauncher<String> pickAvatarLauncher;
 
     /** A newly picked photo not yet uploaded/saved; mutually exclusive with {@link #avatarCleared}. */
@@ -96,11 +101,16 @@ public class AccountDetailsActivity extends BaseActivity {
 
         pickAvatarLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
-                pendingAvatarUri = uri;
-                avatarCleared = false;
-                tvAvatarInitials.setVisibility(View.GONE);
-                Glide.with(this).load(uri).transform(new CircleCrop()).into(ivAvatar);
-                OrganicToast.show(this, footer, getString(R.string.account_details_avatar_pending));
+                LocalImageCache.copyToPrivateCache(this, uri, AVATAR_CACHE_PREFIX, localUri -> {
+                    if (localUri == null) {
+                        return;
+                    }
+                    pendingAvatarUri = localUri;
+                    avatarCleared = false;
+                    tvAvatarInitials.setVisibility(View.GONE);
+                    Glide.with(this).load(localUri).transform(new CircleCrop()).into(ivAvatar);
+                    OrganicToast.show(this, footer, getString(R.string.account_details_avatar_pending));
+                });
             }
         });
 
@@ -238,6 +248,7 @@ public class AccountDetailsActivity extends BaseActivity {
                 pendingAvatarUri = null;
                 avatarCleared = false;
                 renderAvatar(SessionManager.getInstance().getAvatarUrl());
+                LocalImageCache.clearCache(this, AVATAR_CACHE_PREFIX);
                 saveRemainingProfileChanges();
             } else if (result instanceof ApiResult.Error<?> error) {
                 setAvatarUploading(false);

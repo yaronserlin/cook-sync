@@ -1,3 +1,8 @@
+/**
+ * Client-layer (Android) component of the Cloudinary image-upload feature. Concrete
+ * {@link MediaRepository} that calls the server's {@code /api/cloudinary/*} endpoints via
+ * Retrofit's {@code ApiService}, on the shared background executor every repository in the app uses.
+ */
 package com.cooksync.app.data.repository.impl;
 
 import androidx.lifecycle.MutableLiveData;
@@ -14,7 +19,7 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
  * via Retrofit.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public class MediaRepositoryImp extends BaseRepository implements MediaRepository {
@@ -35,11 +40,6 @@ public class MediaRepositoryImp extends BaseRepository implements MediaRepositor
     /**
      * {@inheritDoc}
      */
-    @Override
-    public void getUploadSignature(MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget) {
-        getUploadSignature(null, null, resultTarget);
-    }
-
     @Override
     public void getUploadSignature(String folder, String publicId, MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());

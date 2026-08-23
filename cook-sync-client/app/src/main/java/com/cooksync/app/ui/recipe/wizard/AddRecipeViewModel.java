@@ -8,12 +8,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.data.datasource.local.RecipeDraftStore;
-import com.cooksync.app.data.repository.MediaRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.UnitRepository;
 import com.cooksync.app.domain.ApiResult;
-import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
@@ -39,7 +37,6 @@ public class AddRecipeViewModel extends BaseViewModel {
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
     private final UnitRepository unitRepository;
-    private final MediaRepository mediaRepository;
 
     private RecipeDraft draft = new RecipeDraft();
 
@@ -54,14 +51,12 @@ public class AddRecipeViewModel extends BaseViewModel {
      * @param recipeRepository the repository used to publish the finished recipe
      * @param tagRepository the repository used to load/create tags
      * @param unitRepository the repository used to load measurement units
-     * @param mediaRepository the repository used to request Cloudinary upload signatures
      */
     public AddRecipeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository,
-                               UnitRepository unitRepository, MediaRepository mediaRepository) {
+                               UnitRepository unitRepository) {
         this.recipeRepository = recipeRepository;
         this.tagRepository = tagRepository;
         this.unitRepository = unitRepository;
-        this.mediaRepository = mediaRepository;
     }
 
     // ── Draft lifecycle ──────────────────────────────────────────────
@@ -381,16 +376,6 @@ public class AddRecipeViewModel extends BaseViewModel {
 
     public void resolvePendingImageUpload(RecipeDraftMediaHelper.PendingImageUpload pending, String uploadedUrl) {
         RecipeDraftMediaHelper.resolvePendingImageUpload(draft, pending, uploadedUrl);
-    }
-
-    /**
-     * Requests a fresh Cloudinary upload signature into a caller-owned {@code resultTarget},
-     * exactly like every {@code *Repository} call in the app.
-     *
-     * @param resultTarget LiveData target to post the outcome
-     */
-    public void requestUploadSignature(MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget) {
-        mediaRepository.getUploadSignature(resultTarget);
     }
 
     // ── Review & publish (step 4) ────────────────────────────────────

@@ -1,3 +1,9 @@
+/**
+ * Server-side API-layer component of the Cloudinary image-upload feature. Exposes the two
+ * endpoints the Android client's {@code MediaRepository} calls (via {@code ApiService}) before
+ * every direct-to-Cloudinary upload: a signed upload signature, and the environment-specific
+ * root storage folder. Delegates all Cloudinary SDK interaction to {@code CloudinaryService}.
+ */
 package com.cooksync_server.controllers;
 
 import com.cooksync_server.services.CloudinaryService;
@@ -7,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -30,12 +37,16 @@ public class CloudinaryController {
      * Time: O(1)
      * Space: O(1)
      *
+     * @param folder target folder path the client intends to upload into, or {@code null} to
+     *               use the server-configured default
+     * @param publicId target asset public ID the client intends to upload as, or {@code null}
+     *                 to let Cloudinary auto-generate one
      * @return response entity containing CloudinarySignatureResponse payload
      */
     @GetMapping("/signature")
     public ResponseEntity<ApiResponse<CloudinarySignatureResponse>> getSignature(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String folder,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String publicId) {
+            @RequestParam(required = false) String folder,
+            @RequestParam(required = false) String publicId) {
         CloudinarySignatureResponse response = cloudinaryService.generateUploadSignature(folder, publicId);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Cloudinary signature generated"));
     }

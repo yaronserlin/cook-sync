@@ -1,3 +1,9 @@
+/**
+ * Client-layer (Android) component of the Cloudinary image-upload feature. Pure, side-effect-free
+ * helper scanning a {@link RecipeDraft} for images still referenced by a local (not-yet-uploaded)
+ * URI, and writing each one's resulting Cloudinary URL back into the draft once
+ * {@code RecipePublishManager} finishes uploading it.
+ */
 package com.cooksync.app.data.model.recipe;
 
 import com.dtos.response.recipe.DescriptionBlockDTO;
@@ -19,6 +25,7 @@ public final class RecipeDraftMediaHelper {
 
     /** One picked-but-not-yet-uploaded image item in a draft. */
     public static final class PendingImageUpload {
+        /** Which slot in the draft this pending image belongs to. */
         public enum Kind { COVER, DESCRIPTION_BLOCK, INSTRUCTION }
 
         private final Kind kind;
@@ -26,6 +33,12 @@ public final class RecipeDraftMediaHelper {
         private final DescriptionBlockDTO descriptionBlock;
         private final RecipeDraft.DraftInstruction instruction;
 
+        /**
+         * @param kind which slot in the draft this pending image belongs to
+         * @param localUri the not-yet-uploaded local ({@code content://} or {@code file://}) URI
+         * @param descriptionBlock the owning description block, if {@code kind} is {@code DESCRIPTION_BLOCK}; otherwise {@code null}
+         * @param instruction the owning instruction step, if {@code kind} is {@code INSTRUCTION}; otherwise {@code null}
+         */
         public PendingImageUpload(Kind kind, String localUri, DescriptionBlockDTO descriptionBlock,
                                   RecipeDraft.DraftInstruction instruction) {
             this.kind = kind;
@@ -34,18 +47,22 @@ public final class RecipeDraftMediaHelper {
             this.instruction = instruction;
         }
 
+        /** @return the not-yet-uploaded local ({@code content://} or {@code file://}) URI */
         public String getLocalUri() {
             return localUri;
         }
 
+        /** @return which slot in the draft this pending image belongs to */
         public Kind getKind() {
             return kind;
         }
 
+        /** @return the owning description block, if {@link #getKind()} is {@code DESCRIPTION_BLOCK}; otherwise {@code null} */
         public DescriptionBlockDTO getDescriptionBlock() {
             return descriptionBlock;
         }
 
+        /** @return the owning instruction step, if {@link #getKind()} is {@code INSTRUCTION}; otherwise {@code null} */
         public RecipeDraft.DraftInstruction getInstruction() {
             return instruction;
         }
@@ -115,6 +132,13 @@ public final class RecipeDraftMediaHelper {
         }
     }
 
+    /**
+     * Reports whether {@code value} is a local URI (picked but not yet uploaded), as opposed to
+     * an already-uploaded {@code https://} Cloudinary URL.
+     *
+     * @param value the URI string to check, may be {@code null}
+     * @return {@code true} if {@code value} starts with {@code content://} or {@code file://}
+     */
     private static boolean isLocalUri(String value) {
         return value != null && (value.startsWith("content://") || value.startsWith("file://"));
     }

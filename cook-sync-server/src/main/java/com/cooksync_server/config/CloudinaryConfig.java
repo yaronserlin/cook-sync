@@ -1,3 +1,8 @@
+/**
+ * Server-side configuration-layer component of the Cloudinary image-upload feature. Wires the
+ * three {@code CLOUDINARY_*} environment credentials into the singleton {@code Cloudinary} SDK
+ * client bean that {@code CloudinaryServiceImp} signs upload requests and issues deletions with.
+ */
 package com.cooksync_server.config;
 
 import com.cloudinary.Cloudinary;
@@ -17,12 +22,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CloudinaryConfig {
 
+    /** Cloudinary account's cloud name, e.g. {@code "cooksync"}, from the {@code CLOUDINARY_CLOUD_NAME} env var. */
     @Value("${CLOUDINARY_CLOUD_NAME}")
     private String cloudName;
 
+    /** Cloudinary account's public API key, from the {@code CLOUDINARY_API_KEY} env var. */
     @Value("${CLOUDINARY_API_KEY}")
     private String apiKey;
 
+    /** Cloudinary account's private API secret, from the {@code CLOUDINARY_API_SECRET} env var; never sent to the client. */
     @Value("${CLOUDINARY_API_SECRET}")
     private String apiSecret;
 

@@ -1,3 +1,9 @@
+/**
+ * Server-side business-layer component of the Cloudinary image-upload feature. Declares the
+ * signature-generation and asset-deletion operations that {@code CloudinaryController} exposes
+ * over HTTP and that {@code RecipeServiceImp}, {@code UserProfileServiceImp}, and
+ * {@code AccountDeletionServiceImp} call directly to clean up media on update/delete.
+ */
 package com.cooksync_server.services;
 
 import java.util.List;
@@ -8,17 +14,10 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
  * Service interface for Cloudinary operations including signature generation and asset deletion.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public interface CloudinaryService {
-
-    /**
-     * Generates a signed upload signature payload for client direct uploads.
-     *
-     * @return CloudinarySignatureResponse DTO containing signature details and timestamp
-     */
-    CloudinarySignatureResponse generateUploadSignature();
 
     /**
      * Generates a signed upload signature payload for client direct uploads targeting a specific folder and public ID.
