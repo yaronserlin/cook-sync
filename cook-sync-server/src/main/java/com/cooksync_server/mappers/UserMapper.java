@@ -4,7 +4,8 @@ import com.cooksync_server.entities.User;
 import com.dtos.response.user.UserResponse;
 
 /**
- * Mapper utility class transforming User entities into UserResponse DTOs.
+ * Mapper utility converting {@link User} JPA entities into {@link UserResponse} DTOs for
+ * outbound API responses.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -16,10 +17,10 @@ public final class UserMapper {
     }
 
     /**
-     * Converts a User entity into a UserResponse DTO.
+     * Converts a {@link User} entity into its {@link UserResponse} DTO representation.
      *
-     * @param user target User entity instance
-     * @return populated UserResponse instance or null
+     * @param user source User entity, may be {@code null}
+     * @return the populated UserResponse, or {@code null} if {@code user} is {@code null}
      */
     public static UserResponse toResponse(User user) {
         if (user == null) {

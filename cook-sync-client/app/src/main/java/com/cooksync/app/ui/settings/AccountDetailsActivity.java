@@ -26,6 +26,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.CloudinaryUploader;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.LocalImageCache;
 import com.cooksync.app.util.SessionManager;
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -33,21 +34,24 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.user.UserResponse;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.Objects;
+
 /**
  * Dedicated screen for managing every self-service account setting in one place: name, city,
  * bio, email, password, avatar, public-profile privacy toggles, and account deletion. Reached
- * from the "Account details" row in {@link SettingsActivity}, matching the design's
+ * from the "Account details" row on {@link SettingsActivity}, corresponding to the design's
  * {@code is.edit} screen.
  *
- * <p>Reuses {@link SettingsViewModel} exactly as {@link SettingsActivity} does — this screen is
- * a new View bound to the same ViewModel and repository calls, not a new business-logic layer.
- * Each edited section ("Save changes" tap) fires only the network calls whose underlying fields
- * actually changed, mirroring the granularity of the server's {@code AuthController} endpoints.</p>
+ * <p>Binds to the same {@link SettingsViewModel} instance type that {@link SettingsActivity}
+ * uses, rather than introducing a separate business-logic layer — this Activity is simply another
+ * View over the same ViewModel and repository calls. Each edited section is submitted only when
+ * its own "Save changes" tap fires the network calls for the fields that actually changed,
+ * mirroring the granularity of the server's {@code AuthController} endpoints.</p>
  *
- * <p>A picked avatar (or "Use initials instead") is only a local preview until "Save changes" is
- * tapped — nothing is uploaded or persisted until then, matching every other field on this
- * screen. Leaving the screen (back arrow, system back, or Cancel) with any unsaved field —
- * including a pending avatar change — prompts a discard-confirmation dialog first.</p>
+ * <p>A picked avatar (or "Use initials instead") is held only as a local preview until "Save
+ * changes" is tapped — nothing is uploaded or persisted before then, matching every other field
+ * on this screen. Leaving the screen (back arrow, system back, or Cancel) while any field is
+ * unsaved — including a pending avatar change — prompts a discard-confirmation dialog first.</p>
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -72,14 +76,14 @@ public class AccountDetailsActivity extends BaseActivity {
     private MaterialCheckBox cbShowFavoritesPublicly;
     private View footer;
 
-    /** Prefix for this screen's cached avatar picks, distinguishing them in the shared app cache. */
+    /** Prefix applied to this screen's cached avatar picks, distinguishing them within the shared app-wide cache. */
     private static final String AVATAR_CACHE_PREFIX = "avatar_pick_";
 
     private ActivityResultLauncher<String> pickAvatarLauncher;
 
-    /** A newly picked photo not yet uploaded/saved; mutually exclusive with {@link #avatarCleared}. */
+    /** A newly picked photo not yet uploaded or saved; mutually exclusive with {@link #avatarCleared}. */
     private Uri pendingAvatarUri;
-    /** Whether "Use initials instead" was tapped but not yet saved. */
+    /** Whether "Use initials instead" was tapped but the change has not yet been saved. */
     private boolean avatarCleared;
 
     // Baseline values loaded from the server, used both to detect what changed on Save and to
@@ -159,15 +163,15 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * Pre-fills the form with whatever is already cached locally, so the screen isn't blank
+     * Pre-fills the form with whatever is already cached locally, so the screen is not blank
      * while {@link SettingsViewModel#loadAccountDetails()}'s network call is in flight. City,
-     * bio, and privacy preferences aren't part of the local cache and are filled in once that
-     * call resolves.
+     * bio, and privacy preferences are not part of the local cache and are filled in only once
+     * that call resolves.
      */
     private void renderCachedProfile() {
-        loadedFirstName = nullToEmpty(SessionManager.getInstance().getFirstName());
-        loadedLastName = nullToEmpty(SessionManager.getInstance().getLastName());
-        loadedEmail = nullToEmpty(SessionManager.getInstance().getEmail());
+        loadedFirstName = Objects.requireNonNullElse(SessionManager.getInstance().getFirstName(), "");
+        loadedLastName = Objects.requireNonNullElse(SessionManager.getInstance().getLastName(), "");
+        loadedEmail = Objects.requireNonNullElse(SessionManager.getInstance().getEmail(), "");
         etFirstName.setText(loadedFirstName);
         etLastName.setText(loadedLastName);
         etEmail.setText(loadedEmail);
@@ -175,14 +179,8 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     private void renderAvatar(String avatarUrl) {
-        if (avatarUrl == null || avatarUrl.isEmpty()) {
-            ivAvatar.setImageDrawable(null);
-            tvAvatarInitials.setText(SessionManager.getInstance().getInitials());
-            tvAvatarInitials.setVisibility(View.VISIBLE);
-        } else {
-            tvAvatarInitials.setVisibility(View.GONE);
-            Glide.with(this).load(avatarUrl).transform(new CircleCrop()).into(ivAvatar);
-        }
+        GlideUtils.renderAvatarOrInitials(Glide.with(this), avatarUrl, ivAvatar, tvAvatarInitials,
+                SessionManager.getInstance().getInitials());
     }
 
     private void setAvatarUploading(boolean uploading) {
@@ -200,11 +198,11 @@ public class AccountDetailsActivity extends BaseActivity {
         viewModel.getAccountDetailsResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<UserResponse> success) {
                 UserResponse data = success.getData();
-                loadedFirstName = nullToEmpty(data.firstName());
-                loadedLastName = nullToEmpty(data.lastName());
-                loadedEmail = nullToEmpty(data.email());
-                loadedCity = nullToEmpty(data.city());
-                loadedBio = nullToEmpty(data.bio());
+                loadedFirstName = Objects.requireNonNullElse(data.firstName(), "");
+                loadedLastName = Objects.requireNonNullElse(data.lastName(), "");
+                loadedEmail = Objects.requireNonNullElse(data.email(), "");
+                loadedCity = Objects.requireNonNullElse(data.city(), "");
+                loadedBio = Objects.requireNonNullElse(data.bio(), "");
                 loadedShowRecipesPublicly = data.showRecipesPublicly();
                 loadedShowFavoritesPublicly = data.showFavoritesPublicly();
                 etFirstName.setText(loadedFirstName);
@@ -300,9 +298,9 @@ public class AccountDetailsActivity extends BaseActivity {
 
     /**
      * Kicks off saving the form. A pending avatar change (new photo or "use initials") is
-     * resolved first — {@link #saveRemainingProfileChanges()} only runs once that single call
-     * has actually settled, from {@link SettingsViewModel#getAvatarResult()}'s success handler,
-     * so it never fires twice for the same tap and never races the avatar write into
+     * resolved first: {@link #saveRemainingProfileChanges()} runs only once that single call has
+     * actually settled, from {@link SettingsViewModel#getAvatarResult()}'s success handler, so it
+     * never fires twice for the same tap and never races the avatar write into
      * {@link SessionManager}. With no pending avatar change, the rest of the form is submitted
      * right away.
      *
@@ -323,12 +321,12 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * If the email field changed, gates the whole save behind a password-confirmation dialog —
-     * {@link #submitAccountChanges()} only runs from that dialog's confirm callback, once it has
-     * already dismissed itself, so it never fires while the dialog is still on screen and can't
-     * be torn down mid-confirmation by a navigate-away triggered from the rest of the batch.
-     * Cancelling the dialog abandons the whole save attempt. With no email change, the batch is
-     * submitted right away.
+     * If the email field changed, gates the entire save behind a password-confirmation dialog:
+     * {@link #submitAccountChanges()} runs only from that dialog's confirm callback, once the
+     * dialog has already dismissed itself, so it never fires while the dialog is still on screen
+     * and cannot be torn down mid-confirmation by a navigate-away triggered from the rest of the
+     * batch. Cancelling the dialog abandons the whole save attempt. With no email change, the
+     * batch is submitted right away.
      *
      * Complexity:
      * Time: O(1)
@@ -345,9 +343,9 @@ public class AccountDetailsActivity extends BaseActivity {
 
     /**
      * Prompts for the current password before submitting {@code newEmail}, since changing email
-     * requires re-authentication and the "current password" field on this screen is meant for
-     * the password-change section, not implicitly reused for email too. On confirm, submits the
-     * email change and then the rest of the form's changes, in that order.
+     * requires re-authentication and the "current password" field on this screen is dedicated to
+     * the password-change section rather than implicitly reused for email too. On confirm,
+     * submits the email change followed by the rest of the form's changes, in that order.
      *
      * @param newEmail the new email address to submit once the password is confirmed
      */
@@ -365,8 +363,8 @@ public class AccountDetailsActivity extends BaseActivity {
 
     /**
      * Submits the name/city/bio/privacy/password batch (see
-     * {@link SettingsViewModel#saveAccountChanges}); on success this navigates to
-     * {@link SettingsActivity}, so it must only run once any required email confirmation has
+     * {@link SettingsViewModel#saveAccountChanges}). On success this navigates to
+     * {@link SettingsActivity}, so it must run only once any required email confirmation has
      * already been resolved.
      *
      * Complexity:
@@ -396,7 +394,7 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * Leaves the screen immediately if nothing is unsaved, otherwise asks the user to confirm
+     * Leaves the screen immediately if nothing is unsaved; otherwise asks the user to confirm
      * discarding their edits first.
      *
      * Complexity:
@@ -418,14 +416,14 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * Compares every editable field (plus any pending, not-yet-saved avatar change) against its
+     * Compares every editable field, plus any pending, not-yet-saved avatar change, against its
      * last-known-saved baseline.
      *
      * Complexity:
      * Time: O(n) where n is the combined length of the editable text fields
      * Space: O(1)
      *
-     * @return true if any field or the avatar differs from what's actually saved
+     * @return {@code true} if any field or the avatar differs from what is actually saved
      */
     private boolean hasUnsavedChanges() {
         return viewModel.hasUnsavedAccountChanges(
@@ -437,9 +435,5 @@ public class AccountDetailsActivity extends BaseActivity {
                 pendingAvatarUri != null || avatarCleared,
                 loadedFirstName, loadedLastName, loadedCity, loadedBio, loadedEmail,
                 loadedShowRecipesPublicly, loadedShowFavoritesPublicly);
-    }
-
-    private static String nullToEmpty(String value) {
-        return value == null ? "" : value;
     }
 }

@@ -31,12 +31,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
- * ViewModel for {@link SettingsActivity}. Validates every field client-side (mirroring the
- * server's Jakarta constraints, exactly like {@link com.cooksync.app.ui.auth.LoginViewModel}
- * and {@link com.cooksync.app.ui.auth.RegisterViewModel}) before delegating to
- * {@link AuthRepository}, fetches Cloudinary upload signatures via {@link MediaRepository} for
- * avatar changes, and fetches the Favorites/My recipes counts shown as row subtitles via
- * {@link RecipeRepository}.
+ * Shared ViewModel backing both {@link SettingsActivity} and {@link AccountDetailsActivity}.
+ * Applies client-side validation to every field before submission — mirroring the server's
+ * Jakarta constraints, in the same style as {@link com.cooksync.app.ui.auth.LoginViewModel} and
+ * {@link com.cooksync.app.ui.auth.RegisterViewModel} — then delegates the actual calls to
+ * {@link AuthRepository}. Obtains Cloudinary upload signatures through {@link MediaRepository}
+ * for avatar changes, and fetches the Favorites/My recipes counts shown as row subtitles through
+ * {@link RecipeRepository}. Sits between the two Settings-area screens and the repository layer,
+ * so neither Activity talks to a repository directly.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -48,12 +50,8 @@ public class SettingsViewModel extends BaseViewModel {
     private final MediaRepository mediaRepository;
     private final RecipeRepository recipeRepository;
 
-    private final MutableLiveData<ApiResult<Void>> profileResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> avatarResult = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<Void>> passwordResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<AuthResponse>> emailResult = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<Void>> deactivateResult = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<Void>> privacyResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> deleteAccountResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> logoutResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<CloudinarySignatureResponse>> signatureResult = new MutableLiveData<>();
@@ -66,7 +64,7 @@ public class SettingsViewModel extends BaseViewModel {
     private String pendingPublicId;
 
     /**
-     * Constructs the ViewModel with the given repositories, injected by
+     * Constructs the ViewModel with its collaborating repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
      * Complexity:
@@ -85,37 +83,8 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Validates and submits an updated first/last name, city, and bio. City and bio are
-     * optional free text, so they are trimmed and passed through as-is (empty becomes null).
-     *
-     * Complexity:
-     * Time: O(n) where n is the combined length of all four fields
-     * Space: O(1)
-     *
-     * @param rawFirstName raw text from the first-name field
-     * @param rawLastName  raw text from the last-name field
-     * @param rawCity      raw text from the city field, may be blank
-     * @param rawBio       raw text from the bio field, may be blank
-     */
-    public void updateProfile(String rawFirstName, String rawLastName, String rawCity, String rawBio) {
-        InputValidator.ValidationResult firstRes = InputValidator.validateName(rawFirstName, "First name");
-        if (!firstRes.isValid) {
-            validationError.setValue(new Event<>(firstRes.errorMessage));
-            return;
-        }
-        InputValidator.ValidationResult lastRes = InputValidator.validateName(rawLastName, "Last name");
-        if (!lastRes.isValid) {
-            validationError.setValue(new Event<>(lastRes.errorMessage));
-            return;
-        }
-        String city = rawCity == null || rawCity.trim().isEmpty() ? null : rawCity.trim();
-        String bio = rawBio == null || rawBio.trim().isEmpty() ? null : rawBio.trim();
-        authRepository.updateProfile(new ProfileUpdateRequestDTO(rawFirstName.trim(), rawLastName.trim(), city, bio), profileResult);
-    }
-
-    /**
-     * Fetches the current user's full profile, including city, bio, and privacy preferences,
-     * to pre-fill the Account Details screen.
+     * Fetches the current user's full profile — including city, bio, and privacy preferences —
+     * used to pre-fill the Account Details screen.
      *
      * Complexity:
      * Time: O(1)
@@ -126,10 +95,10 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Requests a fresh Cloudinary upload signature, used just before uploading a newly
-     * picked avatar image. First resolves the server-configured root upload folder, then
-     * builds the target folder as {@code [baseFolder]/[userEmail]/avatar} before requesting
-     * the signature.
+     * Requests a fresh Cloudinary upload signature, used immediately before uploading a newly
+     * picked avatar image. First resolves the server-configured root upload folder, then builds
+     * the target folder as {@code [baseFolder]/[userEmail]/avatar} before requesting the
+     * signature itself.
      *
      * Complexity:
      * Time: O(1)
@@ -156,8 +125,8 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Persists a newly uploaded avatar's URL against the user's account. Called after the
-     * image itself has already been uploaded to Cloudinary directly by the view layer.
+     * Persists a newly uploaded avatar's URL against the user's account. Called after the image
+     * itself has already been uploaded to Cloudinary directly by the view layer.
      *
      * Complexity:
      * Time: O(1)
@@ -170,31 +139,7 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Validates and submits a password change.
-     *
-     * Complexity:
-     * Time: O(n) where n is the combined length of both passwords
-     * Space: O(1)
-     *
-     * @param rawCurrentPassword raw text from the current-password field
-     * @param rawNewPassword     raw text from the new-password field
-     */
-    public void changePassword(String rawCurrentPassword, String rawNewPassword) {
-        InputValidator.ValidationResult currentRes = InputValidator.validateLoginPassword(rawCurrentPassword);
-        if (!currentRes.isValid) {
-            validationError.setValue(new Event<>(currentRes.errorMessage));
-            return;
-        }
-        InputValidator.ValidationResult newRes = InputValidator.validateNewPassword(rawNewPassword);
-        if (!newRes.isValid) {
-            validationError.setValue(new Event<>(newRes.errorMessage));
-            return;
-        }
-        authRepository.changePassword(new ChangePasswordRequestDTO(rawCurrentPassword, rawNewPassword), passwordResult);
-    }
-
-    /**
-     * Validates and submits an email change, re-authenticated with the current password.
+     * Validates and submits an email change, re-authenticated against the current password.
      *
      * Complexity:
      * Time: O(n) where n is the combined length of the email and password
@@ -219,11 +164,12 @@ public class SettingsViewModel extends BaseViewModel {
 
     /**
      * Submits the profile (name/city/bio), privacy settings, and — if a new password was
-     * entered — a password change, as a single batch. Every request that applies is fired in
-     * parallel; the batch reports exactly one combined outcome via {@link #getSaveChangesResult()}
-     * once all of them have settled, so the caller can navigate away on success without racing
-     * any one of them. A client-side validation failure (invalid name, weak password, mismatched
-     * repeat) fails fast and fires no network call at all.
+     * entered — a password change, as a single batch. Every applicable request is fired in
+     * parallel, and the batch reports exactly one combined outcome via
+     * {@link #getSaveChangesResult()} once every fired request has settled, so the caller can
+     * navigate away on success without racing any individual call. A client-side validation
+     * failure (invalid name, weak password, mismatched repeat) fails fast and fires no network
+     * call at all.
      *
      * Complexity:
      * Time: O(1)
@@ -307,33 +253,8 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Deactivates the current account.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     */
-    public void deactivateAccount() {
-        authRepository.deactivateAccount(deactivateResult);
-    }
-
-    /**
-     * Submits updated public-profile privacy preferences.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param showRecipesPublicly   whether published recipes appear on the public profile
-     * @param showFavoritesPublicly whether favorited recipes are visible to other users
-     */
-    public void updatePrivacySettings(boolean showRecipesPublicly, boolean showFavoritesPublicly) {
-        authRepository.updatePrivacySettings(
-                new PrivacySettingsUpdateRequestDTO(showRecipesPublicly, showFavoritesPublicly), privacyResult);
-    }
-
-    /**
-     * Validates and submits an account-deletion request, starting the 30-day grace period.
+     * Validates and submits an account-deletion request, starting the server's 30-day grace
+     * period.
      *
      * Complexity:
      * Time: O(n) where n is the password length
@@ -351,7 +272,7 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Logs the current user out.
+     * Logs the current user out of the app.
      *
      * Complexity:
      * Time: O(1)
@@ -362,8 +283,8 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Fetches the current user's favorite recipes, used to derive the count shown as the
-     * "Favorites" row's subtitle.
+     * Fetches the current user's favorite recipes, from which the "Favorites" row's subtitle
+     * count is derived.
      *
      * Complexity:
      * Time: O(1)
@@ -374,8 +295,8 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Fetches the current user's own recipes, used to derive the count shown as the
-     * "My recipes" row's subtitle.
+     * Fetches the current user's own recipes, from which the "My recipes" row's subtitle count
+     * is derived.
      *
      * Complexity:
      * Time: O(1)
@@ -385,27 +306,19 @@ public class SettingsViewModel extends BaseViewModel {
         recipeRepository.getMyRecipes(myRecipesResult);
     }
 
-    /** @return observable result of a name update */
-    public LiveData<ApiResult<Void>> getProfileResult() { return profileResult; }
     /** @return observable result of an avatar URL update */
     public LiveData<ApiResult<Void>> getAvatarResult() { return avatarResult; }
-    /** @return observable result of a password change */
-    public LiveData<ApiResult<Void>> getPasswordResult() { return passwordResult; }
     /** @return observable result of an email change */
     public LiveData<ApiResult<AuthResponse>> getEmailResult() { return emailResult; }
-    /** @return observable result of an account deactivation */
-    public LiveData<ApiResult<Void>> getDeactivateResult() { return deactivateResult; }
-    /** @return observable result of a privacy settings update */
-    public LiveData<ApiResult<Void>> getPrivacyResult() { return privacyResult; }
     /** @return observable result of an account-deletion request */
     public LiveData<ApiResult<Void>> getDeleteAccountResult() { return deleteAccountResult; }
-    /** @return one-shot combined outcome of {@link #saveAccountChanges}, Success only once every fired call has succeeded */
+    /** @return one-shot combined outcome of {@link #saveAccountChanges}, success only once every fired call has succeeded */
     public LiveData<Event<ApiResult<Void>>> getSaveChangesResult() { return saveChangesResult; }
-    /** @return observable result of a logout */
+    /** @return observable result of a logout request */
     public LiveData<ApiResult<Void>> getLogoutResult() { return logoutResult; }
     /** @return observable result of a Cloudinary upload-signature request */
     public LiveData<ApiResult<CloudinarySignatureResponse>> getSignatureResult() { return signatureResult; }
-    /** @return one-shot client-side validation errors, to surface as a Toast */
+    /** @return one-shot client-side validation errors, surfaced by the view as a Toast */
     public LiveData<Event<String>> getValidationError() { return validationError; }
     /** @return observable result of the Favorites list fetch, used to derive its row's count */
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() { return favoritesResult; }
@@ -413,14 +326,16 @@ public class SettingsViewModel extends BaseViewModel {
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getMyRecipesResult() { return myRecipesResult; }
     /** @return observable result of the current user's full profile fetch */
     public LiveData<ApiResult<UserResponse>> getAccountDetailsResult() { return accountDetailsResult; }
+    /** @return the target Cloudinary folder resolved for the in-flight avatar upload */
     public String getPendingFolder() { return pendingFolder; }
+    /** @return the target Cloudinary public ID resolved for the in-flight avatar upload */
     public String getPendingPublicId() { return pendingPublicId; }
 
     /**
      * Compares the account details form's current field values against their last-known-saved
      * baseline, deciding whether leaving the screen should prompt a "discard changes?"
-     * confirmation. The Activity supplies the current values (it owns the widgets); this method
-     * owns only the "what counts as changed" rule.
+     * confirmation. The Activity supplies the current values since it owns the widgets; this
+     * method owns only the "what counts as changed" rule.
      *
      * Complexity:
      * Time: O(n) where n is the combined length of the text fields

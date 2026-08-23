@@ -1,8 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. Builds Cloudinary
- * URL-transform thumbnail URLs and avatar-initials fallbacks for display, purely by string
- * manipulation on an already-uploaded asset's URL — performs no upload or network call itself.
- */
 package com.cooksync.app.util;
 
 import androidx.annotation.NonNull;
@@ -10,10 +5,10 @@ import androidx.annotation.Nullable;
 
 /**
  * Helper for deriving a small, content-aware-cropped Cloudinary thumbnail URL from a full-size
- * Cloudinary asset URL, so avatar-sized image requests (e.g. review author photos) don't
- * download a full-resolution image. Relies on Cloudinary's URL-based transformation syntax:
- * inserting a transformation segment right after {@code /upload/} in the delivery URL. Uses
- * {@code g_auto} rather than {@code g_face} gravity, since basic face-detection cropping is
+ * Cloudinary asset URL, so avatar-sized image requests (e.g. review author photos) do not
+ * download a full-resolution image. Relies on Cloudinary's URL-based transformation syntax,
+ * inserting a transformation segment immediately after {@code /upload/} in the delivery URL.
+ * Uses {@code g_auto} rather than {@code g_face} gravity, since basic face-detection cropping is
  * plan-gated on some Cloudinary accounts while {@code g_auto} is universally available.
  *
  * @author Yaron Serlin
@@ -22,14 +17,14 @@ import androidx.annotation.Nullable;
  */
 public final class CloudinaryImageUtils {
 
-    /** Marks where a Cloudinary transformation segment is inserted in a delivery URL. */
+    /** Marks the point at which a Cloudinary transformation segment is inserted into a delivery URL. */
     private static final String UPLOAD_SEGMENT = "/upload/";
 
     private CloudinaryImageUtils() {
     }
 
     /**
-     * Builds a square, face-cropped thumbnail URL from a Cloudinary asset URL.
+     * Builds a square, content-aware-cropped thumbnail URL from a Cloudinary asset URL.
      *
      * Complexity:
      * Time: O(n) in the URL length
@@ -37,7 +32,7 @@ public final class CloudinaryImageUtils {
      *
      * @param url the original Cloudinary asset URL, may be {@code null}/blank
      * @param sizePx the target width/height of the thumbnail, in pixels
-     * @return the transformed thumbnail URL, or the original {@code url} if it isn't a
+     * @return the transformed thumbnail URL, or the original {@code url} if it is not a
      *         recognizable Cloudinary upload URL, or {@code null} if {@code url} was blank
      */
     @Nullable
@@ -55,7 +50,7 @@ public final class CloudinaryImageUtils {
     }
 
     /**
-     * Builds a two-letter initials string from a display name, matching the convention already
+     * Derives a two-letter initials string from a display name, matching the convention already
      * used across the app's avatar chips.
      *
      * Complexity:

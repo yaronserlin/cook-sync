@@ -36,7 +36,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 /**
- * REST Controller exposing user authentication, registration, session management, and profile settings endpoints.
+ * Presents the authentication and account-settings surface of the CookSync REST API under
+ * {@code /api/auth}: registration and OTP verification, login and refresh-token issuance,
+ * session logout, and the authenticated-user profile-management operations covering avatar,
+ * personal details, password, email, privacy preferences, and account
+ * deactivation/deletion. All business logic is delegated to {@link AuthService}, {@link
+ * UserProfileService}, and {@link PasswordService}; this class is responsible only for
+ * request/response mapping and wrapping results in {@link ApiResponse}.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -52,13 +58,13 @@ public class AuthController {
     private final PasswordService passwordService;
 
     /**
-     * Initiates registration for a new account with the provided credentials. No account is
-     * created and no tokens are issued yet — a one-time verification code is emailed to the
-     * given address, and the registration is only completed by calling
-     * {@link #verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO)} with that code.
+     * Begins registration for a new account using the submitted credentials. No user record is
+     * created and no tokens are issued at this stage; a one-time verification code is emailed to
+     * the supplied address, and registration is only finalized through
+     * {@link #verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO)}.
      *
-     * @param request registration details payload DTO
-     * @return response entity containing PendingRegistrationResponse payload
+     * @param request registration details payload
+     * @return response entity carrying the pending-registration payload
      */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<PendingRegistrationResponse>> register(@Valid @RequestBody RegisterRequestDTO request) {
@@ -67,11 +73,12 @@ public class AuthController {
     }
 
     /**
-     * Completes registration by validating the OTP code emailed for a pending registration. On
-     * success, creates the user account and issues initial access and refresh tokens.
+     * Finalizes registration by validating the one-time code emailed for a pending registration.
+     * On success, persists the new user account and issues the initial access and refresh
+     * tokens.
      *
-     * @param request OTP verification payload DTO
-     * @return response entity containing AuthResponse payload
+     * @param request OTP verification payload
+     * @return response entity carrying the newly issued authentication payload
      */
     @PostMapping("/verify-registration-otp")
     public ResponseEntity<ApiResponse<AuthResponse>> verifyRegistrationOtp(@Valid @RequestBody VerifyRegistrationOtpRequestDTO request) {
@@ -80,11 +87,11 @@ public class AuthController {
     }
 
     /**
-     * Regenerates and re-emails a fresh OTP code for an existing pending registration, used when
-     * the previous code expired or was not received.
+     * Reissues and re-emails a fresh verification code for a pending registration, for use when
+     * the previously issued code has expired or was never received.
      *
-     * @param request resend request payload DTO
-     * @return response entity containing PendingRegistrationResponse payload
+     * @param request resend-code request payload
+     * @return response entity carrying the refreshed pending-registration payload
      */
     @PostMapping("/resend-registration-otp")
     public ResponseEntity<ApiResponse<PendingRegistrationResponse>> resendRegistrationOtp(@Valid @RequestBody ResendRegistrationOtpRequestDTO request) {
@@ -93,10 +100,10 @@ public class AuthController {
     }
 
     /**
-     * Authenticates existing user with email and password credentials.
+     * Authenticates an existing account against the submitted email and password credentials.
      *
-     * @param request login credentials payload DTO
-     * @return response entity containing AuthResponse payload
+     * @param request login credentials payload
+     * @return response entity carrying the issued authentication payload
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequestDTO request) {
@@ -105,10 +112,10 @@ public class AuthController {
     }
 
     /**
-     * Generates a new JWT access token using a valid refresh token payload.
+     * Issues a new JWT access token in exchange for a valid refresh token.
      *
-     * @param request refresh token request payload DTO
-     * @return response entity containing renewed AuthResponse payload
+     * @param request refresh-token payload
+     * @return response entity carrying the renewed authentication payload
      */
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody TokenRefreshRequestDTO request) {
@@ -117,10 +124,11 @@ public class AuthController {
     }
 
     /**
-     * Validates active JWT authentication token and returns user profile payload.
+     * Confirms that the caller's JWT access token is still valid and returns the corresponding
+     * user profile.
      *
      * @param authentication active Spring Security authentication token
-     * @return response entity containing AuthResponse payload
+     * @return response entity carrying the current authentication payload
      */
     @GetMapping("/validate-token")
     public ResponseEntity<ApiResponse<AuthResponse>> validateToken(Authentication authentication) {
@@ -130,12 +138,12 @@ public class AuthController {
     }
 
     /**
-     * Fetches the authenticated user's full profile, including fields not carried by
-     * {@link AuthResponse} (city, bio, privacy preferences). Used by the client's Account
-     * Details screen to pre-fill the edit form.
+     * Retrieves the authenticated caller's complete profile, including fields not carried by
+     * {@link AuthResponse} such as city, bio, and privacy preferences. Backs the client's
+     * Account Details screen when pre-filling its edit form.
      *
      * @param authentication active Spring Security authentication token
-     * @return response entity containing the current user's full profile
+     * @return response entity carrying the caller's full profile
      */
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(Authentication authentication) {
@@ -144,10 +152,10 @@ public class AuthController {
     }
 
     /**
-     * Invalidates active user refresh token session upon logout.
+     * Ends the caller's session by revoking its active refresh token.
      *
      * @param authentication active Spring Security authentication token
-     * @return response entity acknowledging logout
+     * @return response entity acknowledging the logout
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(Authentication authentication) {
@@ -157,11 +165,11 @@ public class AuthController {
     }
 
     /**
-     * Updates profile picture avatar URL for authenticated user.
+     * Replaces the authenticated caller's profile picture URL.
      *
-     * @param request avatar URL update payload DTO
+     * @param request avatar-update payload
      * @param authentication active Spring Security authentication token
-     * @return response entity acknowledging avatar update
+     * @return response entity acknowledging the avatar update
      */
     @PutMapping("/avatar")
     public ResponseEntity<ApiResponse<Void>> updateAvatar(
@@ -173,11 +181,11 @@ public class AuthController {
     }
 
     /**
-     * Updates first and last name profile details for authenticated user.
+     * Updates the authenticated caller's first name, last name, city, and bio.
      *
-     * @param request profile details update payload DTO
+     * @param request profile-details update payload
      * @param authentication active Spring Security authentication token
-     * @return response entity acknowledging profile update
+     * @return response entity acknowledging the profile update
      */
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<Void>> updateProfile(
@@ -188,11 +196,11 @@ public class AuthController {
     }
 
     /**
-     * Updates password for authenticated user following password verification.
+     * Changes the authenticated caller's password after verifying the supplied current password.
      *
-     * @param request change password payload DTO
+     * @param request change-password payload
      * @param authentication active Spring Security authentication token
-     * @return response entity acknowledging password update
+     * @return response entity acknowledging the password update
      */
     @PutMapping("/password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
@@ -203,11 +211,12 @@ public class AuthController {
     }
 
     /**
-     * Updates email address for authenticated user and issues new JWT tokens.
+     * Changes the authenticated caller's account email address and issues fresh tokens
+     * reflecting the new address.
      *
-     * @param request email update payload DTO
+     * @param request email-update payload
      * @param authentication active Spring Security authentication token
-     * @return response entity containing new AuthResponse payload
+     * @return response entity carrying the reissued authentication payload
      */
     @PutMapping("/email")
     public ResponseEntity<ApiResponse<AuthResponse>> updateEmail(
@@ -218,10 +227,10 @@ public class AuthController {
     }
 
     /**
-     * Deactivates account for authenticated user.
+     * Deactivates the authenticated caller's account.
      *
      * @param authentication active Spring Security authentication token
-     * @return response entity acknowledging account deactivation
+     * @return response entity acknowledging the deactivation
      */
     @PatchMapping("/deactivate")
     public ResponseEntity<ApiResponse<Void>> deactivateAccount(Authentication authentication) {
@@ -230,11 +239,11 @@ public class AuthController {
     }
 
     /**
-     * Updates public-profile privacy preferences for authenticated user.
+     * Updates the authenticated caller's public-profile privacy preferences.
      *
-     * @param request privacy settings update payload DTO
+     * @param request privacy-settings update payload
      * @param authentication active Spring Security authentication token
-     * @return response entity acknowledging the privacy settings update
+     * @return response entity acknowledging the privacy-settings update
      */
     @PutMapping("/privacy")
     public ResponseEntity<ApiResponse<Void>> updatePrivacySettings(
@@ -245,11 +254,11 @@ public class AuthController {
     }
 
     /**
-     * Starts the 30-day self-service account-deletion grace period for authenticated user,
-     * following password verification. The account is restored automatically if the user logs
-     * back in before the grace period lapses; otherwise it is permanently purged.
+     * Starts the authenticated caller's 30-day self-service account-deletion grace period after
+     * verifying the supplied current password. The account is restored automatically if the user
+     * logs back in before the grace period elapses; otherwise it is permanently purged.
      *
-     * @param request delete-account payload DTO carrying the current password for verification
+     * @param request delete-account payload carrying the current password for verification
      * @param authentication active Spring Security authentication token
      * @return response entity acknowledging the deletion request
      */
@@ -263,11 +272,11 @@ public class AuthController {
     }
 
     /**
-     * Initiates the forgot-password flow by emailing a one-time reset token, if the given
-     * email belongs to a registered account. Always returns success regardless of whether the
-     * email is registered, so the response never reveals account existence.
+     * Begins the forgot-password flow by emailing a one-time reset code when the submitted
+     * address belongs to a registered account. Always responds with success regardless of
+     * whether the address is registered, so the response never discloses account existence.
      *
-     * @param request forgot-password request payload DTO
+     * @param request forgot-password request payload
      * @return response entity acknowledging the request
      */
     @PostMapping("/forgot-password")
@@ -278,10 +287,10 @@ public class AuthController {
     }
 
     /**
-     * Completes the forgot-password flow by consuming a valid reset token and setting a new
+     * Completes the forgot-password flow by consuming a valid reset code and setting a new
      * account password.
      *
-     * @param request reset-password request payload DTO
+     * @param request reset-password request payload
      * @return response entity acknowledging the password reset
      */
     @PostMapping("/reset-password")

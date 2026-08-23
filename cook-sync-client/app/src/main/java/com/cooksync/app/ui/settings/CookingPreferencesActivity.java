@@ -8,10 +8,10 @@ import com.cooksync.app.data.datasource.local.CookingPreferencesStore;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 /**
- * Device-level cooking preferences: whether cooking mode keeps the screen awake, and whether a
- * finished step timer plays a sound and vibrates. Reads and writes {@link CookingPreferencesStore}
- * directly rather than through a ViewModel/repository, since these are local device settings with
- * no network or account dependency.
+ * Screen for editing device-level cooking preferences: whether cooking mode keeps the screen
+ * awake, and whether a finished step timer plays a sound and vibrates. Reads and writes
+ * {@link CookingPreferencesStore} directly rather than through a ViewModel or repository, since
+ * these settings are local to the device and carry no network or account dependency.
  *
  * @author Yaron Serlin
  * @version 1.0

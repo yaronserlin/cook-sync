@@ -3,9 +3,9 @@ package com.cooksync_server.services;
 import com.cooksync_server.entities.User;
 
 /**
- * Service interface for the self-service account-deletion lifecycle: starting the 30-day grace
- * period, restoring an account on login within that window, and purging accounts whose grace
- * period has lapsed.
+ * Defines the self-service account-deletion lifecycle: starting the 30-day grace period,
+ * restoring an account on login within that window, and purging accounts whose grace period
+ * has lapsed.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -36,9 +36,9 @@ public interface AccountDeletionService {
     void purgeExpiredAccounts();
 
     /**
-     * Permanently purges a single account right now, regardless of its status or how long ago
-     * (if ever) deletion was requested — bypassing the 30-day grace period entirely. Intended
-     * for admin-initiated hard deletes, not the self-service or scheduled paths.
+     * Permanently purges a single account immediately, regardless of its status or how long ago
+     * (if ever) deletion was requested, bypassing the 30-day grace period entirely. Intended for
+     * admin-initiated hard deletes, not the self-service or scheduled paths.
      *
      * @param user the account to purge immediately
      */

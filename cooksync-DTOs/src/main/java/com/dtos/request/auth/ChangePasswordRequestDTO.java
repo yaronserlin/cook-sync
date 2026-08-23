@@ -7,11 +7,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Data Transfer Object for authenticated user password change requests.
- * Requires verification of the current password alongside the new complex password.
+ * Request payload for an authenticated user's password-change action, submitted from the Android
+ * client's Settings screen and processed by the server's {@code PUT /api/auth/password} endpoint
+ * through the password service. The current password is re-verified before the new one is applied.
  *
- * @param currentPassword the user's existing account password for identity verification
- * @param newPassword the new secret password meeting system security criteria
+ * @param currentPassword the user's existing account password, checked to confirm their identity before the change is accepted
+ * @param newPassword the desired new password; must be between 6 and 100 characters and contain at least one uppercase letter, one lowercase letter, one digit, and one special character
  * @author Yaron Serlin
  * @version 1.0
  * @since 02/08/2026

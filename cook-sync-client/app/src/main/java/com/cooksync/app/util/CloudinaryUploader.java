@@ -1,10 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. Wraps the Cloudinary
- * Android SDK to perform the actual direct-to-Cloudinary upload once a screen holds a signed
- * {@code CloudinarySignatureResponse} from the server's {@code CloudinaryController}; also hosts
- * {@link #buildUserFolder} so every client upload call site shares one per-user folder-path
- * format instead of reimplementing it.
- */
 package com.cooksync.app.util;
 
 import android.content.Context;
@@ -22,10 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Thin wrapper around the Cloudinary Android SDK for direct client-to-Cloudinary uploads
- * authorized by a short-lived server-issued {@link CloudinarySignatureResponse}. Centralizes
- * the one-time {@link MediaManager#init} call so every upload call site (profile avatar,
- * eventually recipe photos) doesn't need to worry about re-initialization.
+ * Thin wrapper around the Cloudinary Android SDK for direct client-to-Cloudinary uploads,
+ * authorized by a short-lived, server-issued {@link CloudinarySignatureResponse} obtained through
+ * {@link com.cooksync.app.data.repository.MediaRepository}. Centralizes the one-time
+ * {@link MediaManager#init} call so every upload call site — the profile avatar today, recipe
+ * photos in future — does not need to worry about re-initialization.
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -35,7 +29,7 @@ public final class CloudinaryUploader {
 
     private static volatile boolean initialized = false;
 
-    /** Callback for the outcome of an upload. */
+    /** Callback describing the outcome of an upload. */
     public interface Callback {
         /**
          * Invoked when the upload finishes successfully.
@@ -56,24 +50,6 @@ public final class CloudinaryUploader {
     }
 
     /**
-     * Uploads the file at {@code fileUri} to Cloudinary's default folder/public-ID assignment
-     * using a freshly issued signature.
-     *
-     * Complexity:
-     * Time: O(1) plus one asynchronous network upload
-     * Space: O(1)
-     *
-     * @param context the calling screen's context
-     * @param fileUri content/file URI of the image to upload (e.g. from a photo picker)
-     * @param signature signed upload credentials issued by the server
-     * @param callback invoked on the main thread with the outcome
-     */
-    public static void upload(@NonNull Context context, @NonNull Uri fileUri,
-                               @NonNull CloudinarySignatureResponse signature, @NonNull Callback callback) {
-        upload(context, fileUri, null, null, signature, callback);
-    }
-
-    /**
      * Uploads the file at {@code fileUri} to Cloudinary using a freshly issued signature,
      * initializing the SDK against the signature's cloud name on first use.
      *
@@ -83,8 +59,10 @@ public final class CloudinaryUploader {
      *
      * @param context the calling screen's context
      * @param fileUri content/file URI of the image to upload (e.g. from a photo picker)
-     * @param folder target Cloudinary folder, or {@code null}/blank to use the signature's default
-     * @param publicId target Cloudinary public ID, or {@code null}/blank to let Cloudinary auto-generate one
+     * @param folder target Cloudinary folder, or {@code null}/blank to use the signature's
+     *               default
+     * @param publicId target Cloudinary public ID, or {@code null}/blank to let Cloudinary
+     *                 auto-generate one
      * @param signature signed upload credentials issued by the server
      * @param callback invoked on the main thread with the outcome
      */
@@ -142,7 +120,8 @@ public final class CloudinaryUploader {
      * Builds a per-user Cloudinary folder path rooted at {@code baseFolder}, in the form
      * {@code "<baseFolder>/<userEmail>[/<subPath>]"}. Mirrors the server's
      * {@code CloudinaryServiceImp#buildUserFolder}, so every client call site that needs a
-     * per-user upload folder shares one implementation instead of reimplementing the format.
+     * per-user upload folder shares this one implementation rather than reimplementing the
+     * format independently.
      *
      * Complexity:
      * Time: O(1)
@@ -162,7 +141,8 @@ public final class CloudinaryUploader {
 
     /**
      * Initializes {@link MediaManager} against the given cloud name exactly once per process.
-     * Safe to call repeatedly with the same cloud name.
+     * Safe to call repeatedly with the same cloud name; each additional call after the first is a
+     * no-op.
      *
      * Complexity:
      * Time: O(1)

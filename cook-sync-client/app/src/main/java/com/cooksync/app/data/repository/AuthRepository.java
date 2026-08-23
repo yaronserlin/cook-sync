@@ -20,15 +20,16 @@ import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
- * Declares the contract for all authentication-related data operations available to
- * ViewModels. The interface deliberately accepts {@link MutableLiveData} targets rather
- * than returning them, so the ViewModel controls the observable lifecycle while the
- * repository simply posts results to it — this keeps the boundary clean and avoids leaking
- * framework objects into the repository implementation.
+ * Declares the contract for every authentication- and account-related data operation available
+ * to ViewModels, implemented against the server's {@code AuthController} endpoints. The interface
+ * deliberately accepts {@link MutableLiveData} targets as parameters rather than returning them,
+ * so the calling ViewModel controls the observable's lifecycle while the repository simply posts
+ * results to it — keeping the boundary clean and avoiding leaking framework objects into the
+ * repository implementation.
  *
- * <p>Every method posts an {@link ApiResult.Loading} immediately, then either
- * {@link ApiResult.Success} or {@link ApiResult.Error} once the operation resolves,
- * all from a background thread so the main UI thread is never blocked.</p>
+ * <p>Every method posts an {@link ApiResult.Loading} value immediately, followed by either
+ * {@link ApiResult.Success} or {@link ApiResult.Error} once the operation resolves, with all work
+ * performed on a background thread so the main UI thread is never blocked.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -37,7 +38,7 @@ import com.dtos.response.user.UserResponse;
 public interface AuthRepository {
 
     /**
-     * Authenticates the user with email and password. Persists the resulting session via
+     * Authenticates the user with an email and password. Persists the resulting session through
      * {@link com.cooksync.app.util.SessionManager} on success.
      *
      * @param request     login credentials
@@ -47,8 +48,8 @@ public interface AuthRepository {
 
     /**
      * Initiates registration for a new account. No session is started yet — a one-time
-     * verification code is emailed to the given address, and the registration is only
-     * completed by calling {@link #verifyRegistrationOtp}.
+     * verification code is emailed to the given address, and registration is only completed by
+     * a subsequent call to {@link #verifyRegistrationOtp}.
      *
      * @param request     registration payload
      * @param resultTarget live data target the result will be posted to
@@ -73,15 +74,15 @@ public interface AuthRepository {
     void resendRegistrationOtp(ResendRegistrationOtpRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget);
 
     /**
-     * Logs the current user out, invalidating the server-side refresh token and clearing
-     * the local session.
+     * Logs the current user out, invalidating the server-side refresh token and clearing the
+     * local session.
      *
      * @param resultTarget live data target the result will be posted to
      */
     void logout(MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
-     * Updates the authenticated user's display name fields.
+     * Updates the authenticated user's display-name fields.
      *
      * @param request     profile update payload
      * @param resultTarget live data target the result will be posted to
@@ -89,8 +90,8 @@ public interface AuthRepository {
     void updateProfile(ProfileUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
-     * Updates the authenticated user's avatar URL, after it has already been uploaded to
-     * Cloudinary by the caller.
+     * Updates the authenticated user's avatar URL, after the image itself has already been
+     * uploaded to Cloudinary by the caller.
      *
      * @param request     avatar update payload
      * @param resultTarget live data target the result will be posted to
@@ -115,13 +116,6 @@ public interface AuthRepository {
     void updateEmail(EmailUpdateRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget);
 
     /**
-     * Deactivates the authenticated user's account.
-     *
-     * @param resultTarget live data target the result will be posted to
-     */
-    void deactivateAccount(MutableLiveData<ApiResult<Void>> resultTarget);
-
-    /**
      * Updates the authenticated user's public-profile privacy preferences.
      *
      * @param request     privacy settings update payload
@@ -138,9 +132,9 @@ public interface AuthRepository {
     void requestAccountDeletion(DeleteAccountRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
-     * Validates the stored access token against the server. Used on app startup to
-     * silently re-authenticate the user when a previous session exists, avoiding the
-     * need to show the login form again.
+     * Validates the stored access token against the server. Used on app startup to silently
+     * re-authenticate the user when a previous session exists, avoiding the need to show the
+     * login form again.
      *
      * @param resultTarget live data target the result will be posted to
      */
@@ -164,8 +158,8 @@ public interface AuthRepository {
     void getUserProfile(String userId, MutableLiveData<ApiResult<UserResponse>> resultTarget);
 
     /**
-     * Requests a password-reset email for the given account, if one exists. Always succeeds
-     * from the caller's perspective regardless of whether the email is registered.
+     * Requests a password-reset email for the given account, if one exists. Always succeeds from
+     * the caller's perspective regardless of whether the email is actually registered.
      *
      * @param request     forgot-password payload
      * @param resultTarget live data target the result will be posted to

@@ -1,9 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. Generic, feature-
- * agnostic primitive that both {@code RecipeImagePicker} (recipe wizard) and the account-details
- * avatar picker build on to survive Android's short-lived {@code content://} read-permission
- * window across a deferred upload.
- */
 package com.cooksync.app.util;
 
 import android.content.Context;
@@ -27,8 +21,9 @@ import java.util.concurrent.Executors;
  * Copies a system photo-picker's {@code content://} URI into this app's private cache, so a
  * caller that defers an upload until later holds a {@code file://} URI it owns outright instead
  * of a picker-granted URI whose read permission can expire before the deferred upload runs.
- * Shared by every screen that picks an image and only uploads it after a later user action (the
- * recipe wizard's cover/description/instruction photos, the account-details avatar picker).
+ * Shared by every screen that picks an image and only uploads it in response to a later user
+ * action — the recipe wizard's cover/description/instruction photos, and the account-details
+ * avatar picker.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -39,10 +34,11 @@ public final class LocalImageCache {
     /** Single background thread used to copy picked images into this app's private cache. */
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
-    /** Notified once a picked image has been copied into this app's private cache. */
+    /** Notified once a picked image has finished being copied into this app's private cache. */
     public interface Callback {
         /**
-         * @param localUri the copied image's {@code file://} URI, or {@code null} if the copy failed
+         * @param localUri the copied image's {@code file://} URI, or {@code null} if the copy
+         *                 failed
          */
         void onCopied(@Nullable Uri localUri);
     }
@@ -62,7 +58,8 @@ public final class LocalImageCache {
      * @param sourceUri the picker-granted URI to copy
      * @param filePrefix prefix for the cached file's name, also passed to {@link #clearCache} to
      *                    identify which cached files belong to this caller
-     * @param callback invoked on the main thread with the copied file's URI, or {@code null} on failure
+     * @param callback invoked on the main thread with the copied file's URI, or {@code null} on
+     *                 failure
      */
     public static void copyToPrivateCache(@NonNull Context context, @NonNull Uri sourceUri,
                                            @NonNull String filePrefix, @NonNull Callback callback) {
@@ -92,7 +89,7 @@ public final class LocalImageCache {
 
     /**
      * Deletes every cached file previously written under the given {@code filePrefix}, once none
-     * of them are needed anymore.
+     * of them is needed anymore.
      *
      * Complexity:
      * Time: O(n) where n is the number of files in the app's cache directory

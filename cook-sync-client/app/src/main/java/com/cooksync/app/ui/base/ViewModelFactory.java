@@ -37,12 +37,12 @@ import com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel;
 import com.cooksync.app.ui.settings.SettingsViewModel;
 
 /**
- * Factory for constructing ViewModels with their required repository dependencies, following
- * the Dependency Inversion principle: feature ViewModels declare their repository
- * dependencies as constructor parameters instead of instantiating {@code *RepositoryImp}
- * classes themselves, and this factory is the single place that wires concrete
- * implementations in. Used via {@code new ViewModelProvider(this, new ViewModelFactory())}
- * from every Activity that owns a ViewModel.
+ * Factory for constructing ViewModels together with their required repository dependencies,
+ * following the Dependency Inversion principle: feature ViewModels declare their repository
+ * dependencies as constructor parameters instead of instantiating {@code *RepositoryImp} classes
+ * themselves, and this factory is the single place that wires the concrete implementations in.
+ * Used via {@code new ViewModelProvider(this, new ViewModelFactory())} from every Activity that
+ * owns a ViewModel.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -58,8 +58,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final UnitRepository unitRepository;
 
     /**
-     * Constructs the factory, eagerly creating the shared repository instances it hands out
-     * to every ViewModel it builds.
+     * Constructs the factory, eagerly creating the shared repository instances it hands out to
+     * every ViewModel it subsequently builds.
      *
      * Complexity:
      * Time: O(1)
@@ -84,7 +84,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
      * @param <T> the requested ViewModel type
      * @param modelClass the class of the ViewModel to create
      * @return a fully constructed instance of {@code modelClass}
-     * @throws IllegalArgumentException if {@code modelClass} is not a known ViewModel type
+     * @throws IllegalArgumentException if {@code modelClass} is not a recognized ViewModel type
      */
     @NonNull
     @Override

@@ -214,14 +214,6 @@ public interface ApiService {
     Call<ApiResponse<AuthResponse>> updateEmail(@Body EmailUpdateRequestDTO request);
 
     /**
-     * Deactivates the authenticated user's account.
-     *
-     * @return call yielding an empty acknowledgement
-     */
-    @PATCH("api/auth/deactivate")
-    Call<ApiResponse<Void>> deactivateAccount();
-
-    /**
      * Updates the authenticated user's public-profile privacy preferences.
      *
      * @param request privacy settings update payload

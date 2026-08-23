@@ -23,9 +23,9 @@ import com.dtos.response.user.UserResponse;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Service class handling authenticated-user profile management: reading profile details, and
- * updating avatar, name/city/bio, privacy preferences, account email, and account
- * activation/deletion lifecycle. Registration and login/token concerns live in
+ * Implements authenticated-user profile management: retrieving profile details, and updating
+ * avatar, name/city/bio, privacy preferences, account email, and the
+ * account-activation/deletion lifecycle. Registration and login/token concerns live in
  * {@link AuthServiceImp}; password change/reset lives in {@link PasswordServiceImp}.
  *
  * @author Yaron Serlin
@@ -47,8 +47,9 @@ public class UserProfileServiceImp implements UserProfileService {
      * Fetches the authenticated user's full profile, including fields not carried by
      * {@link AuthResponse} (city, bio, privacy preferences).
      *
-     * @param userEmail authenticated user email
+     * @param userEmail authenticated user's email address
      * @return the user's full profile
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional(readOnly = true)
     @Override
@@ -61,8 +62,9 @@ public class UserProfileServiceImp implements UserProfileService {
     /**
      * Fetches a specific user's public profile by user ID.
      *
-     * @param userId target user unique identifier
-     * @return UserResponse DTO
+     * @param userId target user's unique identifier
+     * @return the matching user's profile
+     * @throws ResourceNotFoundException if no user matches {@code userId}
      */
     @Transactional(readOnly = true)
     @Override
@@ -73,10 +75,12 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     /**
-     * Updates user avatar picture URL.
+     * Replaces the user's avatar picture URL, deleting the previous Cloudinary asset when one
+     * existed and differs from the new URL.
      *
-     * @param userEmail target user email
+     * @param userEmail target user's email address
      * @param avatarUrl new profile picture URL
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional
     @Override
@@ -94,10 +98,11 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     /**
-     * Updates user first name, last name, city, and bio profile details.
+     * Updates the user's first name, last name, city, and bio.
      *
-     * @param userEmail target user email
+     * @param userEmail target user's email address
      * @param request profile update request DTO
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional
     @Override
@@ -114,8 +119,9 @@ public class UserProfileServiceImp implements UserProfileService {
     /**
      * Updates the user's public-profile privacy preferences.
      *
-     * @param userEmail target user email
+     * @param userEmail target user's email address
      * @param request privacy settings update request DTO
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional
     @Override
@@ -128,11 +134,17 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     /**
-     * Updates user account email address following password verification and issues updated tokens.
+     * Updates the user's account email address after verifying the current password, and issues
+     * refreshed tokens reflecting the change. Rejects the change when the requested address is
+     * already registered to another account, whether that is caught by the upfront lookup or by
+     * a unique-constraint violation surfaced at save time under concurrent registration.
      *
-     * @param userEmail current authenticated user email
+     * @param userEmail current authenticated user's email address
      * @param request email update request DTO
-     * @return AuthResponse containing updated tokens reflecting new email address
+     * @return authentication payload carrying tokens issued for the new email address
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
+     * @throws InvalidCredentialsException if the supplied current password does not match
+     * @throws UserAlreadyExistsException if the requested new email is already registered to another account
      */
     @Transactional
     @Override
@@ -162,9 +174,10 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     /**
-     * Deactivates user account (soft delete) and revokes active refresh tokens.
+     * Deactivates the user's account (soft delete) and revokes active refresh tokens.
      *
-     * @param userEmail target user email
+     * @param userEmail target user's email address
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional
     @Override
@@ -178,14 +191,16 @@ public class UserProfileServiceImp implements UserProfileService {
     }
 
     /**
-     * Starts the 30-day self-service account-deletion grace period following password
-     * verification. Distinct from {@link #deactivateAccount(String)}: this also hides the
-     * user's reviews and starts the countdown to permanent purge; a plain deactivation does
-     * neither. Logging back in within the grace period restores the account via
+     * Starts the 30-day self-service account-deletion grace period after verifying the current
+     * password. Distinct from {@link #deactivateAccount(String)}: this additionally hides the
+     * user's reviews and starts the countdown to permanent purge, neither of which a plain
+     * deactivation does. Logging back in within the grace period restores the account via
      * {@link AuthServiceImp#login}.
      *
-     * @param userEmail target user email
+     * @param userEmail target user's email address
      * @param request delete-account request DTO carrying the current password for verification
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
+     * @throws InvalidCredentialsException if the supplied current password does not match
      */
     @Transactional
     @Override

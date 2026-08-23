@@ -1,8 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. Concrete
- * {@link MediaRepository} that calls the server's {@code /api/cloudinary/*} endpoints via
- * Retrofit's {@code ApiService}, on the shared background executor every repository in the app uses.
- */
 package com.cooksync.app.data.repository.impl;
 
 import androidx.lifecycle.MutableLiveData;
@@ -15,8 +10,9 @@ import com.cooksync.app.domain.ApiResult;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 
 /**
- * Concrete implementation of {@link MediaRepository} that delegates to the remote REST API
- * via Retrofit.
+ * Concrete implementation of {@link MediaRepository} that delegates every call to the remote
+ * REST API via Retrofit, executing network work on {@link BaseRepository}'s shared background
+ * thread pool.
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -27,7 +23,7 @@ public class MediaRepositoryImp extends BaseRepository implements MediaRepositor
     private final ApiService apiService;
 
     /**
-     * Constructs the repository using the shared authenticated Retrofit service.
+     * Constructs the repository against the shared authenticated Retrofit service.
      *
      * Complexity:
      * Time: O(1)

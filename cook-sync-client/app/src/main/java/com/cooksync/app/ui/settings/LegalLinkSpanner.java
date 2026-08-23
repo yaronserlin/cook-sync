@@ -21,9 +21,9 @@ import com.cooksync.app.ui.base.Navigator;
 
 /**
  * Turns the "Terms of Use" and "Privacy Policy" mentions inside a piece of text into tappable,
- * bold accent-colored links opening {@link LegalDocumentActivity}. Shared by every screen that
+ * bold, accent-colored links that open {@link LegalDocumentActivity}. Shared by every screen that
  * needs this exact treatment — the sign-up screen's terms checkbox label and the Settings
- * screen's footer — rather than each screen re-implementing the same span logic.
+ * screen's footer — so each screen does not reimplement the same span logic independently.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -37,8 +37,8 @@ public final class LegalLinkSpanner {
     /**
      * Renders {@code fullTextRes} into {@code view} with its "Terms of Use" and "Privacy Policy"
      * substrings turned into clickable links. {@link LinkMovementMethod} intercepts touches that
-     * land on a span, so tapping a link opens the document instead of triggering the view's own
-     * click behavior (e.g. toggling a checkbox).
+     * land on a span, so tapping a link opens the corresponding document instead of triggering
+     * the view's own click behavior (e.g. toggling a checkbox).
      *
      * Complexity:
      * Time: O(n) — n is the length of the resolved text
@@ -66,7 +66,7 @@ public final class LegalLinkSpanner {
     /**
      * Styles the first occurrence of {@code linkText} within {@code fullText} as a bold,
      * accent-colored {@link ClickableSpan} that opens {@code documentType} on
-     * {@link LegalDocumentActivity}. No-op if {@code linkText} isn't found.
+     * {@link LegalDocumentActivity}. A no-op if {@code linkText} is not found.
      *
      * Complexity:
      * Time: O(n) — n is the length of {@code fullText}

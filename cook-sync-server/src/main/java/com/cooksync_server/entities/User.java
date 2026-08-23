@@ -19,8 +19,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * JPA Entity representing a registered user account.
- * Maps database persistence columns in the "users" table.
+ * JPA entity mapping the {@code users} table: represents a registered CookSync account,
+ * including its credentials, profile details, privacy preferences, and account-status/
+ * deletion lifecycle state.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -63,7 +64,7 @@ public class User {
     /**
      * Enumerates the reasons an account can be non-enabled, tracked separately from
      * {@link #enabled} so the admin console can distinguish a user who deactivated their own
-     * account from one an admin suspended, while {@link #enabled} itself keeps driving
+     * account from one an admin suspended, while {@link #enabled} itself continues to drive
      * authentication and recipe-visibility checks unchanged.
      */
     public enum AccountStatus {
@@ -82,7 +83,7 @@ public class User {
 
     /**
      * Whether the user accepted the terms of use at registration. Write-only by design: this is
-     * a consent record captured for legal/audit purposes, not a value any server or client logic
+     * a consent record kept for legal/audit purposes, not a value any server or client logic
      * reads back afterward.
      */
     @Builder.Default
@@ -91,8 +92,8 @@ public class User {
 
     /**
      * Whether the user opted into marketing communications at registration. Write-only by
-     * design, same as {@link #termsAccepted}: retained as a consent record, not read back by any
-     * server or client logic.
+     * design, as with {@link #termsAccepted}: retained purely as a consent record, never read
+     * back by any server or client logic.
      */
     @Builder.Default
     @Column(name = "marketing_opt_in", nullable = false)
@@ -114,9 +115,10 @@ public class User {
 
     /**
      * Timestamp of a self-service account-deletion request, distinct from a plain
-     * {@link AccountStatus#DEACTIVATED} deactivation. Null means the account was never asked to be
-     * deleted (or a prior request was cancelled by logging back in). When set, it anchors the
-     * 30-day grace period after which the scheduled purge job permanently erases the account.
+     * {@link AccountStatus#DEACTIVATED} deactivation. {@code null} means the account was never
+     * asked to be deleted (or a prior request was cancelled by logging back in). When set, it
+     * anchors the 30-day grace period after which the scheduled purge job permanently erases the
+     * account.
      */
     @Column(name = "deletion_requested_at")
     private LocalDateTime deletionRequestedAt;
@@ -128,7 +130,8 @@ public class User {
     private LocalDateTime updatedAt;
 
     /**
-     * Initializes timestamps prior to persistence.
+     * Populates the creation and last-modified timestamps immediately before the entity is
+     * first persisted.
      */
     @PrePersist
     protected void onCreate() {
@@ -137,9 +140,10 @@ public class User {
     }
 
     /**
-     * Computes the trimmed full name of the user.
+     * Builds the user's trimmed full name from first and last name, with a single space
+     * separator and no leading/trailing whitespace.
      *
-     * @return formatted full name string
+     * @return the formatted full name
      */
     public String getFullName() {
         StringBuilder fullName = new StringBuilder();
@@ -156,7 +160,7 @@ public class User {
     }
 
     /**
-     * Updates modified timestamp prior to entity update execution.
+     * Refreshes the last-modified timestamp immediately before an update is persisted.
      */
     @PreUpdate
     protected void onUpdate() {

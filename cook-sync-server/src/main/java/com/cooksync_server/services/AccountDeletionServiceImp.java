@@ -22,9 +22,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service class managing the self-service account-deletion lifecycle: starting the 30-day
- * grace period, restoring an account if the user logs back in during that window, and
- * permanently purging accounts whose grace period has lapsed.
+ * Implements the self-service account-deletion lifecycle: starting the 30-day grace period,
+ * restoring an account if the user logs back in during that window, and permanently purging
+ * accounts whose grace period has lapsed.
  * <p>
  * A deletion request reuses {@link User.AccountStatus#DEACTIVATED} rather than introducing a
  * dedicated status value, so the only difference between a plain self-deactivation and a
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AccountDeletionServiceImp implements AccountDeletionService {
 
-    /** Grace period between a deletion request and permanent purge. */
+    /** Number of days between a deletion request and permanent purge. */
     private static final long GRACE_PERIOD_DAYS = 30;
 
     /** Placeholder ID substituted for an empty recipe-ID list so IN-clause queries stay well-formed. */
@@ -61,7 +61,7 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
     /**
      * Starts the 30-day account-deletion grace period: disables the account, hides every review
      * the user authored from public view, and revokes active sessions. The user's recipes are
-     * hidden implicitly since public listings already filter on {@code createdBy.enabled}.
+     * hidden implicitly, since public listings already filter on {@code createdBy.enabled}.
      *
      * Complexity:
      * Time: O(R) where R is the user's review count
@@ -85,7 +85,7 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
 
     /**
      * Restores an account to normal: re-enables it, resets its status to {@code ACTIVE}, clears
-     * any pending deletion timestamp, and un-hides its reviews. Their recipes reappear
+     * any pending deletion timestamp, and un-hides its reviews. Its recipes reappear
      * automatically once {@code enabled} flips back to true. Used both when a user logs back in
      * within their own 30-day deletion grace period ({@link AuthServiceImp#login}), and when an
      * admin reactivates a suspended or deactivated account ({@code AdminServiceImp#enableUser}) —
@@ -116,7 +116,7 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * cron trigger.
      *
      * Complexity:
-     * Time: O(U * (P + N)) where U is expired-account count, P is each user's recipe/review
+     * Time: O(U * (P + N)) where U is the expired-account count, P is each user's recipe/review
      * graph size, and N is the personal-note/favorite cleanup cost per account
      * Space: O(P) per account processed
      */
@@ -138,9 +138,9 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
     }
 
     /**
-     * Permanently purges a single account right now, bypassing the 30-day grace period —
-     * delegates straight to {@link #purgeAccount(User)}, the same erasure logic the scheduled
-     * job uses, just without the status/cutoff filtering. Used for admin-initiated hard deletes.
+     * Permanently purges a single account immediately, bypassing the 30-day grace period —
+     * delegates directly to {@link #purgeAccount(User)}, the same erasure logic the scheduled
+     * job uses, without the status/cutoff filtering. Used for admin-initiated hard deletes.
      *
      * Complexity:
      * Time: O(P) where P is the account's combined recipe/review/note/favorite graph size
@@ -157,12 +157,13 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
 
     /**
      * Permanently erases a single account and everything it owns, in FK-safe order: dependent
-     * moderation reports, personal notes, and favorites are cleaned up first (none of them
-     * cascade-delete from {@code User} or {@code Recipe}), then Cloudinary media assets (avatar
-     * and owned recipe images) are deleted, then the user's recipes are removed as managed
+     * moderation reports, personal notes, and favorites are removed first (none of them
+     * cascade-delete from {@code User} or {@code Recipe}); Cloudinary media assets (avatar and
+     * owned recipe images) are then deleted; the user's recipes are then removed as managed
      * entities so their own {@code cascade = ALL, orphanRemoval = true} relations (ingredients,
-     * instructions, images, description blocks, reviews) are cleaned up by Hibernate, then the
-     * user's remaining reviews, sessions, and reset tokens, and finally the user row itself.
+     * instructions, images, description blocks, reviews) are cleaned up by Hibernate; and
+     * finally the user's remaining reviews, sessions, and reset tokens are removed along with
+     * the user row itself.
      *
      * Complexity:
      * Time: O(P) where P is the user's combined recipe/review/note/favorite graph size
@@ -177,10 +178,10 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
                 ? NO_RECIPES
                 : ownedRecipes.stream().map(Recipe::getId).toList();
 
-        // Collected before the bulk deletes below: several of them are @Modifying(clearAutomatically
-        // = true), which detaches ownedRecipes from the persistence context — reading their lazy
-        // instructions/images/descriptionBlocks collections afterward would throw
-        // LazyInitializationException, so this has to run while they're still managed.
+        // Captured while ownedRecipes is still attached to the persistence context: several of
+        // the bulk deletes below run with @Modifying(clearAutomatically = true), which detaches
+        // these entities afterward, and reading their lazy instructions/images/descriptionBlocks
+        // collections post-detach would raise a LazyInitializationException.
         List<String> imagesToDelete = new ArrayList<>();
         if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) {
             imagesToDelete.add(user.getAvatarUrl());

@@ -53,16 +53,6 @@
                     android:textSize="@dimen/sp_28"
                     tools:text="YS" />
 
-
-
-                <ProgressBar
-                    android:id="@+id/avatar_progress"
-                    android:layout_width="@dimen/dp_96"
-                    android:layout_height="@dimen/dp_96"
-                    android:layout_gravity="center"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
             </FrameLayout>
 
             <TextView

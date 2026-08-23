@@ -24,9 +24,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service class handling account password lifecycle: authenticated password changes, and the
- * unauthenticated forgot/reset-password OTP flow. Registration and login/token concerns live in
- * {@link AuthServiceImp}; other profile settings live in {@link UserProfileServiceImp}.
+ * Implements account password lifecycle operations: authenticated password changes, and the
+ * unauthenticated forgot/reset-password one-time-code flow. Registration and login/token
+ * concerns live in {@link AuthServiceImp}; other profile settings live in
+ * {@link UserProfileServiceImp}.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -37,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PasswordServiceImp implements PasswordService {
 
-    /** How many minutes a forgot-password reset code remains valid after being issued. */
+    /** Number of minutes a forgot-password reset code remains valid after being issued. */
     private static final int RESET_TOKEN_VALIDITY_MINUTES = 10;
 
     /** {@link #RESET_TOKEN_VALIDITY_MINUTES} expressed in milliseconds, for {@link Instant} arithmetic. */
@@ -50,10 +51,13 @@ public class PasswordServiceImp implements PasswordService {
     private final EmailService emailService;
 
     /**
-     * Changes user account password following verification of current password, revoking existing sessions.
+     * Changes the user's account password after verifying the current password, revoking any
+     * existing sessions.
      *
-     * @param userEmail target user email
+     * @param userEmail target user's email address
      * @param request password change request DTO
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
+     * @throws InvalidCredentialsException if the supplied current password does not match
      */
     @Transactional
     public void changePassword(String userEmail, ChangePasswordRequestDTO request) {
@@ -70,11 +74,12 @@ public class PasswordServiceImp implements PasswordService {
     }
 
     /**
-     * Initiates the forgot-password flow: if the email belongs to a registered account, issues a
-     * fresh one-time 6-digit reset code and emails it to the user. Always succeeds silently for
-     * unknown emails as well, so the response never reveals whether an address is registered.
-     * Calling this again for the same account (e.g. the client's "resend code" action) simply
-     * invalidates any prior code and issues a fresh one — there is no separate resend endpoint.
+     * Initiates the forgot-password flow: when the submitted email belongs to a registered
+     * account, discards any previously issued reset code, generates a fresh one-time 6-digit
+     * code, and emails it to the user. Completes silently for unregistered emails as well, so
+     * the response never reveals whether an address is registered. Invoking this again for the
+     * same account — the client's "resend code" action — simply invalidates the prior code and
+     * issues a new one; there is no separate resend endpoint.
      *
      * @param request forgot-password request payload
      */
@@ -102,16 +107,19 @@ public class PasswordServiceImp implements PasswordService {
     }
 
     /**
-     * Completes the forgot-password flow: validates the submitted reset code against the
-     * account's active {@link PasswordResetToken} row, updates the account password, deletes the
-     * consumed row, and revokes all active sessions for the account. Incorrect codes increment
-     * the row's attempt count; once {@link OtpCodeGenerator#MAX_ATTEMPTS} incorrect attempts
-     * accumulate, the row is invalidated and the user must request a new code. An unknown email
-     * and a known-but-invalid/expired/exhausted code are deliberately indistinguishable to the
-     * caller (same exception, same message), preserving {@link #forgotPassword}'s guarantee that
-     * account existence is never revealed.
+     * Completes the forgot-password flow: validates the submitted code against the account's
+     * active {@link PasswordResetToken} row, updates the account password, deletes the consumed
+     * row, and revokes all active sessions for the account. An incorrect code increments the
+     * row's attempt count; once {@link OtpCodeGenerator#MAX_ATTEMPTS} incorrect attempts
+     * accumulate, the row is invalidated and the user must request a new code. An unregistered
+     * email and a known-but-invalid/expired/exhausted code are deliberately indistinguishable to
+     * the caller (same exception, same message), preserving the account-existence guarantee made
+     * by {@link #forgotPassword}.
      *
      * @param request reset-password request payload
+     * @throws InvalidOtpException if the email is unrecognized, no reset code is pending, or the submitted code does not match
+     * @throws OtpExpiredException if the pending reset code has expired
+     * @throws TooManyOtpAttemptsException if the incorrect-attempt limit for the pending code has just been exceeded by this call
      */
     @Transactional(noRollbackFor = {InvalidOtpException.class, TooManyOtpAttemptsException.class})
     public void resetPassword(ResetPasswordRequestDTO request) {

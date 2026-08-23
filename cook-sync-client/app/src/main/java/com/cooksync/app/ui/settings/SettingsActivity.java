@@ -8,26 +8,23 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.cooksync.app.R;
 import com.cooksync.app.data.datasource.local.CookingPreferencesStore;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.admin.AdminConsoleActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
-import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.home.HomeActivity;
 import com.cooksync.app.ui.recipe.favorites.FavoriteRecipesActivity;
 import com.cooksync.app.ui.recipe.myrecipes.MyRecipesActivity;
+import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -36,19 +33,22 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The "Settings" tab: a hub of navigational rows (Favorites, My recipes, Notifications, Cooking
- * preferences, Account details, and, for admins, Admin console), plus the avatar header and log
- * out. Uses the same shared {@link com.dtos.response.auth.AuthResponse}-backed session cache
- * ({@link SessionManager}) that every other screen reads for the avatar chip's initials, so a
- * successful edit here is immediately reflected everywhere else on the next visit.
+ * Hub screen for the "Settings" bottom-navigation tab: the avatar header plus navigational rows
+ * to Favorites, My recipes, Cooking preferences, Account details, and, for admin accounts, the
+ * Admin console, along with the sign-out action. Avatar and name rendering read from the locally
+ * cached session ({@link SessionManager}, populated from the server's
+ * {@link com.dtos.response.auth.AuthResponse}) so the screen paints instantly rather than waiting
+ * on a network round trip, and picks up whatever was last saved on {@link AccountDetailsActivity}
+ * the next time this screen is shown.
  *
- * <p>Avatar uploads go directly from this device to Cloudinary using a short-lived signature
- * fetched from the server (see {@link com.cooksync.app.data.repository.MediaRepository}), and
- * only the resulting URL is sent to CookSync's own server — the binary image never passes
- * through the application backend.</p>
+ * <p>A newly picked avatar photo is uploaded directly from this device to Cloudinary using a
+ * short-lived signature obtained through {@link com.cooksync.app.data.repository.MediaRepository};
+ * only the resulting secure URL is ever sent to CookSync's own server, so the image bytes never
+ * transit the application backend.</p>
  *
- * <p>Name/city/bio/email/password/privacy editing and account deletion now live on the
- * dedicated {@link AccountDetailsActivity} screen, reached via the "Account details" row.</p>
+ * <p>Editing of name, city, bio, email, password, and privacy preferences, and account deletion,
+ * is handled entirely by the dedicated {@link AccountDetailsActivity} screen, reached from this
+ * screen's "Account details" row.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -56,14 +56,13 @@ import java.util.Objects;
  */
 public class SettingsActivity extends BaseActivity {
 
-    /** Intent extra: a one-shot success message to show once this screen is resumed. */
+    /** Intent extra carrying a one-shot success message to display the next time this screen resumes. */
     public static final String EXTRA_PENDING_TOAST = "extra_pending_toast";
 
     private SettingsViewModel viewModel;
 
     private ImageView ivAvatar;
     private TextView tvAvatarInitials;
-    private ProgressBar avatarProgress;
     private TextView tvName;
     private TextView tvEmail;
     private TextView tvFavoritesSub;
@@ -104,11 +103,13 @@ public class SettingsActivity extends BaseActivity {
     }
 
     /**
-     * Shows and consumes a one-shot success message passed via {@link #EXTRA_PENDING_TOAST},
-     * e.g. from {@link AccountDetailsActivity} after a successful save. {@link OrganicToast}
-     * can't outlive the activity it's anchored to, so this is how a save on one screen shows its
-     * confirmation on the screen the user actually lands on. Removed from the intent immediately
-     * so it isn't re-shown on a later {@code onResume} (rotation, returning from another tab).
+     * Displays and immediately consumes the one-shot message passed via
+     * {@link #EXTRA_PENDING_TOAST}, typically set by {@link AccountDetailsActivity} after a
+     * successful save. {@link com.cooksync.app.ui.common.OrganicToast} is anchored to the
+     * activity that shows it and cannot outlive it, so this is how a save on one screen surfaces
+     * its confirmation on the screen the user actually lands on afterward. The extra is stripped
+     * from the intent immediately so a later {@code onResume} (rotation, returning from another
+     * tab) does not re-show the same message.
      */
     private void showPendingToastIfAny() {
         String message = getIntent().getStringExtra(EXTRA_PENDING_TOAST);
@@ -121,15 +122,14 @@ public class SettingsActivity extends BaseActivity {
     private void bindViews() {
         ivAvatar = findViewById(R.id.iv_avatar);
         tvAvatarInitials = findViewById(R.id.tv_avatar_initials);
-        avatarProgress = findViewById(R.id.avatar_progress);
         tvName = findViewById(R.id.tv_name);
         tvEmail = findViewById(R.id.tv_email);
     }
 
     private void renderCachedProfile() {
-        String first = SessionManager.getInstance().getFirstName();
-        String last = SessionManager.getInstance().getLastName();
-        tvName.setText(TextUtils.join(" ", new String[]{nullToEmpty(first), nullToEmpty(last)}).trim());
+        String first = Objects.requireNonNullElse(SessionManager.getInstance().getFirstName(), "");
+        String last = Objects.requireNonNullElse(SessionManager.getInstance().getLastName(), "");
+        tvName.setText(TextUtils.join(" ", new String[]{first, last}).trim());
 
         String email = SessionManager.getInstance().getEmail();
         tvEmail.setText(Objects.requireNonNullElse(email, ""));
@@ -139,22 +139,16 @@ public class SettingsActivity extends BaseActivity {
     }
 
     private void renderAvatar(String avatarUrl) {
-        if (avatarUrl == null || avatarUrl.isEmpty()) {
-            ivAvatar.setImageDrawable(null);
-            ivAvatar.setOnClickListener(null);
-            tvAvatarInitials.setText(SessionManager.getInstance().getInitials());
-            tvAvatarInitials.setVisibility(View.VISIBLE);
-        } else {
-            tvAvatarInitials.setVisibility(View.GONE);
-            Glide.with(this).load(avatarUrl).transform(new CircleCrop()).into(ivAvatar);
-            ivAvatar.setOnClickListener(v -> openFullscreenImage(avatarUrl));
-        }
+        GlideUtils.renderAvatarOrInitials(Glide.with(this), avatarUrl, ivAvatar, tvAvatarInitials,
+                SessionManager.getInstance().getInitials());
+        ivAvatar.setOnClickListener(avatarUrl == null || avatarUrl.isEmpty()
+                ? null : v -> openFullscreenImage(avatarUrl));
     }
 
     /**
-     * Opens {@link FullscreenImageActivity} to view the current avatar photo full-screen.
+     * Opens {@link FullscreenImageActivity} to display the current avatar photo full-screen.
      *
-     * @param imageUrl the avatar's image URL
+     * @param imageUrl the avatar image's URL
      */
     private void openFullscreenImage(String imageUrl) {
         Intent intent = new Intent(this, FullscreenImageActivity.class);
@@ -183,8 +177,8 @@ public class SettingsActivity extends BaseActivity {
     }
 
     /**
-     * Binds every settings row's icon, label, subtitle and click destination, and hides the
-     * "Admin console" row entirely for non-admin users.
+     * Binds every settings row's icon, label, subtitle, and click destination, and hides the
+     * "Admin console" row entirely for non-admin accounts.
      *
      * Complexity:
      * Time: O(1)
@@ -222,19 +216,19 @@ public class SettingsActivity extends BaseActivity {
     }
 
     /**
-     * Binds one {@code item_settings_row} include's icon, label, subtitle and click listener.
+     * Binds one {@code item_settings_row} include's icon, label, subtitle, and click listener.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
      *
      * @param rowId the id of the {@code <include>} hosting the row
-     * @param iconRes the row's icon drawable
+     * @param iconRes the row's icon drawable resource
      * @param label the row's bold label text
-     * @param sub the row's subtitle text, or {@code null} to leave it for the caller to set
+     * @param sub the row's subtitle text, or {@code null} to leave it for the caller to set later
      * @param onClick the action to run when the row is tapped
-     * @return the row's subtitle {@link TextView}, so callers needing a dynamic subtitle can
-     *         update it later
+     * @return the row's subtitle {@link TextView}, allowing callers that need a dynamic subtitle
+     *         to update it afterward
      */
     private TextView bindRow(int rowId, @DrawableRes int iconRes, String label, String sub,
                               View.OnClickListener onClick) {
@@ -252,7 +246,8 @@ public class SettingsActivity extends BaseActivity {
     /**
      * Re-reads {@link CookingPreferencesStore} and updates the "Cooking preferences" row's
      * subtitle to match, since the toggles it summarizes are edited on
-     * {@link CookingPreferencesActivity} and only reflected here once the user navigates back.
+     * {@link CookingPreferencesActivity} and only become visible here once the user navigates
+     * back.
      *
      * Complexity:
      * Time: O(1)
@@ -264,44 +259,7 @@ public class SettingsActivity extends BaseActivity {
                 : R.string.settings_row_cooking_preferences_sub_off);
     }
 
-    private void showComingSoon(@StringRes int rowLabelRes) {
-        OrganicToast.show(this, bottomNav, getString(R.string.settings_row_coming_soon_format, getString(rowLabelRes)));
-    }
-
     private void setupObservers() {
-        viewModel.getValidationError().observe(this, event -> {
-            String message = event.getContentIfNotHandled();
-            if (message != null) showError(message, bottomNav);
-        });
-
-        viewModel.getProfileResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                renderCachedProfile();
-                showSuccess(getString(R.string.settings_updated), bottomNav);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), bottomNav);
-            }
-        });
-
-
-
-        viewModel.getPasswordResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                showSuccess(getString(R.string.settings_password_updated), bottomNav);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), bottomNav);
-            }
-        });
-
-        viewModel.getEmailResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                renderCachedProfile();
-                showSuccess(getString(R.string.settings_email_updated), bottomNav);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), bottomNav);
-            }
-        });
-
         viewModel.getFavoritesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
                 tvFavoritesSub.setText(getString(R.string.settings_row_favorites_sub_format, success.getData().size()));
@@ -315,18 +273,9 @@ public class SettingsActivity extends BaseActivity {
         });
     }
 
-    private void setAvatarUploading(boolean uploading) {
-        avatarProgress.setVisibility(uploading ? View.VISIBLE : View.GONE);
-        findViewById(R.id.btn_edit_avatar).setEnabled(!uploading);
-    }
-
     private void confirmLogout() {
         OrganicConfirmDialog.show(this, getString(R.string.settings_dialog_logout_title),
                 getString(R.string.settings_dialog_logout_message), getString(R.string.settings_action_logout),
                 getString(R.string.action_cancel), false, viewModel::logout);
-    }
-
-    private static String nullToEmpty(String value) {
-        return value == null ? "" : value;
     }
 }

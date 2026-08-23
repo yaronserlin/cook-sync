@@ -7,11 +7,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Data Transfer Object for self-service email change requests.
- * Requires the user's current password for identity verification prior to updating the email address.
+ * Request payload for a self-service email-address change, submitted from the Android client's
+ * Settings screen and handled by the server's {@code PUT /api/auth/email} endpoint via the user
+ * profile service. The current password is re-checked before the new address is accepted.
  *
- * @param newEmail the target new email address, must be valid and up to 255 characters
- * @param currentPassword the user's active password for re-authentication
+ * @param newEmail the requested replacement email address; required, must be a well-formed email, and limited to 255 characters
+ * @param currentPassword the user's active password, checked to confirm their identity before the change is accepted
  * @author Yaron Serlin
  * @version 1.0
  * @since 02/08/2026

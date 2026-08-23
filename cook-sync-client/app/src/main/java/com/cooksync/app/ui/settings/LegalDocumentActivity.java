@@ -12,11 +12,11 @@ import com.cooksync.app.ui.base.BaseActivity;
 /**
  * Displays a static legal document — either the Terms of Use or the Privacy Policy — as a
  * scrollable, formatted text screen. A single shared Activity renders both documents rather than
- * one Activity per document, since they only differ in title and body content; which document to
- * show is selected via {@link #EXTRA_DOCUMENT_TYPE}.
+ * dedicating one Activity per document, since the two differ only in title and body content;
+ * which document to render is selected via {@link #EXTRA_DOCUMENT_TYPE}.
  *
- * <p>Reached from the "Terms of Use" / "Privacy Policy" rows on {@link SettingsActivity}, and from
- * the clickable links in the sign-up screen's terms checkbox label.</p>
+ * <p>Reached from the "Terms of Use" / "Privacy Policy" rows on {@link SettingsActivity}, and
+ * from the clickable links in the sign-up screen's terms checkbox label.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -24,13 +24,13 @@ import com.cooksync.app.ui.base.BaseActivity;
  */
 public class LegalDocumentActivity extends BaseActivity {
 
-    /** Intent extra: which document to display, one of {@link #DOCUMENT_TERMS_OF_USE} or {@link #DOCUMENT_PRIVACY_POLICY}. */
+    /** Intent extra naming which document to display: one of {@link #DOCUMENT_TERMS_OF_USE} or {@link #DOCUMENT_PRIVACY_POLICY}. */
     public static final String EXTRA_DOCUMENT_TYPE = "extra_document_type";
 
-    /** {@link #EXTRA_DOCUMENT_TYPE} value for the Terms of Use document. */
+    /** {@link #EXTRA_DOCUMENT_TYPE} value selecting the Terms of Use document. */
     public static final String DOCUMENT_TERMS_OF_USE = "terms_of_use";
 
-    /** {@link #EXTRA_DOCUMENT_TYPE} value for the Privacy Policy document. */
+    /** {@link #EXTRA_DOCUMENT_TYPE} value selecting the Privacy Policy document. */
     public static final String DOCUMENT_PRIVACY_POLICY = "privacy_policy";
 
     @Override
@@ -56,7 +56,7 @@ public class LegalDocumentActivity extends BaseActivity {
 
     /**
      * Parses a body string resource's {@code <b>}/{@code <br/>} markup into a styled
-     * {@link CharSequence} ready to hand to a {@link TextView}.
+     * {@link CharSequence} ready to be handed to a {@link TextView}.
      *
      * Complexity:
      * Time: O(n) — n is the body text length

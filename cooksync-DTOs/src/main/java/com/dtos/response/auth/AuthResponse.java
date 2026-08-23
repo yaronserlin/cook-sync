@@ -1,16 +1,18 @@
 package com.dtos.response.auth;
 
 /**
- * Data Transfer Object containing authentication response payloads returned after login, registration, or token renewal.
- * Encapsulates JWT access token, refresh token, user identity credentials, and role authorization flags.
+ * Response payload carrying an authenticated session, returned by the server's login,
+ * registration, and token-refresh flows in {@code AuthController} and the auth service. The
+ * Android client's {@code AuthRepository} persists the tokens through {@code SessionManager} and
+ * uses the accompanying user details to populate the signed-in experience without a further lookup.
  *
- * @param token the active bearer JWT access token string
- * @param refreshToken the active refresh token string for token renewal
+ * @param token the bearer JWT access token used to authorize subsequent API requests
+ * @param refreshToken the token used to obtain a new access token once it expires
  * @param userId the unique identifier of the authenticated user
  * @param firstName the user's first name
  * @param lastName the user's last name
- * @param isAdmin boolean flag indicating whether the user possesses administrative privileges
- * @param avatarUrl web URL pointing to the user's avatar image, or null if unset
+ * @param isAdmin whether the user holds administrator privileges
+ * @param avatarUrl the hosted URL of the user's avatar image, or null if none is set
  * @author Yaron Serlin
  * @version 1.0
  * @since 02/08/2026

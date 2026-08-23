@@ -268,8 +268,6 @@
     <string name="settings_title">Settings</string>
     <string name="settings_avatar_content_description">Profile avatar</string>
     <string name="settings_updated">Profile updated</string>
-    <string name="settings_avatar_updated">Avatar updated</string>
-    <string name="settings_password_updated">Password updated</string>
     <string name="settings_email_updated">Email updated</string>
     <string name="settings_dialog_logout_title">Sign out?</string>
     <string name="settings_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
@@ -280,8 +278,6 @@
     <string name="settings_row_favorites_sub_format">%1$d saved</string>
     <string name="settings_row_my_recipes_label">My recipes</string>
     <string name="settings_row_my_recipes_sub_format">%1$d published</string>
-    <string name="settings_row_notifications_label">Notifications</string>
-    <string name="settings_row_notifications_sub">Reviews on your recipes</string>
     <string name="settings_row_cooking_preferences_label">Cooking preferences</string>
     <string name="settings_row_cooking_preferences_sub_on">Screen awake: On</string>
     <string name="settings_row_cooking_preferences_sub_off">Screen awake: Off</string>
@@ -289,7 +285,6 @@
     <string name="settings_row_account_details_sub">Name, email, password, avatar</string>
     <string name="settings_row_admin_console_label">Admin console</string>
     <string name="settings_row_admin_console_sub">Moderation &amp; management tools</string>
-    <string name="settings_row_coming_soon_format">%1$s — coming soon</string>
     <string name="settings_footer_legal_links">Terms of Use · Privacy Policy</string>
 
     <!-- Account details -->
@@ -301,7 +296,6 @@
     <string name="account_details_email_helper">Changing this sends a confirmation link to the new address.</string>
     <string name="account_details_password_section">Password</string>
     <string name="label_repeat_new_password">Repeat new password</string>
-    <string name="account_details_password_mismatch">New passwords don\'t match.</string>
     <string name="account_details_privacy_section">Privacy</string>
     <string name="account_details_privacy_recipes">Show my published recipes on my public profile.</string>
     <string name="account_details_privacy_favorites">Let other people see which recipes I favorited. Private notes always stay hidden.</string>
