@@ -22,4 +22,13 @@ public interface InstructionRepository extends JpaRepository<Instruction, String
      * @return list of instruction entities sorted by step number ascending
      */
     List<Instruction> findByRecipeIdOrderByStepNumberAsc(String recipeId);
+
+    /**
+     * Checks that an instruction step exists and belongs to the given recipe.
+     *
+     * @param id target instruction step ID
+     * @param recipeId recipe the instruction must belong to
+     * @return true if the instruction exists and is part of that recipe
+     */
+    boolean existsByIdAndRecipeId(String id, String recipeId);
 }

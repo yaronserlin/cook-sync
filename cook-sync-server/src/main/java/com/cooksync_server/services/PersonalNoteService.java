@@ -5,7 +5,10 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
 
 /**
- * Service interface for managing a user's private notes on recipes and instruction steps.
+ * Service contract for the personal-notes feature: business rules and persistence access for a
+ * user's private notes on recipes and individual instruction steps. Implemented by
+ * {@link PersonalNoteServiceImp} and consumed by {@link com.cooksync_server.controllers.NoteController},
+ * keeping the REST layer free of persistence and authorization concerns.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -40,16 +43,6 @@ public interface PersonalNoteService {
      * @return PagedResponse of NoteResponse DTOs
      */
     PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size);
-
-    /**
-     * Retrieves all personal notes created by the authenticated user across every recipe.
-     *
-     * @param userEmail authenticated user email address
-     * @param page page number index
-     * @param size page size limit
-     * @return PagedResponse of NoteResponse DTOs
-     */
-    PagedResponse<NoteResponse> getMyNotes(String userEmail, int page, int size);
 
     /**
      * Deletes a personal note following author verification.

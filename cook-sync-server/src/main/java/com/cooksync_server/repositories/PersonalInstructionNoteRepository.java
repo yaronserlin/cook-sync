@@ -13,7 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Spring Data JPA Repository interface for PersonalInstructionNote entity persistence.
+ * Spring Data JPA repository for {@link PersonalInstructionNote} persistence: lookups by owner,
+ * by recipe, and by the general-note-vs-per-step-note distinction (an instruction ID of
+ * {@code null} means the note applies to the whole recipe), plus the bulk deletes used by recipe
+ * removal and account-deletion purges. Backs {@link com.cooksync_server.services.PersonalNoteServiceImp}.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -31,24 +34,6 @@ public interface PersonalInstructionNoteRepository extends JpaRepository<Persona
      * @return page of matching personal instruction note entities
      */
     Page<PersonalInstructionNote> findAllByUserIdAndRecipeId(String userId, String recipeId, Pageable pageable);
-
-    /**
-     * Retrieves all personal notes created by a specific user.
-     *
-     * @param userId target user ID
-     * @param pageable pagination information
-     * @return page of matching personal instruction note entities
-     */
-    Page<PersonalInstructionNote> findAllByUserId(String userId, Pageable pageable);
-
-    /**
-     * Checks if a user has created any notes for a specific recipe.
-     *
-     * @param userId target user ID
-     * @param recipeId target recipe ID
-     * @return true if user notes exist for recipe
-     */
-    boolean existsByUserIdAndRecipeId(String userId, String recipeId);
 
     /**
      * Retrieves the general recipe-wide personal note for a user (where instruction IS NULL).
@@ -95,6 +80,11 @@ public interface PersonalInstructionNoteRepository extends JpaRepository<Persona
     @Query("DELETE FROM PersonalInstructionNote n WHERE n.user.id = :userId AND n.recipe.id = :recipeId")
     void deleteByUserIdAndRecipeId(@Param("userId") String userId, @Param("recipeId") String recipeId);
 
+    /**
+     * Deletes every personal note attached to a specific recipe, regardless of author.
+     *
+     * @param recipeId target recipe ID
+     */
     @Modifying
     @Query("DELETE FROM PersonalInstructionNote n WHERE n.recipe.id = :recipeId")
     void deleteByRecipeId(@Param("recipeId") String recipeId);

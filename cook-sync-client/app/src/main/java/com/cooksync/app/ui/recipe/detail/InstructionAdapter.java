@@ -78,6 +78,9 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         notifyDataSetChanged();
     }
 
+    /**
+     * @param listener callback notified when the viewer saves or deletes a step's private note
+     */
     public void setOnNoteChangeListener(OnNoteChangeListener listener) {
         this.noteChangeListener = listener;
     }

@@ -2,12 +2,23 @@ package com.cooksync.app.ui.recipe.detail;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
 import com.cooksync.app.data.repository.RecipeRepository;
+import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.testutil.ApiResultAnswers;
 import com.dtos.response.note.NoteResponse;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -23,11 +34,62 @@ import java.util.List;
  */
 public class RecipeDetailViewModelTest {
 
+    @Rule
+    public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
+
+    private RecipeRepository repository;
     private RecipeDetailViewModel viewModel;
 
     @Before
     public void setUp() {
-        viewModel = new RecipeDetailViewModel(mock(RecipeRepository.class));
+        repository = mock(RecipeRepository.class);
+        viewModel = new RecipeDetailViewModel(repository);
+    }
+
+    @Test
+    public void loadNotes_publishesNotesFromRepository() {
+        NoteResponse note = new NoteResponse("n1", "recipe-1", null, "Great recipe");
+        doAnswer(ApiResultAnswers.success(List.of(note))).when(repository).getAllPersonalNotes(eq("recipe-1"), any());
+
+        viewModel.loadNotes("recipe-1");
+
+        ApiResult<List<NoteResponse>> result = viewModel.getNotesResult().getValue();
+        assertTrue(result instanceof ApiResult.Success<List<NoteResponse>>);
+        assertEquals(List.of(note), ((ApiResult.Success<List<NoteResponse>>) result).getData());
+    }
+
+    @Test
+    public void saveNote_delegatesToRepository_withGivenRecipeInstructionAndText() {
+        doAnswer(ApiResultAnswers.<Void>success(null))
+                .when(repository).saveNote(eq("recipe-1"), eq("step-1"), eq("Reduce salt"), any());
+
+        viewModel.saveNote("recipe-1", "step-1", "Reduce salt");
+
+        verify(repository).saveNote(eq("recipe-1"), eq("step-1"), eq("Reduce salt"), any());
+        ApiResult<Void> result = viewModel.getNoteSaveResult().getValue();
+        assertTrue(result instanceof ApiResult.Success<Void>);
+    }
+
+    @Test
+    public void saveNote_publishesErrorResult_whenRepositoryFails() {
+        doAnswer(ApiResultAnswers.<Void>error("network error"))
+                .when(repository).saveNote(eq("recipe-1"), isNull(), eq("Great recipe"), any());
+
+        viewModel.saveNote("recipe-1", null, "Great recipe");
+
+        ApiResult<Void> result = viewModel.getNoteSaveResult().getValue();
+        assertTrue(result instanceof ApiResult.Error<Void>);
+    }
+
+    @Test
+    public void deleteNote_delegatesToRepository() {
+        doAnswer(ApiResultAnswers.<Void>success(null)).when(repository).deleteNote(eq("note-1"), any());
+
+        viewModel.deleteNote("note-1");
+
+        verify(repository).deleteNote(eq("note-1"), any());
+        ApiResult<Void> result = viewModel.getNoteSaveResult().getValue();
+        assertTrue(result instanceof ApiResult.Success<Void>);
     }
 
     @Test

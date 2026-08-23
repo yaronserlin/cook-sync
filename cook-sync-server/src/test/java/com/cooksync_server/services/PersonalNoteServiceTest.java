@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.cooksync_server.entities.FavoriteRecipe;
 import com.cooksync_server.entities.PersonalInstructionNote;
@@ -24,10 +29,12 @@ import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.repositories.FavoriteRecipeRepository;
+import com.cooksync_server.repositories.InstructionRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.UserRepository;
 import com.dtos.request.note.NoteRequestDTO;
+import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
 
 /**
@@ -48,6 +55,8 @@ class PersonalNoteServiceTest {
     private UserRepository userRepository;
     @Mock
     private FavoriteRecipeRepository favoriteRepository;
+    @Mock
+    private InstructionRepository instructionRepository;
 
     @InjectMocks
     private PersonalNoteServiceImp personalNoteService;
@@ -93,6 +102,36 @@ class PersonalNoteServiceTest {
     }
 
     @Test
+    void saveNote_ShouldSaveStepNote_WhenInstructionBelongsToRecipe() {
+        UUID instructionUuid = UUID.randomUUID();
+        NoteRequestDTO request = new NoteRequestDTO(recipeUuid, instructionUuid, "Whisk until stiff peaks");
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(recipeRepository.findById(recipeUuid.toString())).thenReturn(Optional.of(sampleRecipe));
+        when(instructionRepository.existsByIdAndRecipeId(instructionUuid.toString(), recipeUuid.toString())).thenReturn(true);
+        when(noteRepository.findByUserIdAndRecipeIdAndInstructionId("user-1", recipeUuid.toString(), instructionUuid.toString()))
+                .thenReturn(Optional.empty());
+        when(favoriteRepository.existsByUserIdAndRecipeId("user-1", recipeUuid.toString())).thenReturn(true);
+
+        personalNoteService.saveNote(request, "gordon@cooksync.com");
+
+        verify(noteRepository).save(org.mockito.ArgumentMatchers.any(PersonalInstructionNote.class));
+    }
+
+    @Test
+    void saveNote_ShouldThrowResourceNotFoundException_WhenInstructionDoesNotBelongToRecipe() {
+        UUID instructionUuid = UUID.randomUUID();
+        NoteRequestDTO request = new NoteRequestDTO(recipeUuid, instructionUuid, "Whisk until stiff peaks");
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(recipeRepository.findById(recipeUuid.toString())).thenReturn(Optional.of(sampleRecipe));
+        when(instructionRepository.existsByIdAndRecipeId(instructionUuid.toString(), recipeUuid.toString())).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> personalNoteService.saveNote(request, "gordon@cooksync.com"));
+
+        verify(noteRepository, never()).save(org.mockito.ArgumentMatchers.any(PersonalInstructionNote.class));
+    }
+
+    @Test
     void getNote_ShouldReturnNull_WhenNoNoteExists() {
         when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
         when(noteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull("user-1", "recipe-1"))
@@ -115,6 +154,34 @@ class PersonalNoteServiceTest {
 
         assertEquals("note-1", response.id());
         assertEquals("Great crust", response.note());
+    }
+
+    @Test
+    void getNotesForRecipe_ShouldReturnPagedResponseOfNotes() {
+        PersonalInstructionNote generalNote = PersonalInstructionNote.builder()
+                .id("note-1").user(sampleUser).recipe(sampleRecipe).note("Great crust").build();
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        Page<PersonalInstructionNote> page = new PageImpl<>(List.of(generalNote), PageRequest.of(0, 10), 1);
+        when(noteRepository.findAllByUserIdAndRecipeId(
+                org.mockito.ArgumentMatchers.eq("user-1"),
+                org.mockito.ArgumentMatchers.eq(recipeUuid.toString()),
+                org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(page);
+
+        PagedResponse<NoteResponse> response = personalNoteService.getNotesForRecipe(
+                recipeUuid.toString(), "gordon@cooksync.com", 0, 10);
+
+        assertEquals(1, response.content().size());
+        assertEquals("note-1", response.content().get(0).id());
+        assertEquals("Great crust", response.content().get(0).note());
+    }
+
+    @Test
+    void getNotesForRecipe_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> personalNoteService.getNotesForRecipe(recipeUuid.toString(), "missing@cooksync.com", 0, 10));
     }
 
     @Test

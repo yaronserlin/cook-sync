@@ -401,6 +401,10 @@ public class RecipeDetailActivity extends BaseActivity {
                 });
     }
 
+    /**
+     * Renders the recipe-wide note card's display (non-editing) state: the note text if one
+     * exists, or a dimmed "add a note" hint otherwise.
+     */
     private void renderRecipeNote() {
         NoteResponse note = viewModel.findRecipeNote(currentNotes);
         boolean hasNote = note != null;
@@ -451,6 +455,11 @@ public class RecipeDetailActivity extends BaseActivity {
         closeRecipeNoteEditor();
     }
 
+    /**
+     * Deletes the recipe-wide note from its inline editor, if one currently exists. Guarded the
+     * same way as {@link #commitRecipeNoteInline} against a duplicate commit from the same
+     * gesture.
+     */
     private void deleteRecipeNoteInline() {
         if (!noteEditGuard.tryCommit()) return;
         NoteResponse existing = viewModel.findRecipeNote(currentNotes);
@@ -458,6 +467,10 @@ public class RecipeDetailActivity extends BaseActivity {
         closeRecipeNoteEditor();
     }
 
+    /**
+     * Rebuilds the per-step note lookup from {@link #currentNotes} and pushes it to
+     * {@link #instructionAdapter}, so each instruction step shows its own note (if any).
+     */
     private void renderStepNotes() {
         Map<String, String> stepNotes = new HashMap<>();
         for (NoteResponse note : currentNotes) {

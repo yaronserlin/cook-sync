@@ -90,6 +90,12 @@ public class RecipeDetailViewModel extends BaseViewModel {
         repository.getRecipeDetail(recipeId, recipeResult);
     }
 
+    /**
+     * Loads every private note on the recipe (the recipe-wide note, if any, plus one per
+     * annotated instruction step) into {@link #getNotesResult()}.
+     *
+     * @param recipeId the recipe to load notes for
+     */
     public void loadNotes(String recipeId) {
         repository.getAllPersonalNotes(recipeId, notesResult);
     }

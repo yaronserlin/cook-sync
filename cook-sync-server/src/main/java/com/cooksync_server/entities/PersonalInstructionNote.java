@@ -20,8 +20,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * JPA Entity representing a private user note on a recipe or instruction step.
- * Maps table columns in "personal_instruction_notes".
+ * JPA entity representing a private, per-user text note attached to a recipe or to one of its
+ * instruction steps. Maps to the "personal_instruction_notes" table. A {@code null}
+ * {@link #instruction} marks a recipe-wide note; a non-null one scopes the note to that single
+ * step. Exposed to clients as {@link com.dtos.response.note.NoteResponse} via
+ * {@link com.cooksync_server.services.PersonalNoteServiceImp}.
  *
  * @author Yaron Serlin
  * @version 1.0

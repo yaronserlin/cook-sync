@@ -48,6 +48,12 @@ public class CookingModeViewModel extends BaseViewModel {
     }
 
     public LiveData<ApiResult<RecipeResponse>> getRecipeResult() { return recipeResult; }
+
+    /**
+     * Every private note on the recipe (recipe-wide plus per-step), keyed by
+     * {@link NoteResponse#instructionId()} by the observing Activity to show the right note
+     * alongside each step.
+     */
     public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() { return notesResult; }
     public LiveData<Integer> getCurrentStepIndex() { return currentStepIndex; }
     public LiveData<Integer> getTimerRemainingSeconds() { return timerRemainingSeconds; }
@@ -76,6 +82,12 @@ public class CookingModeViewModel extends BaseViewModel {
         repository.getRecipeDetail(recipeId, recipeResult);
     }
 
+    /**
+     * Loads every private note on the recipe into {@link #getNotesResult()}, for the cooking
+     * screen to surface alongside each matching step.
+     *
+     * @param recipeId the recipe to load notes for
+     */
     public void loadNotes(String recipeId) {
         repository.getAllPersonalNotes(recipeId, notesResult);
     }

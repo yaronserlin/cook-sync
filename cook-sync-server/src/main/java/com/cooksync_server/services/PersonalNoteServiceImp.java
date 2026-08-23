@@ -17,6 +17,7 @@ import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
+import com.cooksync_server.repositories.InstructionRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.UserRepository;
@@ -24,7 +25,11 @@ import com.cooksync_server.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Service class managing user private notes on recipes and step-by-step instructions.
+ * Default implementation of {@link PersonalNoteService}: manages user private notes on recipes
+ * and step-by-step instructions, backed by {@link PersonalInstructionNoteRepository}. Cross-checks
+ * the owning recipe (and, for step notes, the owning instruction) via {@link RecipeRepository} and
+ * {@link InstructionRepository} before persisting, and coordinates with
+ * {@link FavoriteRecipeRepository} for the auto-favorite side effect described on {@link #saveNote}.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -38,9 +43,13 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
     private final FavoriteRecipeRepository favoriteRepository;
+    private final InstructionRepository instructionRepository;
 
     /**
-     * Saves or updates a personal private note for a recipe or specific instruction step.
+     * Saves or updates a personal private note for a recipe or specific instruction step. As a
+     * side effect, also bookmarks the recipe to the user's favorites if it isn't already
+     * favorited, since writing a note is a strong signal of interest; this is one-directional —
+     * later deleting the note that triggered it does not remove the favorite.
      *
      * Complexity:
      * Time: O(1)
@@ -48,6 +57,8 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
      *
      * @param request note creation or update request DTO
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if the user or recipe cannot be found, or if
+     *         {@code request.instructionId()} doesn't identify a step belonging to that recipe
      */
     @Transactional
     public void saveNote(NoteRequestDTO request, String userEmail) {
@@ -57,6 +68,10 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
                 .orElseThrow(() -> new ResourceNotFoundException("Recipe", request.recipeId().toString()));
 
         String instructionId = request.instructionId() != null ? request.instructionId().toString() : null;
+        if (instructionId != null && !instructionRepository.existsByIdAndRecipeId(instructionId, recipe.getId())) {
+            throw new ResourceNotFoundException("Instruction", instructionId);
+        }
+
         Optional<PersonalInstructionNote> existingNote = instructionId == null
                 ? noteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull(user.getId(), request.recipeId().toString())
                 : noteRepository.findByUserIdAndRecipeIdAndInstructionId(user.getId(), request.recipeId().toString(), instructionId);
@@ -71,14 +86,12 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
 
         noteRepository.save(note);
 
-        if (request.note() != null && !request.note().isBlank()) {
-            if (!favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipe.getId())) {
-                FavoriteRecipe favorite = FavoriteRecipe.builder()
-                        .user(user)
-                        .recipe(recipe)
-                        .build();
-                favoriteRepository.save(favorite);
-            }
+        if (!favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipe.getId())) {
+            FavoriteRecipe favorite = FavoriteRecipe.builder()
+                    .user(user)
+                    .recipe(recipe)
+                    .build();
+            favoriteRepository.save(favorite);
         }
     }
 
@@ -123,28 +136,6 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
 
         Page<PersonalInstructionNote> notesPage = noteRepository.findAllByUserIdAndRecipeId(
                 user.getId(), recipeId, PageRequest.of(page, size));
-
-        return PagedResponseMapper.toPagedResponse(notesPage, PersonalNoteServiceImp::toResponse);
-    }
-
-    /**
-     * Retrieves all personal notes created by the user.
-     *
-     * Complexity:
-     * Time: O(N) where N is user note count
-     * Space: O(N)
-     *
-     * @param userEmail user email address
-     * @param page page number
-     * @param size page size
-     * @return PagedResponse of NoteResponse DTOs
-     */
-    @Transactional(readOnly = true)
-    public PagedResponse<NoteResponse> getMyNotes(String userEmail, int page, int size) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        Page<PersonalInstructionNote> notesPage = noteRepository.findAllByUserId(user.getId(), PageRequest.of(page, size));
 
         return PagedResponseMapper.toPagedResponse(notesPage, PersonalNoteServiceImp::toResponse);
     }

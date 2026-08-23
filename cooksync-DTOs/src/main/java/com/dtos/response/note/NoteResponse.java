@@ -1,8 +1,9 @@
 package com.dtos.response.note;
 
 /**
- * Data Transfer Object representing a private user note on a recipe or instruction step.
- * Encapsulates note unique identifier, recipe mapping, optional step mapping, and note content.
+ * Response body shared between the server's note endpoints and the Android client for a single
+ * private note. A null {@code instructionId} identifies a recipe-wide note; a non-null one scopes
+ * the note to that instruction step (used by the client to key its per-step note lookup).
  *
  * @param id unique identifier of the personal note record
  * @param recipeId unique identifier of the parent recipe

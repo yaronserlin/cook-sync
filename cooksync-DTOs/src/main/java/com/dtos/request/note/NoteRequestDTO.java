@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
- * Data Transfer Object for creating or updating a personal user note on a recipe or instruction.
- * Encapsulates the target recipe identifier, optional step identifier, and textual note content.
+ * Request body shared between the Android client and the server's {@code POST /api/notes}
+ * endpoint for creating or updating a personal note on a recipe or one of its instruction steps.
  *
  * @param recipeId the target recipe unique identifier, must not be null
  * @param instructionId optional instruction step identifier, null if note applies to the overall recipe
