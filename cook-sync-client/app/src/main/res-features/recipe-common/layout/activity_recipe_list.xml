@@ -115,7 +115,7 @@
             tools:listitem="@layout/item_recipe_row_card" />
 
         <include
-            android:id="@+id/skeleton_view"
+            android:id="@+id/skeleton_container"
             layout="@layout/activity_recipe_list_skeleton"
             android:visibility="gone" />
 

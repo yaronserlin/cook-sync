@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home feed skeleton: search bar, filter/tag-chip row bones, and three stacked
+  skeleton_card includes standing in for the first page of the recipe feed.
+  Animated by SkeletonHelper.attachAll() in HomeActivity.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

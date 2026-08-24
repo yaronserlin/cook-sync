@@ -83,6 +83,13 @@ public abstract class RecipeListActivity extends BaseActivity {
      */
     protected abstract String getCurrentSearchQuery();
 
+    /**
+     * Inflates the shared list layout, binds every static view, and attaches a
+     * {@link com.cooksync.app.ui.common.SkeletonHelper} to the skeleton container so subclasses
+     * can call {@link #showSkeleton(boolean)} as soon as they kick off their own data load.
+     *
+     * @param savedInstanceState saved instance state bundle (may be {@code null})
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +109,7 @@ public abstract class RecipeListActivity extends BaseActivity {
         cgRemovableConstraints = noResultsState.findViewById(R.id.cg_removable_constraints);
         btnClearAll = noResultsState.findViewById(R.id.btn_clear_all);
 
-        setupSkeleton(R.id.skeleton_view);
+        setupSkeleton(R.id.skeleton_container);
 
         setupBottomNav();
         setupCreateRecipeFab();

@@ -20,8 +20,8 @@ import java.util.List;
  * // In an Activity / Fragment:
  * SkeletonHelper skeleton = new SkeletonHelper();
  *
- * // Start shimmer on a whole container:
- * skeleton.attach(skeletonContainer);
+ * // Start shimmer on every bone in a skeleton container:
+ * skeleton.attachAll(skeletonContainer);
  * skeleton.start();
  *
  * // Stop and hide when content is ready:
@@ -51,22 +51,6 @@ public class SkeletonHelper {
 
     private final List<View> targets = new ArrayList<>();
     private ValueAnimator animator;
-
-    /**
-     * Registers a single {@link View} as a shimmer target.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param view the view to animate
-     * @return this instance for method chaining
-     */
-    @NonNull
-    public SkeletonHelper attach(@NonNull View view) {
-        targets.add(view);
-        return this;
-    }
 
     /**
      * Recursively collects every direct and indirect child of {@code container}

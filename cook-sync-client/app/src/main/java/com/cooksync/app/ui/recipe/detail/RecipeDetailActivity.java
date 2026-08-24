@@ -117,6 +117,13 @@ public class RecipeDetailActivity extends BaseActivity {
     private RecipeDetailViewModel.ReviewSort currentSort = RecipeDetailViewModel.ReviewSort.NEWEST;
     private boolean isInitialLoad = true;
 
+    /**
+     * Inflates the detail layout, binds {@link RecipeDetailViewModel} via {@link ViewModelFactory},
+     * wires up views and adapters, then shows the skeleton and kicks off the recipe/favorites/notes
+     * loads. Finishes immediately, before any of that, if no recipe id was passed in the intent.
+     *
+     * @param savedInstanceState saved instance state bundle (may be {@code null})
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,7 +169,7 @@ public class RecipeDetailActivity extends BaseActivity {
         scrollView = findViewById(R.id.detail_scroll);
         contentGroup = scrollView;
         bottomBar = findViewById(R.id.detail_bottom_bar);
-        setupSkeleton(R.id.detail_skeleton);
+        setupSkeleton(R.id.skeleton_container);
 
         heroImage = findViewById(R.id.detail_image);
         title = findViewById(R.id.detail_title);
@@ -480,8 +487,9 @@ public class RecipeDetailActivity extends BaseActivity {
     }
 
     /**
-     * Shows or hides the skeleton loading placeholder, toggling it against the real content
-     * scroll view and the bottom action bar (which isn't actionable before data arrives).
+     * Extends the base skeleton toggle to also hide/show {@link #contentGroup} and
+     * {@link #bottomBar} (which isn't actionable before data arrives), since this screen has no
+     * single content view to pass through {@link BaseActivity#showSkeleton}.
      *
      * @param show {@code true} to show the skeleton and hide real content, {@code false} to reveal it
      * @param ignored unused; {@link BaseActivity#showSkeleton} accepts a content view to toggle,
@@ -489,17 +497,9 @@ public class RecipeDetailActivity extends BaseActivity {
      */
     @Override
     protected void showSkeleton(boolean show, View ignored) {
-        if (show) {
-            if (skeletonHelper != null) skeletonHelper.start();
-            if (skeletonView != null) skeletonView.setVisibility(View.VISIBLE);
-            contentGroup.setVisibility(View.INVISIBLE);
-            bottomBar.setVisibility(View.INVISIBLE);
-        } else {
-            if (skeletonHelper != null) skeletonHelper.stop();
-            if (skeletonView != null) skeletonView.setVisibility(View.GONE);
-            contentGroup.setVisibility(View.VISIBLE);
-            bottomBar.setVisibility(View.VISIBLE);
-        }
+        super.showSkeleton(show, null);
+        contentGroup.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
+        bottomBar.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
     }
 
     /**

@@ -125,7 +125,7 @@ public class HomeActivity extends BaseActivity {
             tagAdapter.setSelectedTags(viewModel.getSelectedTags());
         });
 
-        setupSkeleton(R.id.skeleton_view);
+        setupSkeleton(R.id.skeleton_container);
 
         AvatarView avatarView = findViewById(R.id.avatar_view_profile);
         avatarView.setAvatar(SessionManager.getInstance().getAvatarUrl(), SessionManager.getInstance().getDisplayName());

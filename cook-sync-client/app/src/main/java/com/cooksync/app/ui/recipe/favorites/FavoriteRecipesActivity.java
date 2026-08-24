@@ -49,6 +49,13 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         return R.id.nav_favorites;
     }
 
+    /**
+     * Inflates the shared list layout via {@link RecipeListActivity}, binds
+     * {@link FavoritesViewModel} via {@link ViewModelFactory}, wires up the row adapter and its
+     * observers, then shows the skeleton and kicks off the initial favorites and tag-catalog loads.
+     *
+     * @param savedInstanceState unused; this screen restores no instance state of its own
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

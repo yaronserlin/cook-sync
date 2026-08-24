@@ -140,7 +140,7 @@
             tools:listitem="@layout/item_recipe_card" />
 
         <include
-            android:id="@+id/skeleton_view"
+            android:id="@+id/skeleton_container"
             layout="@layout/activity_home_skeleton"
             android:visibility="gone" />
 

@@ -604,7 +604,7 @@
     </androidx.core.widget.NestedScrollView>
 
     <include
-        android:id="@+id/detail_skeleton"
+        android:id="@+id/skeleton_container"
         layout="@layout/activity_recipe_detail_skeleton" />
 
     <LinearLayout
