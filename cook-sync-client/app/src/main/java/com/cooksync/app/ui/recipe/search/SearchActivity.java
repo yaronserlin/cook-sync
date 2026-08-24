@@ -32,14 +32,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Dedicated recipe search screen, reached by tapping the search field on {@link
- * com.cooksync.app.ui.home.HomeActivity}. Runs a keyword search against the public recipe
- * catalog, surfaces matching tag suggestions while typing, supports the same sort/difficulty/
- * tags/rating/time filters as Home via the shared {@link com.cooksync.app.ui.recipe.common.FiltersBottomSheetDialogFragment},
- * and displays results in the design's compact row format.
+ * Client-layer (Android) entry-point screen of the dedicated recipe search feature, reached by
+ * tapping the search field on {@link com.cooksync.app.ui.home.HomeActivity}. Runs a keyword
+ * search against the server's public search endpoint, or browses by a tapped tag suggestion via
+ * its tag-filtered endpoint, both through {@link SearchViewModel} and rendered as
+ * {@code RecipePreviewResponse} DTOs shared with the server. Surfaces matching tag suggestions
+ * while typing, supports the same sort/difficulty/tags/rating/time filters as Home via the shared
+ * {@link com.cooksync.app.ui.recipe.common.FiltersBottomSheetDialogFragment}, and displays
+ * results in the design's compact row format. Owns the screen's view wiring only; all search/
+ * filter data state lives in {@link SearchViewModel}.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 05/08/2026
  */
 public class SearchActivity extends BaseActivity {

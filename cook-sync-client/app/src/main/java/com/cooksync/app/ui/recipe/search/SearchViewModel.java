@@ -20,15 +20,17 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Manages the data state for the dedicated {@link SearchActivity}: running a keyword search
- * against the public recipe catalog, applying the same sort/difficulty/tags/rating/time
- * filters as the Home feed (via the shared {@code FiltersBottomSheetDialogFragment}), and
- * surfacing tag suggestions that match the in-progress query. Both the keyword search and the
- * tag-browse mode are paginated server-side, so results are fetched and displayed incrementally
- * as the results list is scrolled, exactly like {@code HomeViewModel}'s browse feed.
+ * Client-layer (Android) ViewModel backing {@link SearchActivity}: owns the dedicated search
+ * screen's data state, running a keyword search or tag-browse against the server's public
+ * search and tag-filtered endpoints (via {@link RecipeRepository}, returning
+ * {@link RecipePreviewResponse} DTOs shared with the server), the tag catalog used for
+ * "Matching tags" suggestions (via {@link TagRepository}), and the same sort/difficulty/tags/
+ * rating/time filtering inherited from {@link AbstractFilterableListViewModel}. Both the keyword
+ * search and the tag-browse mode are paginated server-side, so results are fetched and displayed
+ * incrementally as the results list is scrolled, exactly like {@code HomeViewModel}'s browse feed.
  *
  * @author Yaron Serlin
- * @version 1.2
+ * @version 1.3
  * @since 05/08/2026
  */
 public class SearchViewModel extends AbstractFilterableListViewModel {
