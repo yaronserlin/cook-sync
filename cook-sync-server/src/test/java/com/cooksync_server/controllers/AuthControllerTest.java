@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,8 +22,10 @@ import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
 import com.cooksync_server.services.AuthService;
 import com.cooksync_server.services.PasswordService;
 import com.cooksync_server.services.UserProfileService;
+import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
@@ -30,10 +33,11 @@ import com.dtos.response.user.UserResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Web-layer test suite verifying {@link AuthController}'s request mapping, payload validation,
- * and status-code wiring against mocked {@link AuthService}, {@link UserProfileService}, and
- * {@link PasswordService} instances. Confirms the controller routes each endpoint to the correct
- * one of the three services after {@code AuthServiceImp} was split by responsibility.
+ * Web-layer test suite verifying {@link AuthController}'s request mapping,
+ * payload validation, and status-code wiring against mocked
+ * {@link AuthService}, {@link UserProfileService}, and {@link PasswordService}
+ * instances. Confirms the controller routes each endpoint to the correct one of
+ * the three services after {@code AuthServiceImp} was split by responsibility.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -59,9 +63,10 @@ class AuthControllerTest {
     private PasswordService passwordService;
 
     /**
-     * {@link com.cooksync_server.config.JwtAuthenticationFilter} is auto-registered by
-     * {@code @WebMvcTest} as a servlet {@code Filter}; mocking its {@code JwtUtil} dependency
-     * just satisfies that bean's constructor (no {@code Authorization} header is sent here).
+     * {@link com.cooksync_server.config.JwtAuthenticationFilter} is
+     * auto-registered by {@code @WebMvcTest} as a servlet {@code Filter};
+     * mocking its {@code JwtUtil} dependency just satisfies that bean's
+     * constructor (no {@code Authorization} header is sent here).
      */
     @MockitoBean
     private JwtUtil jwtUtil;
@@ -74,9 +79,9 @@ class AuthControllerTest {
                 .thenReturn(new PendingRegistrationResponse("john@example.com", 600));
 
         mockMvc.perform(post("/api/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.email").value("john@example.com"));
     }
@@ -87,9 +92,9 @@ class AuthControllerTest {
                 "John", "Doe", "not-an-email", "Password123!", true, false);
 
         mockMvc.perform(post("/api/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -99,21 +104,21 @@ class AuthControllerTest {
                 "John", "Doe", "john@example.com", "Password123!", false, false);
 
         mockMvc.perform(post("/api/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void verifyRegistrationOtp_ShouldReturnBadRequest_WhenCodeNotSixDigits() throws Exception {
-        VerifyRegistrationOtpRequestDTO invalidRequest =
-                new VerifyRegistrationOtpRequestDTO("john@example.com", "12");
+        VerifyRegistrationOtpRequestDTO invalidRequest
+                = new VerifyRegistrationOtpRequestDTO("john@example.com", "12");
 
         mockMvc.perform(post("/api/auth/verify-registration-otp")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -124,9 +129,9 @@ class AuthControllerTest {
                 .thenReturn(new AuthResponse("jwt-token", "refresh-token", "user-1", "John", "Doe", false, null));
 
         mockMvc.perform(post("/api/auth/login")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.token").value("jwt-token"));
     }
@@ -138,9 +143,9 @@ class AuthControllerTest {
                 .thenThrow(new InvalidCredentialsException("Invalid email or password"));
 
         mockMvc.perform(post("/api/auth/login")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -149,9 +154,9 @@ class AuthControllerTest {
         LoginRequestDTO invalidRequest = new LoginRequestDTO("john@example.com", "123");
 
         mockMvc.perform(post("/api/auth/login")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -172,11 +177,64 @@ class AuthControllerTest {
     @WithMockUser(username = "john@example.com")
     void forgotPassword_ShouldRouteToPasswordService() throws Exception {
         mockMvc.perform(post("/api/auth/forgot-password")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"john@example.com\"}"))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"john@example.com\"}"))
                 .andExpect(status().isOk());
 
         org.mockito.Mockito.verify(passwordService).forgotPassword(any());
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void updateEmail_ShouldRouteToUserProfileService() throws Exception {
+        EmailUpdateRequestDTO request = new EmailUpdateRequestDTO("new@example.com", "Password123!");
+
+        mockMvc.perform(put("/api/auth/email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(userProfileService).requestEmailChange("john@example.com", request);
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void updateEmail_ShouldReturnBadRequest_WhenNewEmailInvalid() throws Exception {
+        EmailUpdateRequestDTO invalidRequest = new EmailUpdateRequestDTO("not-an-email", "Password123!");
+
+        mockMvc.perform(put("/api/auth/email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void verifyEmailChangeOtp_ShouldReturnOk_WhenCodeValid() throws Exception {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("123456");
+        when(userProfileService.confirmEmailChange("john@example.com", request))
+                .thenReturn(new AuthResponse("jwt-token", "refresh-token", "user-1", "John", "Doe", false, null));
+
+        mockMvc.perform(post("/api/auth/email/verify-otp")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.token").value("jwt-token"));
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void verifyEmailChangeOtp_ShouldReturnBadRequest_WhenCodeNotSixDigits() throws Exception {
+        VerifyEmailChangeOtpRequestDTO invalidRequest = new VerifyEmailChangeOtpRequestDTO("12");
+
+        mockMvc.perform(post("/api/auth/email/verify-otp")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -1,8 +1,10 @@
 package com.dtos.request.auth;
 
+import com.dtos.validation.OtpCode;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data Transfer Object for completing registration by submitting the OTP code sent by email.
@@ -16,10 +18,10 @@ import jakarta.validation.constraints.Pattern;
 public record VerifyRegistrationOtpRequestDTO(
         @NotBlank(message = "Email cannot be blank")
         @Email(message = "Email should be valid")
+        @Size(max = 255, message = "Email cannot exceed 255 characters")
         String email,
 
-        @NotBlank(message = "OTP code cannot be blank")
-        @Pattern(regexp = "^\\d{6}$", message = "OTP code must be exactly 6 digits")
+        @OtpCode
         String code
 ) {
 }

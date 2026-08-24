@@ -49,6 +49,7 @@ public class RefreshTokenServiceImp implements RefreshTokenService{
      *
      * @param userId unique user identifier
      * @return created RefreshToken entity
+     * @throws ResourceNotFoundException if no user matches {@code userId}
      */
     @Transactional
     @Override
@@ -70,6 +71,7 @@ public class RefreshTokenServiceImp implements RefreshTokenService{
      *
      * @param token target RefreshToken entity
      * @return valid RefreshToken instance
+     * @throws UnauthorizedActionException if {@code token} has already expired
      */
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {

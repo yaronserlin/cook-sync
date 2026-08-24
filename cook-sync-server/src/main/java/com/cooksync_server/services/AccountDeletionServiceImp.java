@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.User;
+import com.cooksync_server.repositories.EmailChangeTokenRepository;
 import com.cooksync_server.repositories.FavoriteRecipeRepository;
 import com.cooksync_server.repositories.PasswordResetTokenRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
@@ -55,6 +56,7 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
     private final PersonalInstructionNoteRepository personalInstructionNoteRepository;
     private final FavoriteRecipeRepository favoriteRecipeRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailChangeTokenRepository emailChangeTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final CloudinaryService cloudinaryService;
 
@@ -162,8 +164,11 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * owned recipe images) are then deleted; the user's recipes are then removed as managed
      * entities so their own {@code cascade = ALL, orphanRemoval = true} relations (ingredients,
      * instructions, images, description blocks, reviews) are cleaned up by Hibernate; and
-     * finally the user's remaining reviews, sessions, and reset tokens are removed along with
-     * the user row itself.
+     * finally the user's remaining reviews, sessions, and any pending password-reset/email-change
+     * codes are removed along with the user row itself — neither token table carries a foreign
+     * key to {@code users} (see {@code V2__realign_otp_tables.sql} and
+     * {@code V4__email_change_tokens.sql}), so both must be cleaned up explicitly here or a
+     * purged user would leave an orphaned row behind.
      *
      * Complexity:
      * Time: O(P) where P is the user's combined recipe/review/note/favorite graph size
@@ -211,6 +216,7 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
 
         refreshTokenService.deleteByUserId(userId);
         passwordResetTokenRepository.deleteByUserId(userId);
+        emailChangeTokenRepository.deleteByUserId(userId);
         userRepository.delete(user);
 
         log.info("Permanently purged account ID: {}", userId);

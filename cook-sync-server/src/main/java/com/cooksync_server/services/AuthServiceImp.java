@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.cooksync_server.config.JwtUtil;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
@@ -61,11 +60,11 @@ public class AuthServiceImp implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final EmailService emailService;
     private final AccountDeletionService accountDeletionService;
+    private final SessionIssuer sessionIssuer;
     private final String dummyPasswordHash;
 
     /**
@@ -73,22 +72,22 @@ public class AuthServiceImp implements AuthService {
      *
      * @param userRepository repository for user persistence
      * @param passwordEncoder encoder for BCrypt password hashing
-     * @param jwtUtil utility for JWT generation and verification
      * @param refreshTokenService service for managing session refresh tokens
      * @param pendingRegistrationRepository repository for unverified registration attempts
      * @param emailService service used to deliver registration OTP emails
      * @param accountDeletionService service handling the self-service account-deletion lifecycle
+     * @param sessionIssuer service issuing access/refresh token pairs for a user
      */
-    public AuthServiceImp(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
+    public AuthServiceImp(UserRepository userRepository, PasswordEncoder passwordEncoder,
             RefreshTokenService refreshTokenService, PendingRegistrationRepository pendingRegistrationRepository,
-            EmailService emailService, AccountDeletionService accountDeletionService) {
+            EmailService emailService, AccountDeletionService accountDeletionService, SessionIssuer sessionIssuer) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.emailService = emailService;
         this.accountDeletionService = accountDeletionService;
+        this.sessionIssuer = sessionIssuer;
         this.dummyPasswordHash = passwordEncoder.encode("dummy-password-for-timing-protection");
     }
 
@@ -183,11 +182,8 @@ public class AuthServiceImp implements AuthService {
         }
         pendingRegistrationRepository.delete(pending);
 
-        String token = jwtUtil.generateToken(newUser.getEmail(), newUser.getId(), newUser.isAdmin());
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(newUser.getId());
-
         log.info("User registered successfully with ID: {}", newUser.getId());
-        return new AuthResponse(token, refreshToken.getToken(), newUser.getId(), newUser.getFirstName(), newUser.getLastName(), newUser.isAdmin(), newUser.getAvatarUrl());
+        return sessionIssuer.issue(newUser);
     }
 
     /**
@@ -258,11 +254,8 @@ public class AuthServiceImp implements AuthService {
                 throw new UnauthorizedActionException("This account has been disabled.");
             }
         }
-        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.isAdmin());
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
-
         log.info("User logged in successfully with ID: {}", user.getId());
-        return new AuthResponse(token, refreshToken.getToken(), user.getId(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getAvatarUrl());
+        return sessionIssuer.issue(user);
     }
 
     /**
@@ -284,11 +277,7 @@ public class AuthServiceImp implements AuthService {
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
-                .map(user -> {
-                    String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.isAdmin());
-                    RefreshToken rotatedRefreshToken = refreshTokenService.createRefreshToken(user.getId());
-                    return new AuthResponse(token, rotatedRefreshToken.getToken(), user.getId(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getAvatarUrl());
-                })
+                .map(sessionIssuer::issue)
                 .orElseThrow(() -> new UnauthorizedActionException("Refresh token is not in database or is invalid!"));
     }
 

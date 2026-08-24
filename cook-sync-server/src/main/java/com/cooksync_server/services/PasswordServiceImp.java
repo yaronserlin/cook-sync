@@ -49,6 +49,7 @@ public class PasswordServiceImp implements PasswordService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
+    private final CredentialVerifier credentialVerifier;
 
     /**
      * Changes the user's account password after verifying the current password, revoking any
@@ -61,12 +62,7 @@ public class PasswordServiceImp implements PasswordService {
      */
     @Transactional
     public void changePassword(String userEmail, ChangePasswordRequestDTO request) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
-
-        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
-            throw new InvalidCredentialsException("Current password is incorrect");
-        }
+        User user = credentialVerifier.verifyCurrentPassword(userEmail, request.currentPassword());
 
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);

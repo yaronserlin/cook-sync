@@ -12,6 +12,7 @@ import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
@@ -206,13 +207,25 @@ public interface ApiService {
     Call<ApiResponse<Void>> changePassword(@Body ChangePasswordRequestDTO request);
 
     /**
-     * Changes the authenticated user's email address, re-issuing tokens for the new identity.
+     * Begins changing the authenticated user's email address: verifies the current password and
+     * emails a one-time verification code to the requested new address. Also serves as the
+     * "resend code" action when called again for the same pending change.
      *
      * @param request email update payload
-     * @return call yielding the renewed session
+     * @return call yielding an empty acknowledgement
      */
     @PUT("api/auth/email")
-    Call<ApiResponse<AuthResponse>> updateEmail(@Body EmailUpdateRequestDTO request);
+    Call<ApiResponse<Void>> updateEmail(@Body EmailUpdateRequestDTO request);
+
+    /**
+     * Completes an email-address change by submitting the OTP code emailed to the pending new
+     * address, re-issuing tokens for the new identity.
+     *
+     * @param request OTP verification payload
+     * @return call yielding the renewed session
+     */
+    @POST("api/auth/email/verify-otp")
+    Call<ApiResponse<AuthResponse>> verifyEmailChangeOtp(@Body VerifyEmailChangeOtpRequestDTO request);
 
     /**
      * Updates the authenticated user's public-profile privacy preferences.

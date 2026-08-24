@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Body for OrganicConfirmDialog#showWithOtpConfirm: a confirm message followed by a 6-digit
+     code field, an inline error slot, and a resend action, used for verifying a pending
+     email-address change without leaving the hosting screen. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/dp_20"
+    android:paddingTop="@dimen/dp_4"
+    android:paddingBottom="@dimen/dp_20">
+
+    <TextView
+        android:id="@+id/tv_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0.85"
+        android:textColor="@color/color_text"
+        android:textSize="@dimen/sp_14"
+        tools:text="Enter the 6-digit code we sent to new@example.com." />
+
+    <TextView
+        style="@style/CookSync.FieldLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_16"
+        android:text="@string/label_otp_code" />
+
+    <EditText
+        android:id="@+id/et_otp_code"
+        style="@style/CookSync.Input.Code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_otp_code"
+        android:imeOptions="actionDone" />
+
+    <TextView
+        android:id="@+id/tv_otp_error"
+        style="@style/CookSync.ErrorText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_4"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_resend"
+        style="@style/CookSync.Button.Ghost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_12"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/action_resend_code" />
+
+</LinearLayout>

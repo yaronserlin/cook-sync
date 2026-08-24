@@ -16,6 +16,7 @@ final class OtpCodeGenerator {
     /** Maximum incorrect OTP submissions allowed before a pending code is invalidated. */
     static final int MAX_ATTEMPTS = 5;
 
+    /** Cryptographically strong random source backing {@link #generate()}. */
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private OtpCodeGenerator() {

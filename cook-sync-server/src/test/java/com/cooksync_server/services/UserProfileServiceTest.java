@@ -1,8 +1,18 @@
 package com.cooksync_server.services;
 
+import com.cooksync_server.entities.EmailChangeToken;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
+import com.cooksync_server.exceptions.auth.InvalidOtpException;
+import com.cooksync_server.exceptions.auth.OtpExpiredException;
+import com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException;
+import com.cooksync_server.exceptions.auth.UserAlreadyExistsException;
+import com.cooksync_server.repositories.EmailChangeTokenRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.auth.EmailUpdateRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
+import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,16 +22,26 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit test suite verifying public-profile lookup in {@link UserProfileServiceImp}.
+ * Unit test suite verifying public-profile lookup and the self-service email-change OTP flow in
+ * {@link UserProfileServiceImp}.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -35,13 +55,19 @@ class UserProfileServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private com.cooksync_server.config.JwtUtil jwtUtil;
-    @Mock
     private RefreshTokenService refreshTokenService;
     @Mock
     private CloudinaryService cloudinaryService;
     @Mock
     private AccountDeletionService accountDeletionService;
+    @Mock
+    private EmailChangeTokenRepository emailChangeTokenRepository;
+    @Mock
+    private EmailServiceImp emailService;
+    @Mock
+    private SessionIssuer sessionIssuer;
+    @Mock
+    private CredentialVerifier credentialVerifier;
 
     @InjectMocks
     private UserProfileServiceImp userProfileService;
@@ -84,5 +110,163 @@ class UserProfileServiceTest {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userProfileService.getUserProfileById("missing"));
+    }
+
+    @Test
+    void requestEmailChange_ShouldSaveHashedCodeAndSendEmailToNewAddress_WhenPasswordCorrectAndEmailFree() {
+        EmailUpdateRequestDTO request = new EmailUpdateRequestDTO("new@example.com", "correct-password");
+        when(credentialVerifier.verifyCurrentPassword("jane@cooksync.com", "correct-password")).thenReturn(sampleUser);
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        lenient().when(passwordEncoder.encode(anyString())).thenReturn("hashed-code");
+
+        userProfileService.requestEmailChange("jane@cooksync.com", request);
+
+        verify(emailChangeTokenRepository, times(1)).deleteByUserId("user-2");
+        verify(emailChangeTokenRepository, times(1)).save(any(EmailChangeToken.class));
+        verify(emailService, times(1)).sendOtpEmail(eq("new@example.com"), anyString(), anyInt());
+    }
+
+    @Test
+    void requestEmailChange_ShouldThrowInvalidCredentialsException_WhenPasswordIncorrect() {
+        EmailUpdateRequestDTO request = new EmailUpdateRequestDTO("new@example.com", "wrong-password");
+        when(credentialVerifier.verifyCurrentPassword("jane@cooksync.com", "wrong-password"))
+                .thenThrow(new InvalidCredentialsException("Current password is incorrect"));
+
+        assertThrows(InvalidCredentialsException.class,
+                () -> userProfileService.requestEmailChange("jane@cooksync.com", request));
+        verify(emailChangeTokenRepository, never()).save(any(EmailChangeToken.class));
+    }
+
+    @Test
+    void requestEmailChange_ShouldThrowUserAlreadyExistsException_WhenNewEmailAlreadyRegistered() {
+        EmailUpdateRequestDTO request = new EmailUpdateRequestDTO("taken@example.com", "correct-password");
+        when(credentialVerifier.verifyCurrentPassword("jane@cooksync.com", "correct-password")).thenReturn(sampleUser);
+        when(userRepository.existsByEmail("taken@example.com")).thenReturn(true);
+
+        assertThrows(UserAlreadyExistsException.class,
+                () -> userProfileService.requestEmailChange("jane@cooksync.com", request));
+        verify(emailChangeTokenRepository, never()).save(any(EmailChangeToken.class));
+    }
+
+    @Test
+    void confirmEmailChange_ShouldApplyNewEmailAndDeleteToken_WhenCodeCorrect() {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("123456");
+        EmailChangeToken changeToken = EmailChangeToken.builder()
+                .id("token-id")
+                .user(sampleUser)
+                .newEmail("new@example.com")
+                .codeHash("hashed-code")
+                .expiryDate(Instant.now().plusSeconds(300))
+                .attemptCount(0)
+                .build();
+
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(emailChangeTokenRepository.findByUserId("user-2")).thenReturn(Optional.of(changeToken));
+        when(passwordEncoder.matches("123456", "hashed-code")).thenReturn(true);
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(sessionIssuer.issue(sampleUser))
+                .thenReturn(new AuthResponse("jwt-token", "refresh-token", "user-2", "Jane", "Smith", true, null));
+
+        AuthResponse response = userProfileService.confirmEmailChange("jane@cooksync.com", request);
+
+        assertEquals("new@example.com", sampleUser.getEmail());
+        assertEquals("jwt-token", response.token());
+        verify(userRepository, times(1)).save(sampleUser);
+        verify(emailChangeTokenRepository, times(1)).delete(changeToken);
+    }
+
+    @Test
+    void confirmEmailChange_ShouldThrowInvalidOtpException_WhenNoActiveTokenFound() {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("123456");
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(emailChangeTokenRepository.findByUserId("user-2")).thenReturn(Optional.empty());
+
+        assertThrows(InvalidOtpException.class,
+                () -> userProfileService.confirmEmailChange("jane@cooksync.com", request));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void confirmEmailChange_ShouldThrowOtpExpiredException_WhenTokenExpired() {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("123456");
+        EmailChangeToken changeToken = EmailChangeToken.builder()
+                .user(sampleUser)
+                .newEmail("new@example.com")
+                .codeHash("hashed-code")
+                .expiryDate(Instant.now().minusSeconds(60))
+                .attemptCount(0)
+                .build();
+
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(emailChangeTokenRepository.findByUserId("user-2")).thenReturn(Optional.of(changeToken));
+
+        assertThrows(OtpExpiredException.class,
+                () -> userProfileService.confirmEmailChange("jane@cooksync.com", request));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void confirmEmailChange_ShouldThrowInvalidOtpException_AndIncrementAttempts_WhenCodeIncorrect() {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("000000");
+        EmailChangeToken changeToken = EmailChangeToken.builder()
+                .user(sampleUser)
+                .newEmail("new@example.com")
+                .codeHash("hashed-code")
+                .expiryDate(Instant.now().plusSeconds(300))
+                .attemptCount(0)
+                .build();
+
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(emailChangeTokenRepository.findByUserId("user-2")).thenReturn(Optional.of(changeToken));
+        when(passwordEncoder.matches("000000", "hashed-code")).thenReturn(false);
+
+        assertThrows(InvalidOtpException.class,
+                () -> userProfileService.confirmEmailChange("jane@cooksync.com", request));
+        assertEquals(1, changeToken.getAttemptCount());
+        verify(emailChangeTokenRepository, times(1)).save(changeToken);
+        verify(emailChangeTokenRepository, never()).delete(any(EmailChangeToken.class));
+    }
+
+    @Test
+    void confirmEmailChange_ShouldThrowTooManyOtpAttemptsException_AndDeleteToken_WhenAttemptsExceeded() {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("000000");
+        EmailChangeToken changeToken = EmailChangeToken.builder()
+                .user(sampleUser)
+                .newEmail("new@example.com")
+                .codeHash("hashed-code")
+                .expiryDate(Instant.now().plusSeconds(300))
+                .attemptCount(4)
+                .build();
+
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(emailChangeTokenRepository.findByUserId("user-2")).thenReturn(Optional.of(changeToken));
+        when(passwordEncoder.matches("000000", "hashed-code")).thenReturn(false);
+
+        assertThrows(TooManyOtpAttemptsException.class,
+                () -> userProfileService.confirmEmailChange("jane@cooksync.com", request));
+        verify(emailChangeTokenRepository, times(1)).delete(changeToken);
+        verify(emailChangeTokenRepository, never()).save(any(EmailChangeToken.class));
+    }
+
+    @Test
+    void confirmEmailChange_ShouldThrowUserAlreadyExistsException_WhenPendingEmailTakenSinceRequest() {
+        VerifyEmailChangeOtpRequestDTO request = new VerifyEmailChangeOtpRequestDTO("123456");
+        EmailChangeToken changeToken = EmailChangeToken.builder()
+                .user(sampleUser)
+                .newEmail("new@example.com")
+                .codeHash("hashed-code")
+                .expiryDate(Instant.now().plusSeconds(300))
+                .attemptCount(0)
+                .build();
+
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(emailChangeTokenRepository.findByUserId("user-2")).thenReturn(Optional.of(changeToken));
+        when(passwordEncoder.matches("123456", "hashed-code")).thenReturn(true);
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(true);
+
+        assertThrows(UserAlreadyExistsException.class,
+                () -> userProfileService.confirmEmailChange("jane@cooksync.com", request));
+        verify(userRepository, never()).save(any(User.class));
+        verify(emailChangeTokenRepository, never()).delete(any(EmailChangeToken.class));
     }
 }

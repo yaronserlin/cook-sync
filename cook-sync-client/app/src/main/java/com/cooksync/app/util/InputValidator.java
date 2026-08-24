@@ -42,6 +42,9 @@ public final class InputValidator {
     /** Maximum acceptable name length (mirrors {@code @Size(max=50)} on RegisterRequestDTO). */
     public static final int NAME_MAX = 50;
 
+    /** Maximum acceptable email length (mirrors {@code @Size(max=255)} on every auth email field). */
+    public static final int EMAIL_MAX = 255;
+
     /**
      * Password policy regex — exact copy of the {@code @Pattern} constraint on
      * {@code RegisterRequestDTO#password}:
@@ -106,12 +109,13 @@ public final class InputValidator {
     /**
      * Validates an email address.
      *
-     * <p>Rules (mirror {@code LoginRequestDTO#email} and {@code RegisterRequestDTO#email}):</p>
+     * <p>Rules (mirror the {@code @Size(max=255)}-capped email field shared by every auth
+     * request DTO, e.g. {@code LoginRequestDTO#email} and {@code RegisterRequestDTO#email}):</p>
      * <ol>
      *   <li>Not blank</li>
      *   <li>No dangerous/injection content</li>
      *   <li>Matches {@link Patterns#EMAIL_ADDRESS}</li>
-     *   <li>Does not exceed {@link #PASSWORD_MAX} characters (shared upper bound)</li>
+     *   <li>Does not exceed {@link #EMAIL_MAX} characters</li>
      * </ol>
      *
      * Complexity:
@@ -132,6 +136,9 @@ public final class InputValidator {
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(value).matches()) {
             return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_email_invalid));
+        }
+        if (value.length() > EMAIL_MAX) {
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_email_too_long, EMAIL_MAX));
         }
         return ValidationResult.valid();
     }
@@ -192,19 +199,11 @@ public final class InputValidator {
      */
     @NonNull
     public static ValidationResult validateNewPassword(@Nullable String raw) {
+        ValidationResult baseResult = validateLoginPassword(raw);
+        if (!baseResult.isValid) {
+            return baseResult;
+        }
         String value = InputSanitizer.trim(raw);
-        if (value.isEmpty()) {
-            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_blank));
-        }
-        if (InputSanitizer.containsDangerousContent(value)) {
-            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_dangerous));
-        }
-        if (value.length() < PASSWORD_MIN) {
-            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_too_short, PASSWORD_MIN));
-        }
-        if (value.length() > PASSWORD_MAX) {
-            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_too_long, PASSWORD_MAX));
-        }
         if (!PASSWORD_POLICY.matcher(value).matches()) {
             return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_policy));
         }

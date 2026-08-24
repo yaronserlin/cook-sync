@@ -60,6 +60,10 @@ public class PasswordEditText extends AppCompatEditText {
         init();
     }
 
+    /**
+     * Loads the eye/eye-off drawables, sets the initial masked input type, and applies the
+     * starting (hidden) trailing icon. Shared by both constructors.
+     */
     private void init() {
         iconEye = ContextCompat.getDrawable(getContext(), R.drawable.ic_eye);
         iconEyeOff = ContextCompat.getDrawable(getContext(), R.drawable.ic_eye_off);

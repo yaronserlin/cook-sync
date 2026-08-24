@@ -34,6 +34,7 @@ public record RegisterRequestDTO(
 
         @NotBlank(message = "Email cannot be blank")
         @Email(message = "Email should be valid")
+        @Size(max = 255, message = "Email cannot exceed 255 characters")
         String email,
 
         @NotBlank(message = "Password cannot be blank")

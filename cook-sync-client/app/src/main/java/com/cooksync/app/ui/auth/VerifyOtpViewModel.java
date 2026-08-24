@@ -87,16 +87,8 @@ public class VerifyOtpViewModel extends BaseViewModel {
      * cooldown from a previous send is still running.
      */
     public void resend() {
-        Integer cooldown = resendCooldownSeconds.getValue();
-        if (cooldown != null && cooldown > 0) {
-            return;
-        }
-        observeOnce(resendResult, result -> {
-            if (result instanceof ApiResult.Success) {
-                cooldownTimer.start();
-            }
-        });
-        authRepository.resendRegistrationOtp(new ResendRegistrationOtpRequestDTO(email), resendResult);
+        resendWithCooldown(resendCooldownSeconds, cooldownTimer, resendResult,
+                () -> authRepository.resendRegistrationOtp(new ResendRegistrationOtpRequestDTO(email), resendResult));
     }
 
     /** @return observable OTP verification result (Loading → Success/Error) */

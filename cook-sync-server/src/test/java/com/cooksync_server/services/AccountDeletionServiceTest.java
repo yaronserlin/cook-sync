@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.RecipeImage;
 import com.cooksync_server.entities.User;
+import com.cooksync_server.repositories.EmailChangeTokenRepository;
 import com.cooksync_server.repositories.FavoriteRecipeRepository;
 import com.cooksync_server.repositories.PasswordResetTokenRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
@@ -57,6 +58,8 @@ class AccountDeletionServiceTest {
     @Mock
     private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock
+    private EmailChangeTokenRepository emailChangeTokenRepository;
+    @Mock
     private RefreshTokenServiceImp refreshTokenService;
     @Mock
     private CloudinaryService cloudinaryService;
@@ -75,6 +78,7 @@ class AccountDeletionServiceTest {
                 personalInstructionNoteRepository,
                 favoriteRecipeRepository,
                 passwordResetTokenRepository,
+                emailChangeTokenRepository,
                 refreshTokenService,
                 cloudinaryService
         );
@@ -146,6 +150,8 @@ class AccountDeletionServiceTest {
                 "https://res.cloudinary.com/demo/image/upload/v12345/CookSyncApp/recipe_1.jpg"
         ));
         verify(recipeRepository).deleteAll(List.of(sampleRecipe));
+        verify(passwordResetTokenRepository).deleteByUserId("user-999");
+        verify(emailChangeTokenRepository).deleteByUserId("user-999");
         verify(userRepository).delete(sampleUser);
     }
 }

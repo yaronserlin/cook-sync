@@ -14,6 +14,7 @@ import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
@@ -108,13 +109,28 @@ public interface AuthRepository {
     void changePassword(ChangePasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
-     * Changes the authenticated user's email address, re-issuing a session under the new
-     * identity.
+     * Begins changing the authenticated user's email address: the server verifies the current
+     * password and emails a one-time verification code to the requested new address. No session
+     * change happens yet — that occurs only once {@link #verifyEmailChangeOtp} succeeds. Calling
+     * this again for the same pending change re-sends a fresh code, serving as the "resend code"
+     * action.
      *
      * @param request     email update payload
      * @param resultTarget live data target the result will be posted to
      */
-    void updateEmail(EmailUpdateRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget);
+    void requestEmailChange(EmailUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Completes an email-address change by submitting the OTP code emailed to the pending new
+     * address. Persists a new session under the new identity on success.
+     *
+     * @param request     OTP verification payload
+     * @param newEmail    the pending new email address, cached locally on success since the
+     *                    server response carries no body to read it back from
+     * @param resultTarget live data target the result will be posted to
+     */
+    void verifyEmailChangeOtp(VerifyEmailChangeOtpRequestDTO request, String newEmail,
+                               MutableLiveData<ApiResult<AuthResponse>> resultTarget);
 
     /**
      * Updates the authenticated user's public-profile privacy preferences.

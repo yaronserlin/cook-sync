@@ -17,6 +17,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
@@ -29,10 +30,11 @@ import com.cooksync.app.util.CloudinaryUploader;
 import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.LocalImageCache;
 import com.cooksync.app.util.SessionManager;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.user.UserResponse;
-import com.google.android.material.button.MaterialButton;
 
 import java.util.Objects;
 
@@ -85,6 +87,11 @@ public class AccountDetailsActivity extends BaseActivity {
     private Uri pendingAvatarUri;
     /** Whether "Use initials instead" was tapped but the change has not yet been saved. */
     private boolean avatarCleared;
+
+    /** The email-change OTP dialog while it's on screen, {@code null} otherwise. */
+    private AlertDialog emailOtpDialog;
+    /** The new address the currently-open OTP dialog is verifying, for the success toast/baseline update. */
+    private String pendingOtpNewEmail;
 
     // Baseline values loaded from the server, used both to detect what changed on Save and to
     // detect unsaved edits on exit. Updated after each section's own successful save.
@@ -255,12 +262,46 @@ public class AccountDetailsActivity extends BaseActivity {
             }
         });
 
-        viewModel.getEmailResult().observe(this, result -> {
+        viewModel.getRequestEmailChangeResult().observe(this, result -> {
+            // Fires both for the initial request (dialog not yet open) and for a resend from
+            // the OTP dialog's own button (dialog already open) — routed accordingly below so a
+            // resend never stacks a second dialog on top of the first.
             if (result instanceof ApiResult.Success) {
-                loadedEmail = etEmail.getText().toString().trim();
-                showSuccess(getString(R.string.settings_email_updated), footer);
+                if (emailOtpDialog == null) {
+                    showEmailOtpDialog(etEmail.getText().toString().trim());
+                }
             } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), footer);
+                if (emailOtpDialog != null) {
+                    showEmailOtpError(error.getMessage());
+                } else {
+                    showError(error.getMessage(), footer);
+                }
+            }
+        });
+
+        viewModel.getEmailOtpResendCooldownSeconds().observe(this, seconds -> {
+            if (emailOtpDialog == null) return;
+            MaterialButton btnResend = emailOtpDialog.findViewById(R.id.btn_resend);
+            if (btnResend == null) return;
+            if (seconds == null || seconds <= 0) {
+                btnResend.setEnabled(true);
+                btnResend.setText(R.string.action_resend_code);
+            } else {
+                btnResend.setEnabled(false);
+                btnResend.setText(getString(R.string.action_resend_code_countdown, seconds));
+            }
+        });
+
+        viewModel.getEmailOtpResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<AuthResponse>) {
+                if (emailOtpDialog != null) {
+                    emailOtpDialog.dismiss();
+                }
+                loadedEmail = pendingOtpNewEmail;
+                showSuccess(getString(R.string.settings_email_updated), footer);
+                submitAccountChanges();
+            } else if (result instanceof ApiResult.Error<?> error) {
+                showEmailOtpError(error.getMessage());
             }
         });
 
@@ -321,12 +362,13 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * If the email field changed, gates the entire save behind a password-confirmation dialog:
-     * {@link #submitAccountChanges()} runs only from that dialog's confirm callback, once the
-     * dialog has already dismissed itself, so it never fires while the dialog is still on screen
-     * and cannot be torn down mid-confirmation by a navigate-away triggered from the rest of the
-     * batch. Cancelling the dialog abandons the whole save attempt. With no email change, the
-     * batch is submitted right away.
+     * If the email field changed, gates the entire save behind a password-confirmation dialog
+     * followed by an OTP-verification dialog: {@link #submitAccountChanges()} runs only once the
+     * new address has actually been confirmed, from the {@code emailOtpResult} success observer
+     * in {@link #setupObservers()}, so it never fires while either dialog is still on screen.
+     * Cancelling either dialog abandons the whole save attempt — the email-change code the
+     * server already issued is simply left to expire, same as an abandoned forgot-password code.
+     * With no email change, the batch is submitted right away.
      *
      * Complexity:
      * Time: O(1)
@@ -342,10 +384,12 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * Prompts for the current password before submitting {@code newEmail}, since changing email
+     * Prompts for the current password before requesting {@code newEmail}, since changing email
      * requires re-authentication and the "current password" field on this screen is dedicated to
-     * the password-change section rather than implicitly reused for email too. On confirm,
-     * submits the email change followed by the rest of the form's changes, in that order.
+     * the password-change section rather than implicitly reused for email too. On confirm, asks
+     * the server to verify the password and email a one-time code to {@code newEmail}; the OTP
+     * dialog itself opens from the {@code requestEmailChangeResult} success observer once that
+     * call actually succeeds.
      *
      * @param newEmail the new email address to submit once the password is confirmed
      */
@@ -355,10 +399,44 @@ public class AccountDetailsActivity extends BaseActivity {
                 getString(R.string.account_details_dialog_change_email_message, newEmail),
                 getString(R.string.account_details_action_change_email),
                 getString(R.string.action_cancel),
-                password -> {
-                    viewModel.updateEmail(newEmail, password);
-                    submitAccountChanges();
-                });
+                password -> viewModel.requestEmailChange(newEmail, password));
+    }
+
+    /**
+     * Opens the OTP-verification dialog for a pending email change, once the server has
+     * confirmed a code was actually sent to {@code newEmail}. Tapping "Verify" submits the
+     * entered code; tapping "Resend" re-requests a code without closing the dialog; cancelling
+     * (or dismissing by any other means) abandons the whole save attempt, matching the password
+     * dialog's cancel behavior. {@link #emailOtpDialog} is always cleared when the dialog closes
+     * — via the dismiss listener below — so a later email-change attempt can open a fresh one
+     * instead of finding the field still pointing at a closed dialog.
+     *
+     * @param newEmail the pending new address the code was sent to, shown in the dialog message
+     */
+    private void showEmailOtpDialog(String newEmail) {
+        pendingOtpNewEmail = newEmail;
+        emailOtpDialog = OrganicConfirmDialog.showWithOtpConfirm(this,
+                getString(R.string.account_details_dialog_email_otp_title),
+                getString(R.string.account_details_dialog_email_otp_message, newEmail),
+                getString(R.string.action_verify),
+                getString(R.string.action_cancel),
+                viewModel::verifyEmailChangeOtp,
+                viewModel::resendEmailChangeOtp);
+        emailOtpDialog.setOnDismissListener(d -> emailOtpDialog = null);
+    }
+
+    /**
+     * Surfaces an email-change OTP error inline in the still-open OTP dialog, so the user can
+     * correct the code without losing their place (e.g. having to re-enter their password).
+     *
+     * @param message the server's error message (invalid code, expired code, or too many attempts)
+     */
+    private void showEmailOtpError(String message) {
+        if (emailOtpDialog == null) return;
+        TextView tvOtpError = emailOtpDialog.findViewById(R.id.tv_otp_error);
+        if (tvOtpError == null) return;
+        tvOtpError.setText(message);
+        tvOtpError.setVisibility(View.VISIBLE);
     }
 
     /**

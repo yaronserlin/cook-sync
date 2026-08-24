@@ -105,8 +105,7 @@ public final class OrganicConfirmDialog {
                                                  @NonNull String message, @NonNull String confirmLabel,
                                                  @NonNull String cancelLabel,
                                                  @NonNull Consumer<String> onConfirm) {
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_with_password, null);
-        ((TextView) view.findViewById(R.id.tv_message)).setText(message);
+        View view = inflateWithMessage(context, R.layout.dialog_confirm_with_password, message);
         EditText etPassword = view.findViewById(R.id.et_password);
 
         new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_CookSync_Dialog_Danger)
@@ -139,8 +138,7 @@ public final class OrganicConfirmDialog {
                                             @NonNull String message, @NonNull String requiredText,
                                             @NonNull String confirmLabel, @NonNull String cancelLabel,
                                             @NonNull Runnable onConfirm) {
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_with_text, null);
-        ((TextView) view.findViewById(R.id.tv_message)).setText(message);
+        View view = inflateWithMessage(context, R.layout.dialog_confirm_with_text, message);
         EditText etConfirm = view.findViewById(R.id.et_confirm_text);
         etConfirm.setHint(requiredText);
 
@@ -170,6 +168,70 @@ public final class OrganicConfirmDialog {
             });
         });
         dialog.show();
+    }
+
+    /**
+     * Shows a confirm dialog that collects a 6-digit OTP code, for verifying a pending
+     * email-address change without navigating away from the hosting screen. Unlike
+     * {@link #showWithPasswordConfirm}, the dialog does not dismiss itself when the confirm
+     * button is tapped — verifying a code is an asynchronous, retryable network call, so the
+     * caller stays in control of the dialog's lifetime via the returned {@link AlertDialog}:
+     * dismiss it on a successful verification, or leave it open and surface an inline error (via
+     * the returned dialog's {@code tv_otp_error} view) to let the user try again.
+     *
+     * @param context the hosting screen's context
+     * @param title dialog title
+     * @param message dialog body text, shown above the code field (e.g. naming the address the
+     *                code was sent to)
+     * @param confirmLabel the confirm button's label, e.g. "Verify"
+     * @param cancelLabel the cancel button's label, e.g. "Cancel"
+     * @param onConfirm invoked with the entered code when the user taps confirm; never called on
+     *                  cancel; the dialog stays open afterward until the caller dismisses it
+     * @param onResend invoked when the user taps the dialog's "Resend code" button
+     * @return the created, already-shown dialog, so the caller can toggle the resend button's
+     *         state and surface inline errors as the flow progresses
+     */
+    @NonNull
+    public static AlertDialog showWithOtpConfirm(@NonNull Context context, @NonNull CharSequence title,
+                                                  @NonNull String message, @NonNull String confirmLabel,
+                                                  @NonNull String cancelLabel,
+                                                  @NonNull Consumer<String> onConfirm,
+                                                  @NonNull Runnable onResend) {
+        View view = inflateWithMessage(context, R.layout.dialog_confirm_with_otp, message);
+        EditText etOtpCode = view.findViewById(R.id.et_otp_code);
+        Button btnResend = view.findViewById(R.id.btn_resend);
+
+        AlertDialog dialog = new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_CookSync_Dialog)
+                .setTitle(title)
+                .setView(view)
+                .setPositiveButton(confirmLabel, null)
+                .setNegativeButton(cancelLabel, null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    .setOnClickListener(v -> onConfirm.accept(etOtpCode.getText().toString()));
+            btnResend.setOnClickListener(v -> onResend.run());
+        });
+        dialog.show();
+        return dialog;
+    }
+
+    /**
+     * Inflates a dialog body layout and sets its shared {@code tv_message} text view, the two
+     * steps every {@code showWithXConfirm} variant needs before wiring up its own
+     * variant-specific fields.
+     *
+     * @param context the hosting screen's context
+     * @param layoutRes the dialog body layout to inflate, e.g. {@code R.layout.dialog_confirm_with_password}
+     * @param message the text to set on the inflated layout's {@code tv_message} view
+     * @return the inflated, not-yet-attached dialog body view
+     */
+    @NonNull
+    private static View inflateWithMessage(@NonNull Context context, int layoutRes, @NonNull String message) {
+        View view = LayoutInflater.from(context).inflate(layoutRes, null);
+        ((TextView) view.findViewById(R.id.tv_message)).setText(message);
+        return view;
     }
 
     /**

@@ -249,6 +249,17 @@ public class GlobalExceptionHandler {
                 "INTERNAL_SERVER_ERROR", "An unexpected internal server error occurred. Please try again later.");
     }
 
+    /**
+     * Builds the standardized error {@link ResponseEntity} shared by every single-error handler
+     * in this class, wrapping a freshly built {@link ApiErrorResponse} in an {@link ApiResponse}
+     * and setting it as the HTTP response body at the given status.
+     *
+     * @param status HTTP status to respond with
+     * @param error short human-readable status label (e.g. {@code "Bad Request"})
+     * @param errorCode machine-readable error code identifying the failure category
+     * @param message user-facing description of what went wrong
+     * @return response entity carrying the formatted error payload at {@code status}
+     */
     private ResponseEntity<ApiResponse<ApiErrorResponse>> buildErrorResponse(
             HttpStatus status, String error, String errorCode, String message) {
         return ResponseEntity.status(status)

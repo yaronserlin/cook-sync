@@ -1,8 +1,10 @@
 package com.cooksync_server.exceptions.auth;
 
 /**
- * Custom runtime exception thrown when a submitted registration OTP code does not match the
- * expected code, or no pending registration exists for the given email.
+ * Custom runtime exception thrown when a submitted one-time code does not match the expected
+ * code, or no code is currently pending for the target account. Shared by every OTP-verification
+ * flow: registration ({@code AuthServiceImp}), forgot-password reset ({@code PasswordServiceImp}),
+ * and self-service email change ({@code UserProfileServiceImp}).
  *
  * @author Yaron Serlin
  * @version 1.0

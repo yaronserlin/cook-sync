@@ -47,6 +47,8 @@ class PasswordServiceTest {
     private RefreshTokenServiceImp refreshTokenService;
     @Mock
     private EmailServiceImp emailService;
+    @Mock
+    private CredentialVerifier credentialVerifier;
 
     @InjectMocks
     private PasswordServiceImp passwordService;

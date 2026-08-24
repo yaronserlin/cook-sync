@@ -21,6 +21,7 @@ import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
@@ -180,17 +181,29 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
     /**
      * {@inheritDoc}
      *
+     * <p>No session change happens here — the server only emails a verification code at this
+     * stage, and the session is renewed once {@link #verifyEmailChangeOtp} succeeds.</p>
+     */
+    @Override
+    public void requestEmailChange(EmailUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
+        executeAsync(apiService.updateEmail(request), resultTarget);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * <p>On success, the new session — carrying renewed tokens issued for the new email
      * identity — is persisted through {@link SessionManager}.</p>
      */
     @Override
-    public void updateEmail(EmailUpdateRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
+    public void verifyEmailChangeOtp(VerifyEmailChangeOtpRequestDTO request, String newEmail,
+                                      MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeCall(apiService.updateEmail(request));
+            ApiResult<AuthResponse> result = executeCall(apiService.verifyEmailChangeOtp(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
-                SessionManager.getInstance().cacheEmail(request.newEmail());
+                SessionManager.getInstance().cacheEmail(newEmail);
             }
             resultTarget.postValue(result);
         });

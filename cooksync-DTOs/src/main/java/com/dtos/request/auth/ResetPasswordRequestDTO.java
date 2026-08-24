@@ -1,10 +1,10 @@
 package com.dtos.request.auth;
 
+import com.dtos.validation.OtpCode;
 import com.dtos.validation.StrongPassword;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -20,10 +20,10 @@ import jakarta.validation.constraints.Size;
 public record ResetPasswordRequestDTO(
         @NotBlank(message = "Email cannot be blank")
         @Email(message = "Email should be valid")
+        @Size(max = 255, message = "Email cannot exceed 255 characters")
         String email,
 
-        @NotBlank(message = "Reset code cannot be blank")
-        @Pattern(regexp = "^\\d{6}$", message = "Reset code must be exactly 6 digits")
+        @OtpCode
         String code,
 
         @NotBlank(message = "Password cannot be blank")

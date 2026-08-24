@@ -1,4 +1,5 @@
 package com.cooksync.app.ui.settings;
+
 import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
@@ -71,6 +72,12 @@ public class SettingsActivity extends BaseActivity {
 
     private BottomNavigationView bottomNav;
 
+    /**
+     * Inflates the screen, wires the ViewModel and every view section, and kicks off the
+     * Favorites/My recipes count fetches that populate the row subtitles once they resolve.
+     *
+     * @param savedInstanceState saved instance state bundle (may be {@code null})
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +99,13 @@ public class SettingsActivity extends BaseActivity {
         viewModel.loadMyRecipesCount();
     }
 
+    /**
+     * Re-renders the cached profile header, the "Cooking preferences" subtitle, and the
+     * Favorites/My recipes counts every time this screen becomes visible again — covering both a
+     * fresh navigation back from another tab and a save made on {@link AccountDetailsActivity} or
+     * {@link CookingPreferencesActivity} — and shows any pending one-shot toast queued for this
+     * resume.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -119,6 +133,9 @@ public class SettingsActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Binds all view references used by the avatar header from the inflated layout.
+     */
     private void bindViews() {
         ivAvatar = findViewById(R.id.iv_avatar);
         tvAvatarInitials = findViewById(R.id.tv_avatar_initials);
@@ -126,6 +143,11 @@ public class SettingsActivity extends BaseActivity {
         tvEmail = findViewById(R.id.tv_email);
     }
 
+    /**
+     * Paints the avatar header (name, email, avatar image) from whatever is currently cached in
+     * {@link SessionManager}, so the screen never has to wait on a network round trip to show the
+     * signed-in user's identity.
+     */
     private void renderCachedProfile() {
         String first = Objects.requireNonNullElse(SessionManager.getInstance().getFirstName(), "");
         String last = Objects.requireNonNullElse(SessionManager.getInstance().getLastName(), "");
@@ -138,6 +160,13 @@ public class SettingsActivity extends BaseActivity {
         renderAvatar(SessionManager.getInstance().getAvatarUrl());
     }
 
+    /**
+     * Renders the given avatar URL (or the user's initials when {@code null}/blank) into the
+     * header image, and wires a tap-to-enlarge listener via {@link #openFullscreenImage(String)}
+     * whenever an actual avatar image is showing.
+     *
+     * @param avatarUrl the hosted avatar URL to render, or {@code null}/blank to show initials
+     */
     private void renderAvatar(String avatarUrl) {
         GlideUtils.renderAvatarOrInitials(Glide.with(this), avatarUrl, ivAvatar, tvAvatarInitials,
                 SessionManager.getInstance().getInitials());
@@ -156,6 +185,11 @@ public class SettingsActivity extends BaseActivity {
         Navigator.start(this, intent);
     }
 
+    /**
+     * Wires the bottom navigation bar: marks the "Settings" tab selected, and navigates to the
+     * matching top-level screen when another tab is tapped, clearing this screen off the back
+     * stack in the process.
+     */
     private void setupBottomNav() {
         bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_settings);
@@ -259,6 +293,10 @@ public class SettingsActivity extends BaseActivity {
                 : R.string.settings_row_cooking_preferences_sub_off);
     }
 
+    /**
+     * Subscribes to the Favorites/My recipes count fetches, updating each row's subtitle once
+     * its result resolves.
+     */
     private void setupObservers() {
         viewModel.getFavoritesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
@@ -273,6 +311,9 @@ public class SettingsActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Prompts for confirmation, then signs the user out via {@link SettingsViewModel#logout()}.
+     */
     private void confirmLogout() {
         OrganicConfirmDialog.show(this, getString(R.string.settings_dialog_logout_title),
                 getString(R.string.settings_dialog_logout_message), getString(R.string.settings_action_logout),

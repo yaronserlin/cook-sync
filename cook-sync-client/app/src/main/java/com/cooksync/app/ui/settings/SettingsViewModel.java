@@ -12,7 +12,9 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.util.CloudinaryUploader;
+import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
+import com.cooksync.app.util.ResendCooldownTimer;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
@@ -20,6 +22,7 @@ import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -50,8 +53,12 @@ public class SettingsViewModel extends BaseViewModel {
     private final MediaRepository mediaRepository;
     private final RecipeRepository recipeRepository;
 
+    /** Seconds the email-change OTP dialog's resend button stays disabled after a code is (re)sent. */
+    private static final int EMAIL_OTP_RESEND_COOLDOWN_SECONDS = 30;
+
     private final MutableLiveData<ApiResult<Void>> avatarResult = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<AuthResponse>> emailResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> requestEmailChangeResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<AuthResponse>> emailOtpResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> deleteAccountResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> logoutResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<CloudinarySignatureResponse>> signatureResult = new MutableLiveData<>();
@@ -60,8 +67,14 @@ public class SettingsViewModel extends BaseViewModel {
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> myRecipesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<UserResponse>> accountDetailsResult = new MutableLiveData<>();
     private final MutableLiveData<Event<ApiResult<Void>>> saveChangesResult = new MutableLiveData<>();
+    private final MutableLiveData<Integer> emailOtpResendCooldownSeconds = new MutableLiveData<>(0);
+    private final ResendCooldownTimer emailOtpCooldownTimer =
+            new ResendCooldownTimer(EMAIL_OTP_RESEND_COOLDOWN_SECONDS, emailOtpResendCooldownSeconds);
     private String pendingFolder;
     private String pendingPublicId;
+    /** New email awaiting OTP confirmation, and the password it was requested with; needed to resend. */
+    private String pendingNewEmail;
+    private String pendingEmailChangePassword;
 
     /**
      * Constructs the ViewModel with its collaborating repositories, injected by
@@ -139,7 +152,10 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Validates and submits an email change, re-authenticated against the current password.
+     * Validates and submits an email-change request, re-authenticated against the current
+     * password. On success the server has emailed a verification code to the new address; the
+     * address and password are stashed so {@link #resendEmailChangeOtp()} can re-submit the same
+     * request, and the resend cooldown starts immediately since a fresh code was just sent.
      *
      * Complexity:
      * Time: O(n) where n is the combined length of the email and password
@@ -148,7 +164,7 @@ public class SettingsViewModel extends BaseViewModel {
      * @param rawNewEmail        raw text from the new-email field
      * @param rawCurrentPassword raw text from the current-password field
      */
-    public void updateEmail(String rawNewEmail, String rawCurrentPassword) {
+    public void requestEmailChange(String rawNewEmail, String rawCurrentPassword) {
         InputValidator.ValidationResult emailRes = InputValidator.validateEmail(rawNewEmail);
         if (!emailRes.isValid) {
             validationError.setValue(new Event<>(emailRes.errorMessage));
@@ -159,7 +175,57 @@ public class SettingsViewModel extends BaseViewModel {
             validationError.setValue(new Event<>(passwordRes.errorMessage));
             return;
         }
-        authRepository.updateEmail(new EmailUpdateRequestDTO(rawNewEmail.trim(), rawCurrentPassword), emailResult);
+        pendingNewEmail = rawNewEmail.trim();
+        pendingEmailChangePassword = rawCurrentPassword;
+        observeOnce(requestEmailChangeResult, result -> {
+            if (result instanceof ApiResult.Success) {
+                emailOtpCooldownTimer.start();
+            }
+        });
+        authRepository.requestEmailChange(new EmailUpdateRequestDTO(pendingNewEmail, pendingEmailChangePassword), requestEmailChangeResult);
+    }
+
+    /**
+     * Re-submits the same email-change request as {@link #requestEmailChange}, using the
+     * address/password stashed from the original call, restarting the resend cooldown on
+     * success. Backs the email-change OTP dialog's "Resend code" action. No-op while the
+     * cooldown from a previous send is still running.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    public void resendEmailChangeOtp() {
+        resendWithCooldown(emailOtpResendCooldownSeconds, emailOtpCooldownTimer, requestEmailChangeResult,
+                () -> authRepository.requestEmailChange(new EmailUpdateRequestDTO(pendingNewEmail, pendingEmailChangePassword), requestEmailChangeResult));
+    }
+
+    /**
+     * Validates and submits the OTP code verifying the pending email change. On success, clears
+     * the stashed pending address/password, since the change is now complete.
+     *
+     * Complexity:
+     * Time: O(n) where n is the length of the code
+     * Space: O(1)
+     *
+     * @param rawCode raw text from the OTP code field
+     */
+    public void verifyEmailChangeOtp(String rawCode) {
+        String code = InputSanitizer.trim(rawCode);
+        InputValidator.ValidationResult codeRes = InputValidator.validateOtpCode(code);
+        if (!codeRes.isValid) {
+            validationError.setValue(new Event<>(codeRes.errorMessage));
+            return;
+        }
+        String newEmail = pendingNewEmail;
+        observeOnce(emailOtpResult, result -> {
+            if (result instanceof ApiResult.Success) {
+                pendingNewEmail = null;
+                pendingEmailChangePassword = null;
+                emailOtpCooldownTimer.cancel();
+            }
+        });
+        authRepository.verifyEmailChangeOtp(new VerifyEmailChangeOtpRequestDTO(code), newEmail, emailOtpResult);
     }
 
     /**
@@ -308,8 +374,12 @@ public class SettingsViewModel extends BaseViewModel {
 
     /** @return observable result of an avatar URL update */
     public LiveData<ApiResult<Void>> getAvatarResult() { return avatarResult; }
-    /** @return observable result of an email change */
-    public LiveData<ApiResult<AuthResponse>> getEmailResult() { return emailResult; }
+    /** @return observable result of an email-change request (the OTP-send step) */
+    public LiveData<ApiResult<Void>> getRequestEmailChangeResult() { return requestEmailChangeResult; }
+    /** @return observable result of email-change OTP verification (the apply step) */
+    public LiveData<ApiResult<AuthResponse>> getEmailOtpResult() { return emailOtpResult; }
+    /** @return observable seconds remaining before the email-change OTP can be resent, 0 when allowed */
+    public LiveData<Integer> getEmailOtpResendCooldownSeconds() { return emailOtpResendCooldownSeconds; }
     /** @return observable result of an account-deletion request */
     public LiveData<ApiResult<Void>> getDeleteAccountResult() { return deleteAccountResult; }
     /** @return one-shot combined outcome of {@link #saveAccountChanges}, success only once every fired call has succeeded */
@@ -380,5 +450,11 @@ public class SettingsViewModel extends BaseViewModel {
         if (showRecipesPublicly != baselineShowRecipesPublicly) return true;
         if (showFavoritesPublicly != baselineShowFavoritesPublicly) return true;
         return false;
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        emailOtpCooldownTimer.cancel();
     }
 }

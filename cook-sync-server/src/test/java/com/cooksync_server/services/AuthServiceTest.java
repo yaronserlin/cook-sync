@@ -1,6 +1,5 @@
 package com.cooksync_server.services;
 
-import com.cooksync_server.config.JwtUtil;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
@@ -8,7 +7,6 @@ import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
 import com.cooksync_server.entities.PendingRegistration;
-import com.cooksync_server.entities.RefreshToken;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
 import com.cooksync_server.exceptions.auth.InvalidOtpException;
@@ -48,8 +46,6 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private JwtUtil jwtUtil;
-    @Mock
     private RefreshTokenServiceImp refreshTokenService;
     @Mock
     private PendingRegistrationRepository pendingRegistrationRepository;
@@ -57,6 +53,8 @@ class AuthServiceTest {
     private EmailServiceImp emailService;
     @Mock
     private AccountDeletionService accountDeletionService;
+    @Mock
+    private SessionIssuer sessionIssuer;
 
     private AuthServiceImp authService;
 
@@ -67,11 +65,11 @@ class AuthServiceTest {
         authService = new AuthServiceImp(
                 userRepository,
                 passwordEncoder,
-                jwtUtil,
                 refreshTokenService,
                 pendingRegistrationRepository,
                 emailService,
-                accountDeletionService
+                accountDeletionService,
+                sessionIssuer
         );
     }
 
@@ -130,9 +128,10 @@ class AuthServiceTest {
             user.setId("generated-user-id");
             return user;
         });
-        when(jwtUtil.generateToken(anyString(), anyString(), anyBoolean())).thenReturn("mock-jwt-token");
-        when(refreshTokenService.createRefreshToken(anyString()))
-                .thenReturn(new RefreshToken("rt-id", null, "mock-refresh-token", Instant.now().plusSeconds(3600)));
+        when(sessionIssuer.issue(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            return new AuthResponse("mock-jwt-token", "mock-refresh-token", user.getId(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getAvatarUrl());
+        });
 
         AuthResponse response = authService.verifyRegistrationOtp(request);
 
@@ -251,9 +250,8 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
         when(passwordEncoder.matches("Password123!", "hashed-password")).thenReturn(true);
-        when(jwtUtil.generateToken("john@example.com", "user-123", false)).thenReturn("mock-jwt-token");
-        when(refreshTokenService.createRefreshToken("user-123"))
-                .thenReturn(new RefreshToken("rt-id", existingUser, "mock-refresh-token", Instant.now().plusSeconds(3600)));
+        when(sessionIssuer.issue(existingUser))
+                .thenReturn(new AuthResponse("mock-jwt-token", "mock-refresh-token", "user-123", "John", "Doe", false, null));
 
         AuthResponse response = authService.login(request);
 

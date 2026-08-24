@@ -173,7 +173,10 @@ public final class SessionManager {
     }
 
     /**
-     * Returns the user's full display name, or email/User fallback.
+     * Builds the user's full display name from the cached first/last name, falling back to the
+     * cached email, or the literal string {@code "User"} if neither is available.
+     *
+     * @return the name to display for the signed-in user, never {@code null}
      */
     public String getDisplayName() {
         String first = getFirstName();

@@ -26,6 +26,7 @@ import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
@@ -211,18 +212,37 @@ public class AuthController {
     }
 
     /**
-     * Changes the authenticated caller's account email address and issues fresh tokens
-     * reflecting the new address.
+     * Begins changing the authenticated caller's account email address: verifies the current
+     * password and emails a one-time verification code to the requested new address. The
+     * address is not changed yet — that happens only through
+     * {@link #verifyEmailChangeOtp(VerifyEmailChangeOtpRequestDTO, Authentication)}. Calling
+     * this again re-sends a fresh code, so it also serves as the "resend code" action.
      *
      * @param request email-update payload
      * @param authentication active Spring Security authentication token
-     * @return response entity carrying the reissued authentication payload
+     * @return response entity acknowledging the request
      */
     @PutMapping("/email")
-    public ResponseEntity<ApiResponse<AuthResponse>> updateEmail(
+    public ResponseEntity<ApiResponse<Void>> updateEmail(
             @Valid @RequestBody EmailUpdateRequestDTO request,
             Authentication authentication) {
-        AuthResponse response = userProfileService.updateEmail(authentication.getName(), request);
+        userProfileService.requestEmailChange(authentication.getName(), request);
+        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Verification code sent to your new email address"));
+    }
+
+    /**
+     * Completes the authenticated caller's email-address change by validating the one-time code
+     * emailed to the pending new address, and issues fresh tokens reflecting the change.
+     *
+     * @param request OTP verification payload
+     * @param authentication active Spring Security authentication token
+     * @return response entity carrying the reissued authentication payload
+     */
+    @PostMapping("/email/verify-otp")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyEmailChangeOtp(
+            @Valid @RequestBody VerifyEmailChangeOtpRequestDTO request,
+            Authentication authentication) {
+        AuthResponse response = userProfileService.confirmEmailChange(authentication.getName(), request);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Email updated successfully"));
     }
 

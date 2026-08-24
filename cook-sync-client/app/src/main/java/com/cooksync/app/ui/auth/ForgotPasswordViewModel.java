@@ -1,4 +1,5 @@
 package com.cooksync.app.ui.auth;
+
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
@@ -85,16 +86,8 @@ public class ForgotPasswordViewModel extends BaseViewModel {
      * running.
      */
     public void resendCode() {
-        Integer cooldown = resendCooldownSeconds.getValue();
-        if (cooldown != null && cooldown > 0) {
-            return;
-        }
-        observeOnce(resendCodeResult, result -> {
-            if (result instanceof ApiResult.Success) {
-                cooldownTimer.start();
-            }
-        });
-        authRepository.forgotPassword(new ForgotPasswordRequestDTO(email), resendCodeResult);
+        resendWithCooldown(resendCooldownSeconds, cooldownTimer, resendCodeResult,
+                () -> authRepository.forgotPassword(new ForgotPasswordRequestDTO(email), resendCodeResult));
     }
 
     /**

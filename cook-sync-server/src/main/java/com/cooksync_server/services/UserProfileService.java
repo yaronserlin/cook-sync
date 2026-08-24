@@ -4,6 +4,7 @@ import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
+import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
@@ -67,17 +68,35 @@ public interface UserProfileService {
     void updatePrivacySettings(String userEmail, PrivacySettingsUpdateRequestDTO request);
 
     /**
-     * Updates the user's account email address after verifying the current password, and issues
-     * refreshed tokens reflecting the change.
+     * Begins a self-service email-address change after verifying the current password: checks
+     * the requested address isn't already registered, then emails a one-time 6-digit
+     * verification code to that new address. The account email is not changed yet — only
+     * {@link #confirmEmailChange(String, VerifyEmailChangeOtpRequestDTO)} applies it. Calling
+     * this again (a "resend") simply invalidates any previously issued code and issues a fresh
+     * one.
      *
      * @param userEmail current authenticated user's email address
      * @param request email update request DTO
-     * @return authentication payload carrying tokens issued for the new email address
      * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userEmail}
      * @throws com.cooksync_server.exceptions.auth.InvalidCredentialsException if the supplied current password does not match
      * @throws com.cooksync_server.exceptions.auth.UserAlreadyExistsException if the requested new email is already registered to another account
      */
-    AuthResponse updateEmail(String userEmail, EmailUpdateRequestDTO request);
+    void requestEmailChange(String userEmail, EmailUpdateRequestDTO request);
+
+    /**
+     * Completes a self-service email-address change by validating the one-time code emailed to
+     * the pending new address, applying the change, and issuing refreshed tokens reflecting it.
+     *
+     * @param userEmail current authenticated user's email address
+     * @param request OTP verification request DTO
+     * @return authentication payload carrying tokens issued for the new email address
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userEmail}
+     * @throws com.cooksync_server.exceptions.auth.InvalidOtpException if no email-change code is pending, or the submitted code does not match
+     * @throws com.cooksync_server.exceptions.auth.OtpExpiredException if the pending code has expired
+     * @throws com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException if the incorrect-attempt limit for the pending code has just been exceeded by this call
+     * @throws com.cooksync_server.exceptions.auth.UserAlreadyExistsException if the pending new email became registered to another account in the meantime
+     */
+    AuthResponse confirmEmailChange(String userEmail, VerifyEmailChangeOtpRequestDTO request);
 
     /**
      * Deactivates the user's account (soft delete) and revokes active refresh tokens.

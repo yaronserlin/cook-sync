@@ -2,6 +2,7 @@ package com.dtos.request.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data Transfer Object for initiating the forgot-password flow.
@@ -14,6 +15,7 @@ import jakarta.validation.constraints.NotBlank;
 public record ForgotPasswordRequestDTO(
         @NotBlank(message = "Email cannot be blank")
         @Email(message = "Email should be valid")
+        @Size(max = 255, message = "Email cannot exceed 255 characters")
         String email
 ) {
 }
