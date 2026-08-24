@@ -5,7 +5,6 @@ import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -21,6 +20,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.ChipStyler;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.HomeActivity;
@@ -266,12 +266,7 @@ public abstract class RecipeListActivity extends BaseActivity {
         boolean active = count > 0;
 
         btnFilters.setText(getString(R.string.filters_count_format, count));
-        btnFilters.setBackgroundTintList(ColorStateList.valueOf(
-                active ? getColor(R.color.color_accent) : getColor(R.color.color_neutral_300)));
-        btnFilters.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
-
-        ColorStateList tint = ColorStateList.valueOf(active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
-        btnFilters.setIconTint(tint);
+        ChipStyler.styleFilterButton(btnFilters, active);
     }
 
     /**

@@ -1,9 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. The recipe wizard's
- * upload orchestrator: fetches a Cloudinary signature per pending image via {@code MediaRepository},
- * uploads each through {@code CloudinaryUploader}, then posts the finished recipe DTO — all as a
- * background job the user can navigate away from, surfaced via {@link #getPublishState()}.
- */
 package com.cooksync.app.data.service;
 
 import android.net.Uri;

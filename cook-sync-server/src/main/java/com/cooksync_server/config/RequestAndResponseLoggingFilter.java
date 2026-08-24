@@ -26,8 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class RequestAndResponseLoggingFilter extends OncePerRequestFilter {
 
+    /** Matches a JSON field whose name suggests a sensitive value, capturing everything up to
+     *  and including its opening quote so the replacement can restore the field name verbatim. */
     private static final Pattern SENSITIVE_JSON_FIELD = Pattern.compile(
             "(?i)(\"[^\"]*(password|token|secret|apiKey)[^\"]*\"\\s*:\\s*)\"[^\"]*\"");
+    /** Replacement text for a {@link #SENSITIVE_JSON_FIELD} match: keeps the captured field name
+     *  ({@code $1}), replaces its value. */
     private static final String REDACTED_JSON_VALUE = "$1\"***REDACTED***\"";
 
     /**

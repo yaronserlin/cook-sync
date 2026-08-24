@@ -1,9 +1,3 @@
-/**
- * Server-side business-layer component of the Reviews feature. Declares the review and
- * moderation operations that {@code ReviewController} exposes over HTTP and that
- * {@code ReviewServiceImp} implements against {@code ReviewRepository}, {@code RecipeRepository},
- * {@code UserRepository}, and {@code ReviewReportRepository}.
- */
 package com.cooksync_server.services;
 
 import com.cooksync_server.exceptions.ResourceNotFoundException;

@@ -1,9 +1,3 @@
-/**
- * Client-layer (Android) component of the Reviews feature. RecyclerView adapter rendering
- * {@code ReviewResponse} DTOs (as returned by the server's {@code ReviewController} and embedded
- * by {@code RecipeMapper}) within Recipe Detail's reviews list; its overflow menu drives
- * {@code RecipeDetailViewModel.deleteReview}/{@code reportReview}.
- */
 package com.cooksync.app.ui.recipe.detail;
 
 import android.view.LayoutInflater;

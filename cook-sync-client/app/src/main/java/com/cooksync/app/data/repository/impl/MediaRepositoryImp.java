@@ -38,8 +38,7 @@ public class MediaRepositoryImp extends BaseRepository implements MediaRepositor
      */
     @Override
     public void getUploadSignature(String folder, String publicId, MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getMediaSignature(folder, publicId))));
+        executeAsync(apiService.getMediaSignature(folder, publicId), resultTarget);
     }
 
     /**
@@ -47,7 +46,6 @@ public class MediaRepositoryImp extends BaseRepository implements MediaRepositor
      */
     @Override
     public void getBaseFolder(MutableLiveData<ApiResult<String>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getCloudinaryBaseFolder())));
+        executeAsync(apiService.getCloudinaryBaseFolder(), resultTarget);
     }
 }

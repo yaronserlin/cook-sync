@@ -12,6 +12,7 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.content.ContextCompat;
 
 import com.cooksync.app.R;
+import com.cooksync.app.util.DimensionUtils;
 
 /**
  * Password input field with a built-in show/hide toggle rendered as a trailing icon inside the
@@ -38,11 +39,22 @@ public class PasswordEditText extends AppCompatEditText {
     private Drawable iconEye;
     private Drawable iconEyeOff;
 
+    /**
+     * Constructs this field programmatically (no XML attributes).
+     *
+     * @param context the hosting context
+     */
     public PasswordEditText(@NonNull Context context) {
         super(context);
         init();
     }
 
+    /**
+     * Constructs this field when inflated from an XML layout.
+     *
+     * @param context the hosting context
+     * @param attrs the XML attribute set, or {@code null} if inflated programmatically
+     */
     public PasswordEditText(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -52,7 +64,7 @@ public class PasswordEditText extends AppCompatEditText {
         iconEye = ContextCompat.getDrawable(getContext(), R.drawable.ic_eye);
         iconEyeOff = ContextCompat.getDrawable(getContext(), R.drawable.ic_eye_off);
         setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        setCompoundDrawablePadding((int) (8 * getResources().getDisplayMetrics().density));
+        setCompoundDrawablePadding(DimensionUtils.dpToPx(getContext(), 8));
         applyToggleIcon();
     }
 
@@ -101,7 +113,7 @@ public class PasswordEditText extends AppCompatEditText {
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         Drawable endIcon = getCompoundDrawables()[2];
         if (endIcon != null && event.getAction() == MotionEvent.ACTION_UP) {
-            float slopPx = ICON_TOUCH_SLOP_DP * getResources().getDisplayMetrics().density;
+            float slopPx = DimensionUtils.dpToPx(getContext(), ICON_TOUCH_SLOP_DP);
             float iconLeft = getWidth() - getPaddingRight() - endIcon.getIntrinsicWidth() - slopPx;
             if (event.getX() >= iconLeft) {
                 togglePasswordVisibility();

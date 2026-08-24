@@ -111,6 +111,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         Navigator.applyCloseTransition(this);
     }
 
+    /**
+     * Releases the {@link SkeletonHelper} attached via {@link #setupSkeleton}, if any, so its
+     * shimmer animation doesn't keep running against a destroyed view hierarchy.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

@@ -58,4 +58,25 @@ public final class ChipStyler {
         chip.setBackgroundTintList(ColorStateList.valueOf(chip.getResources().getColor(bg, null)));
         chip.setTextColor(chip.getResources().getColor(fg, null));
     }
+
+    /**
+     * Accent-fill toggle style with a matching icon tint, used by the "Filters · N" button on
+     * every recipe-list screen ({@code HomeActivity} and every {@code RecipeListActivity}
+     * subclass) to reflect whether any filter is currently active.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param button the button to style
+     * @param active whether at least one filter is currently active
+     */
+    public static void styleFilterButton(@NonNull MaterialButton button, boolean active) {
+        int bg = active ? R.color.color_accent : R.color.color_neutral_300;
+        int fg = active ? R.color.color_bg : R.color.color_text;
+        int icon = active ? R.color.color_bg : R.color.color_accent;
+        button.setBackgroundTintList(ColorStateList.valueOf(button.getResources().getColor(bg, null)));
+        button.setTextColor(button.getResources().getColor(fg, null));
+        button.setIconTint(ColorStateList.valueOf(button.getResources().getColor(icon, null)));
+    }
 }

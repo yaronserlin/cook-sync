@@ -1,8 +1,3 @@
-/**
- * Shared DTO-layer component of the Reviews feature. Defines the response shape
- * {@code ReviewController.getReviewsForRecipe} returns and {@code RecipeMapper} embeds in the
- * recipe-detail response, rendered on the Android client by {@code ReviewAdapter}.
- */
 package com.dtos.response.review;
 
 import java.math.BigDecimal;

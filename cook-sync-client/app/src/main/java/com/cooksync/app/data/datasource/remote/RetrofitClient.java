@@ -35,6 +35,7 @@ public final class RetrofitClient {
     private static volatile ApiService apiService;
     private static volatile ApiService bareApiService;
 
+    /** Shared, lenient Gson instance used to (de)serialize every request/response body. */
     private static final Gson GSON = new GsonBuilder().setLenient().create();
 
     private RetrofitClient() {

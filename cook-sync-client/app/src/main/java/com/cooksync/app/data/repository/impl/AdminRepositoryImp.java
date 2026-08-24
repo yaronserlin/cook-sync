@@ -27,53 +27,83 @@ public class AdminRepositoryImp extends BaseRepository implements AdminRepositor
 
     private final ApiService apiService;
 
+    /**
+     * Constructs the repository against the shared authenticated Retrofit service.
+     */
     public AdminRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getStats(MutableLiveData<ApiResult<AdminStatsResponse>> resultTarget) {
         executeAsync(apiService.getAdminStats(), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction,
                           MutableLiveData<ApiResult<PagedResponse<UserResponse>>> resultTarget) {
         executeAsync(apiService.getAdminUsers(page, size, q, enabled, sortBy, direction), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getReportedReviews(int page, int size,
                                     MutableLiveData<ApiResult<PagedResponse<ReportedReviewResponse>>> resultTarget) {
         executeAsync(apiService.getReportedReviews(page, size), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dismissReport(String reviewId, MutableLiveData<ApiResult<Void>> resultTarget) {
         executeAsync(apiService.dismissReport(reviewId), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void enableUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
         executeAsync(apiService.enableUser(userId), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void suspendUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
         executeAsync(apiService.suspendUser(userId), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
         executeAsync(apiService.deleteUser(userId), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getDuplicateTagGroups(int page, int size,
                                        MutableLiveData<ApiResult<PagedResponse<DuplicateTagGroupResponse>>> resultTarget) {
         executeAsync(apiService.getDuplicateTagGroups(page, size), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void mergeTags(String sourceTagId, String targetTagId, MutableLiveData<ApiResult<Void>> resultTarget) {
         TagMergeRequestDTO request = new TagMergeRequestDTO(sourceTagId, targetTagId);

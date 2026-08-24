@@ -1,8 +1,3 @@
-/**
- * Server-side configuration-layer component of the Cloudinary image-upload feature. Wires the
- * three {@code CLOUDINARY_*} environment credentials into the singleton {@code Cloudinary} SDK
- * client bean that {@code CloudinaryServiceImp} signs upload requests and issues deletions with.
- */
 package com.cooksync_server.config;
 
 import com.cloudinary.Cloudinary;

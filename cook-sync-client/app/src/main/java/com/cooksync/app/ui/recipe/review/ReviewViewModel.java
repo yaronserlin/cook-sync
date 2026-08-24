@@ -1,8 +1,3 @@
-/**
- * Client-layer (Android) component of the Reviews feature. Backs {@link ReviewActivity}: applies
- * client-side rating/title validation, then delegates the actual submission to
- * {@code RecipeRepository}, which calls the server's {@code ReviewController.addReview} endpoint.
- */
 package com.cooksync.app.ui.recipe.review;
 
 import com.cooksync.app.ui.base.BaseViewModel;

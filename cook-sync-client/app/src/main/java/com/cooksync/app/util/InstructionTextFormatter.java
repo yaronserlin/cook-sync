@@ -1,5 +1,8 @@
 package com.cooksync.app.util;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +54,8 @@ public final class InstructionTextFormatter {
      * @param description the step's raw instruction text, may be {@code null}/blank
      * @return the split sentences, in order; empty if {@code description} is {@code null}/blank
      */
-    public static List<Sentence> splitIntoSentences(String description) {
+    @NonNull
+    public static List<Sentence> splitIntoSentences(@Nullable String description) {
         if (description == null || description.isBlank()) {
             return List.of();
         }
@@ -80,7 +84,8 @@ public final class InstructionTextFormatter {
      * @param ingredientNames this step's ingredient names, may contain blanks
      * @return every match's character range, in the order found
      */
-    public static List<Mention> findIngredientMentions(String text, Collection<String> ingredientNames) {
+    @NonNull
+    public static List<Mention> findIngredientMentions(@Nullable String text, @Nullable Collection<String> ingredientNames) {
         List<Mention> mentions = new ArrayList<>();
         if (text == null || ingredientNames == null) {
             return mentions;

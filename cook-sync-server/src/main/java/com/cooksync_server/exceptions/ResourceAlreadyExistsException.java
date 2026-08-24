@@ -7,10 +7,10 @@ package com.cooksync_server.exceptions;
  * @version 1.0
  * @since 02/08/2026
  */
-public class ResourceAllReadyExistsException extends RuntimeException {
+public class ResourceAlreadyExistsException extends RuntimeException {
 
     /**
-     * Constructs a ResourceAllReadyExistsException with resource name and key.
+     * Constructs a ResourceAlreadyExistsException with resource name and key.
      *
      * Complexity:
      * Time: O(1)
@@ -19,7 +19,7 @@ public class ResourceAllReadyExistsException extends RuntimeException {
      * @param resourceName name of the conflicting resource entity
      * @param resourceId unique identifier string causing the duplication conflict
      */
-    public ResourceAllReadyExistsException(String resourceName, String resourceId) {
+    public ResourceAlreadyExistsException(String resourceName, String resourceId) {
         super(String.format("%s already exists: %s", resourceName, resourceId));
     }
 }

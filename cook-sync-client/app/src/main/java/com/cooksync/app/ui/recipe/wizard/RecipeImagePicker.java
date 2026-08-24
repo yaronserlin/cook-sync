@@ -1,9 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. Wraps the recipe
- * wizard's system photo-picker and, via {@code LocalImageCache}, guards against Android's
- * short-lived {@code content://} read-permission window so a picked image survives until the
- * wizard's deferred, Publish-time upload actually runs.
- */
 package com.cooksync.app.ui.recipe.wizard;
 
 import android.content.Context;

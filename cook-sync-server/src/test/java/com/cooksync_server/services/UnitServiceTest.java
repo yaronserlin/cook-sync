@@ -19,7 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.cooksync_server.entities.Unit;
-import com.cooksync_server.exceptions.ResourceAllReadyExistsException;
+import com.cooksync_server.exceptions.ResourceAlreadyExistsException;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.repositories.UnitRepository;
 import com.dtos.request.unit.UnitRequestDTO;
@@ -61,20 +61,20 @@ class UnitServiceTest {
     }
 
     @Test
-    void createUnit_ShouldThrowResourceAllReadyExistsException_WhenCodeTaken() {
+    void createUnit_ShouldThrowResourceAlreadyExistsException_WhenCodeTaken() {
         UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
         when(unitRepository.existsByCodeIgnoreCase("g")).thenReturn(true);
 
-        assertThrows(ResourceAllReadyExistsException.class, () -> unitService.createUnit(request));
+        assertThrows(ResourceAlreadyExistsException.class, () -> unitService.createUnit(request));
     }
 
     @Test
-    void createUnit_ShouldThrowResourceAllReadyExistsException_WhenNameTaken() {
+    void createUnit_ShouldThrowResourceAlreadyExistsException_WhenNameTaken() {
         UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
         when(unitRepository.existsByCodeIgnoreCase("g")).thenReturn(false);
         when(unitRepository.existsByNameIgnoreCase("Gram")).thenReturn(true);
 
-        assertThrows(ResourceAllReadyExistsException.class, () -> unitService.createUnit(request));
+        assertThrows(ResourceAlreadyExistsException.class, () -> unitService.createUnit(request));
     }
 
     @Test

@@ -25,6 +25,7 @@ import com.dtos.response.auth.AuthResponse;
  */
 public final class SessionManager {
 
+    /** The single, process-wide instance returned by {@link #getInstance()}. */
     private static final SessionManager INSTANCE = new SessionManager();
 
     private final MutableLiveData<Boolean> loggedIn = new MutableLiveData<>(false);
@@ -167,14 +168,8 @@ public final class SessionManager {
     public String getInitials() {
         String first = getFirstName();
         String last = getLastName();
-        StringBuilder initials = new StringBuilder();
-        if (first != null && !first.isEmpty()) {
-            initials.append(Character.toUpperCase(first.charAt(0)));
-        }
-        if (last != null && !last.isEmpty()) {
-            initials.append(Character.toUpperCase(last.charAt(0)));
-        }
-        return initials.length() > 0 ? initials.toString() : "?";
+        String name = ((first != null ? first : "") + " " + (last != null ? last : "")).trim();
+        return CloudinaryImageUtils.initialsOf(name);
     }
 
     /**

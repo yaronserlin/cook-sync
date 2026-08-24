@@ -7,9 +7,11 @@ import android.os.Build;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -35,13 +37,6 @@ import java.util.Objects;
  * @since 04/08/2026
  */
 public class RecipeDetailViewModel extends BaseViewModel {
-
-    /**
-     * How long a review delete/report waits before actually reaching the server, giving the
-     * "Undo" toast action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss
-     * duration, since the undo action stops being reachable once the toast itself is gone.
-     */
-    private static final long UNDO_WINDOW_MS = 3200;
 
     /** Prefixes a report's pending-action key so it can't collide with a delete on the same review. */
     private static final String REPORT_KEY_PREFIX = "report:";
@@ -106,7 +101,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * Toggles the recipe's favorite state. Adding is sent immediately; removing is deferred by
-     * {@link #UNDO_WINDOW_MS} so a tap on the toast's "Undo" action (see
+     * {@link #BaseRepository.UNDO_WINDOW_MS} so a tap on the toast's "Undo" action (see
      * {@link #undoRemoveFavorite}) can cancel it before it's ever sent. If an add is requested
      * while its matching remove is still pending, the pending remove is simply cancelled
      * rather than sending an add for something the server still has.
@@ -116,7 +111,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
      */
     public void toggleFavorite(String recipeId, boolean currentlyFavorite) {
         if (currentlyFavorite) {
-            pendingActions.schedule(recipeId, UNDO_WINDOW_MS,
+            pendingActions.schedule(recipeId, BaseRepository.UNDO_WINDOW_MS,
                     () -> repository.removeFavorite(recipeId, new MutableLiveData<>()));
         } else {
             if (pendingActions.cancel(recipeId)) {
@@ -160,14 +155,14 @@ public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * Deletes a review the current user authored. The caller is expected to hide the review
-     * immediately; the actual server call is delayed by {@link #UNDO_WINDOW_MS} so a tap on the
+     * immediately; the actual server call is delayed by {@link #BaseRepository.UNDO_WINDOW_MS} so a tap on the
      * toast's "Undo" action (see {@link #undoDeleteReview}) can cancel it before it's ever
      * sent — a delete the user undoes in time never reaches the server at all.
      *
      * @param reviewId the ID of the review to delete
      */
     public void deleteReview(String reviewId) {
-        pendingActions.schedule(reviewId, UNDO_WINDOW_MS, () -> repository.deleteReview(reviewId, reviewActionResult));
+        pendingActions.schedule(reviewId, BaseRepository.UNDO_WINDOW_MS, () -> repository.deleteReview(reviewId, reviewActionResult));
     }
 
     /**
@@ -190,7 +185,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * @param comment optional supplementary notes
      */
     public void reportReview(String reviewId, String reason, String comment) {
-        pendingActions.schedule(REPORT_KEY_PREFIX + reviewId, UNDO_WINDOW_MS,
+        pendingActions.schedule(REPORT_KEY_PREFIX + reviewId, BaseRepository.UNDO_WINDOW_MS,
                 () -> repository.reportReview(reviewId, reason, comment, reviewActionResult));
     }
 
@@ -267,7 +262,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * @return a "0.0"-formatted string, or the literal {@code "0.0"} if {@code averageRating} is {@code null}
      */
     public String formatAverageRating(Double averageRating) {
-        return averageRating == null ? "0.0" : String.format(Locale.US, "%.1f", averageRating);
+        return RecipeFilterUtils.formatRating(averageRating);
     }
 
     /** How the reviews list can be ordered, cycled by tapping the reviews sort button. */

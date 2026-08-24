@@ -17,8 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 
-import java.util.Collections;
-
 /**
  * Wizard step 3: the editable instruction-step list, each optionally carrying a timer, linked
  * ingredients, and a photo. Shares {@link AddRecipeViewModel} with the other three steps via an
@@ -81,8 +79,7 @@ public class WizardInstructionsFragment extends Fragment {
         touchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback(new DragReorderTouchHelperCallback.OnMoveListener() {
             @Override
             public void onMove(int from, int to) {
-                Collections.swap(viewModel.getInstructions(), from, to);
-                adapter.notifyItemMoved(from, to);
+                adapter.moveItem(from, to);
             }
 
             @Override

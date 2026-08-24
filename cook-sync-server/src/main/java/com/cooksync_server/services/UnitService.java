@@ -27,7 +27,7 @@ public interface UnitService {
      *
      * @param request unit creation request DTO
      * @return UnitResponse DTO of the created unit
-     * @throws com.cooksync_server.exceptions.ResourceAllReadyExistsException if a unit with the same code or name already exists
+     * @throws com.cooksync_server.exceptions.ResourceAlreadyExistsException if a unit with the same code or name already exists
      */
     UnitResponse createUnit(UnitRequestDTO request);
 

@@ -1,5 +1,8 @@
 package com.cooksync.app.util;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * Utility for building a user's display name from their first and last name fields.
  *
@@ -24,7 +27,8 @@ public final class UserNameFormatter {
      * @param lastName the user's last name, or null
      * @return the trimmed "first last" display name, or "" if both are null
      */
-    public static String fullName(String firstName, String lastName) {
+    @NonNull
+    public static String fullName(@Nullable String firstName, @Nullable String lastName) {
         return ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
     }
 }

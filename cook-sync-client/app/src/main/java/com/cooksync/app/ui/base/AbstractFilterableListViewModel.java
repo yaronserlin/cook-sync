@@ -98,12 +98,18 @@ public abstract class AbstractFilterableListViewModel extends BaseViewModel impl
         onFiltersChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void removeDifficulty() {
         currentDifficulty = null;
         onFiltersChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void removeTag(String tagName) {
         if (selectedTags.remove(tagName)) {
@@ -111,12 +117,18 @@ public abstract class AbstractFilterableListViewModel extends BaseViewModel impl
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void removeMinRating() {
         currentMinRating = null;
         onFiltersChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void removeMaxTotalTime() {
         currentMaxTotalTimeMinutes = null;

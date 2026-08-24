@@ -1,9 +1,3 @@
-/**
- * Server-side API-layer component of the Cloudinary image-upload feature. Exposes the two
- * endpoints the Android client's {@code MediaRepository} calls (via {@code ApiService}) before
- * every direct-to-Cloudinary upload: a signed upload signature, and the environment-specific
- * root storage folder. Delegates all Cloudinary SDK interaction to {@code CloudinaryService}.
- */
 package com.cooksync_server.controllers;
 
 import com.cooksync_server.services.CloudinaryService;

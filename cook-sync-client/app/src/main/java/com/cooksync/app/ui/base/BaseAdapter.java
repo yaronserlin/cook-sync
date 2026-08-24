@@ -119,7 +119,9 @@ public abstract class BaseAdapter<T, VH extends RecyclerView.ViewHolder> extends
 
     /**
      * Swaps the items at {@code from} and {@code to} and animates the move, for a drag-reorder
-     * gesture (e.g. via {@code ItemTouchHelper}).
+     * gesture (e.g. via {@code ItemTouchHelper}). Public rather than {@code protected} since the
+     * drag callback that reports {@code from}/{@code to} is normally owned by the hosting
+     * Fragment, not the adapter subclass itself.
      *
      * Complexity:
      * Time: O(1)
@@ -128,11 +130,20 @@ public abstract class BaseAdapter<T, VH extends RecyclerView.ViewHolder> extends
      * @param from the dragged item's current position
      * @param to the position it's being dragged to
      */
-    protected void moveItem(int from, int to) {
+    public void moveItem(int from, int to) {
         Collections.swap(items, from, to);
         notifyItemMoved(from, to);
     }
 
+    /**
+     * Returns the current size of the backing list.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the number of items this adapter renders
+     */
     @Override
     public int getItemCount() {
         return items.size();

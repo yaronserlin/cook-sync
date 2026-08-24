@@ -22,6 +22,7 @@ import okhttp3.Response;
  */
 public class AuthInterceptor implements Interceptor {
 
+    /** URL path suffixes of the endpoints reachable without an access token attached. */
     private static final String[] PUBLIC_PATH_SUFFIXES = {
             "api/auth/login",
             "api/auth/register",

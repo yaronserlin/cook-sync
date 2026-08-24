@@ -1,9 +1,3 @@
-/**
- * Client-layer (Android) component of the Cloudinary image-upload feature. Pure, side-effect-free
- * helper scanning a {@link RecipeDraft} for images still referenced by a local (not-yet-uploaded)
- * URI, and writing each one's resulting Cloudinary URL back into the draft once
- * {@code RecipePublishManager} finishes uploading it.
- */
 package com.cooksync.app.data.model.recipe;
 
 import com.dtos.response.recipe.DescriptionBlockDTO;

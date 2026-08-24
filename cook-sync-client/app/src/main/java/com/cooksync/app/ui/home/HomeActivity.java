@@ -15,6 +15,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.common.AvatarView;
+import com.cooksync.app.ui.common.ChipStyler;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
@@ -267,13 +268,7 @@ public class HomeActivity extends BaseActivity {
 
         com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_filters);
         btn.setText(getString(R.string.filters_count_format, count));
-        btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                active ? getColor(R.color.color_accent) : getColor(R.color.color_neutral_300)));
-        btn.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
-
-        android.content.res.ColorStateList tint = android.content.res.ColorStateList.valueOf(
-                active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
-        btn.setIconTint(tint);
+        ChipStyler.styleFilterButton(btn, active);
 
         TextView summary = findViewById(R.id.tv_active_filters_summary);
         if (!active) {

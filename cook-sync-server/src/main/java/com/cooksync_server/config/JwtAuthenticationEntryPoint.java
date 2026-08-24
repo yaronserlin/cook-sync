@@ -1,7 +1,6 @@
 package com.cooksync_server.config;
 
 import java.io.IOException;
-import java.time.Instant;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -52,16 +51,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ApiErrorResponse error = new ApiErrorResponse(
-                Instant.now(),
+        ApiErrorResponse error = ApiErrorResponse.of(
                 HttpServletResponse.SC_UNAUTHORIZED,
                 "Unauthorized",
                 "INVALID_OR_MISSING_TOKEN",
                 "Authentication is required or the provided token is invalid/expired",
-                request.getRequestURI(),
-                null
+                request.getRequestURI()
         );
 
-        objectMapper.writeValue(response.getWriter(), new ApiResponse<>(false, null, error, null));
+        objectMapper.writeValue(response.getWriter(), ApiResponse.error(error, null));
     }
 }

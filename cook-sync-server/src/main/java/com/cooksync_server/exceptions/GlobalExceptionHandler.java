@@ -1,6 +1,5 @@
 package com.cooksync_server.exceptions;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles ResourceAllReadyExistsException and responds with HTTP 409 CONFLICT.
+     * Handles ResourceAlreadyExistsException and responds with HTTP 409 CONFLICT.
      *
      * Complexity:
      * Time: O(1)
@@ -61,8 +60,8 @@ public class GlobalExceptionHandler {
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
-    @ExceptionHandler(ResourceAllReadyExistsException.class)
-    public ResponseEntity<ApiResponse<ApiErrorResponse>> handleResourceAlreadyExistsException(ResourceAllReadyExistsException ex) {
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<ApiErrorResponse>> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
         log.warn("Resource already exists: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.CONFLICT, "Conflict", "RESOURCE_ALREADY_EXISTS", ex.getMessage());
     }
@@ -177,21 +176,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<List<ApiErrorResponse>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         List<ApiErrorResponse> errors = new ArrayList<>();
 
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String errorMessage = error.getDefaultMessage();
-            errors.add(new ApiErrorResponse(
-                    Instant.now(),
-                    HttpStatus.BAD_REQUEST.value(),
-                    "Bad Request",
-                    "VALIDATION_ERROR",
-                    errorMessage,
-                    "",
-                    null
-            ));
-        });
+        ex.getBindingResult().getAllErrors().forEach(error -> errors.add(ApiErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(), "Bad Request", "VALIDATION_ERROR", error.getDefaultMessage(), "")));
 
         log.warn("Request validation failed with {} error(s)", errors.size());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false, null, errors, null));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(errors, null));
     }
 
     /**
@@ -263,14 +252,6 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ApiResponse<ApiErrorResponse>> buildErrorResponse(
             HttpStatus status, String error, String errorCode, String message) {
         return ResponseEntity.status(status)
-                .body(new ApiResponse<>(false, null, new ApiErrorResponse(
-                        Instant.now(),
-                        status.value(),
-                        error,
-                        errorCode,
-                        message,
-                        "",
-                        null
-                ), null));
+                .body(ApiResponse.error(ApiErrorResponse.of(status.value(), error, errorCode, message, ""), null));
     }
 }

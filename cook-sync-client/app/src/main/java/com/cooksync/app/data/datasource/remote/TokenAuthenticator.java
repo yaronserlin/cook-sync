@@ -32,6 +32,7 @@ import retrofit2.Call;
  */
 public class TokenAuthenticator implements Authenticator {
 
+    /** Maximum number of refresh-and-retry attempts made for a single failed request. */
     private static final int MAX_RETRY_ATTEMPTS = 1;
 
     private final ApiService refreshApiService;

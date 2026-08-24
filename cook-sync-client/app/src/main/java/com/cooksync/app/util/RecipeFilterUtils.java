@@ -18,7 +18,10 @@ import java.util.Objects;
  * @version 1.0
  * @since 07/08/2026
  */
-public class RecipeFilterUtils {
+public final class RecipeFilterUtils {
+
+    private RecipeFilterUtils() {
+    }
 
     /**
      * Filters {@code source} down to entries whose title or description contains {@code query}
@@ -30,11 +33,14 @@ public class RecipeFilterUtils {
      * Time: O(n) where n is {@code source.size()}
      * Space: O(n) for the filtered copy
      *
-     * @param source the unfiltered recipe previews
+     * @param source the unfiltered recipe previews, or {@code null} to yield an empty result
      * @param query the search text, or {@code null}/blank to skip this filter
      * @return a new, filtered list
      */
     public static List<RecipePreviewResponse> filterByQuery(List<RecipePreviewResponse> source, String query) {
+        if (source == null) {
+            return new ArrayList<>();
+        }
         List<RecipePreviewResponse> displayed = new ArrayList<>(source);
         if (query == null || query.isBlank()) {
             return displayed;
@@ -56,7 +62,7 @@ public class RecipeFilterUtils {
      * Time: O(n log n) where n is {@code source.size()}, dominated by the final sort
      * Space: O(n) for the filtered copy
      *
-     * @param source the unfiltered recipe previews
+     * @param source the unfiltered recipe previews, or {@code null} to yield an empty result
      * @param difficulty required difficulty level, or {@code null} to skip this filter
      * @param minRating minimum average rating (inclusive), or {@code null} to skip this filter
      * @param maxTotalTimeMinutes maximum prep+cook time in minutes, or {@code null} to skip this filter
@@ -73,6 +79,9 @@ public class RecipeFilterUtils {
             Collection<String> selectedTags,
             String sortBy
     ) {
+        if (source == null) {
+            return new ArrayList<>();
+        }
         List<RecipePreviewResponse> displayed = new ArrayList<>(source);
 
         if (difficulty != null) {

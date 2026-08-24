@@ -1,9 +1,3 @@
-/**
- * Server-side business-layer component of the Cloudinary image-upload feature. Declares the
- * signature-generation and asset-deletion operations that {@code CloudinaryController} exposes
- * over HTTP and that {@code RecipeServiceImp}, {@code UserProfileServiceImp}, and
- * {@code AccountDeletionServiceImp} call directly to clean up media on update/delete.
- */
 package com.cooksync_server.services;
 
 import java.util.List;

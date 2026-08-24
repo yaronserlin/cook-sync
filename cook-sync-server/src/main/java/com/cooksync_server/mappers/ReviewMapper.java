@@ -1,9 +1,3 @@
-/**
- * Server-side translation-layer component of the Reviews feature. Converts {@code Review} JPA
- * entities into the {@code ReviewResponse} DTO shared with the Android client, and centralizes
- * the average-rating arithmetic shared by {@code ReviewServiceImp} (the persisted recipe rating)
- * and {@code RecipeMapper} (the recipe-detail response's recomputed, visible-only rating).
- */
 package com.cooksync_server.mappers;
 
 import java.math.BigDecimal;

@@ -1,9 +1,3 @@
-/**
- * Client-layer (Android) component of the Reviews feature. Shared dialog for picking a
- * moderation-report reason and optional comment, used wherever a review can be reported; its
- * result feeds {@code RecipeRepository.reportReview}, which calls the server's
- * {@code ReviewController.reportReview} endpoint.
- */
 package com.cooksync.app.ui.common;
 
 import android.content.Context;

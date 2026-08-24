@@ -1,12 +1,7 @@
-/**
- * Client-layer (Android) component of the Reviews feature. Hosts the rating/review submission
- * screen, reached from Cooking Mode's completion flow and from Recipe Detail's "Write a review"
- * button, and submits through {@link ReviewViewModel} and {@code RecipeRepository} to the
- * server's {@code ReviewController.addReview} endpoint.
- */
 package com.cooksync.app.ui.recipe.review;
 
 import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.os.Bundle;
@@ -34,9 +29,6 @@ import java.util.List;
  */
 public class ReviewActivity extends BaseActivity {
 
-    /** Intent extra key for the id of the recipe being reviewed. */
-    public static final String EXTRA_RECIPE_ID = "extra_recipe_id";
-
     private ReviewViewModel viewModel;
     private final List<ImageView> stars = new ArrayList<>();
     private TextView tvRatingLabel;
@@ -58,7 +50,7 @@ public class ReviewActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_review);
 
-        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+        String recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
         if (recipeId == null) {
             finish();
             return;
@@ -99,7 +91,7 @@ public class ReviewActivity extends BaseActivity {
         btnSubmit.setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String comment = etComment.getText().toString().trim();
-            viewModel.submitReview(getIntent().getStringExtra(EXTRA_RECIPE_ID), selectedRating, title, comment);
+            viewModel.submitReview(getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID), selectedRating, title, comment);
         });
 
         updateRating(0);

@@ -48,6 +48,13 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Entry point invoked by Spring Boot on startup under the "seed-skill" profile. Wipes and
+     * repopulates the schema with the minimal dataset: only the units/tags actually referenced
+     * below, a single creator account, and the recipe-to-json-skill-generated recipes.
+     *
+     * @param args command-line arguments, unused
+     */
     @Override
     @Transactional
     public void run(String... args) {
@@ -75,20 +82,7 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
 
     private void clearDatabase() {
         log.info(">>> Clearing existing database tables...");
-        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-        String[] tables = {
-            "users", "recipes", "units", "ingredients", "instructions",
-            "instruction_ingredients", "reviews", "favorite_recipes",
-            "personal_instruction_notes", "tags", "recipe_tags", "recipe_images",
-            "description_blocks"
-        };
-
-        for (String table : tables) {
-            jdbcTemplate.execute("TRUNCATE TABLE " + table);
-        }
-
-        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
+        SeedDatabaseReset.truncateAllTables(jdbcTemplate);
     }
 
     private List<Unit> seedUnits() {

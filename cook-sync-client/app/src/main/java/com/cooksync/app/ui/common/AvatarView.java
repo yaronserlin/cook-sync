@@ -39,11 +39,22 @@ public class AvatarView extends FrameLayout {
     private ImageView imageView;
     private TextView initialsView;
 
+    /**
+     * Constructs this view programmatically (no XML attributes).
+     *
+     * @param context the hosting context
+     */
     public AvatarView(@NonNull Context context) {
         super(context);
         init(context);
     }
 
+    /**
+     * Constructs this view when inflated from an XML layout.
+     *
+     * @param context the hosting context
+     * @param attrs the XML attribute set, or {@code null} if inflated programmatically
+     */
     public AvatarView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);

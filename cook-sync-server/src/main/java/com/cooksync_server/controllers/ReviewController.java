@@ -1,9 +1,3 @@
-/**
- * Server-side API-layer component of the Reviews feature. Exposes the REST endpoints the Android
- * client's {@code RecipeRepository} calls (via {@code ApiService}) to list, submit, delete, and
- * report recipe reviews, delegating all business logic to {@code ReviewService} and relying on
- * {@code GlobalExceptionHandler} to translate its thrown exceptions into HTTP error responses.
- */
 package com.cooksync_server.controllers;
 
 import org.springframework.http.HttpStatus;

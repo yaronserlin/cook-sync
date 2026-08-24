@@ -21,6 +21,7 @@ import com.cooksync.app.ui.recipe.common.RecipeListActivity;
 import com.cooksync.app.ui.recipe.common.RecipeRowCardAdapter;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
+import com.cooksync.app.util.DimensionUtils;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -129,7 +130,7 @@ public class MyRecipesActivity extends RecipeListActivity {
 
             if (draftsContainer.getChildCount() > 0) {
                 ((android.view.ViewGroup.MarginLayoutParams) draftCard.getLayoutParams()).topMargin =
-                        (int) (12 * getResources().getDisplayMetrics().density);
+                        DimensionUtils.dpToPx(this, 12);
             }
             draftsContainer.addView(draftCard);
         }
@@ -224,7 +225,7 @@ public class MyRecipesActivity extends RecipeListActivity {
         // immediately from showOptionsMenu() instead of from here.
         viewModel.getDeleteResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<Void>) {
-                OrganicToast.showSuccess(this, bottomNav, getString(R.string.recipe_deleted));
+                showSuccess(getString(R.string.recipe_deleted), bottomNav);
             } else if (result instanceof ApiResult.Error<Void> error) {
                 showError(error.getMessage(), bottomNav);
             }

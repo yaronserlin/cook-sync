@@ -74,6 +74,14 @@ public class DataSeeder implements CommandLineRunner {
     /** In-memory cache of remote image URL -> Cloudinary secure URL to prevent redundant uploads. */
     private final Map<String, String> cloudinaryCache = new ConcurrentHashMap<>();
 
+    /**
+     * Entry point invoked by Spring Boot on startup under the "seed" profile. Wipes and
+     * repopulates the entire schema with the full demo dataset (units, tags, users, recipes,
+     * reviews, favorites, personal notes), uploading every referenced image to Cloudinary along
+     * the way.
+     *
+     * @param args command-line arguments, unused
+     */
     @Override
     @Transactional
     public void run(String... args) {
@@ -141,20 +149,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private void clearDatabase() {
         log.info(">>> Clearing existing database tables...");
-        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-        String[] tables = {
-                "users", "recipes", "units", "ingredients", "instructions",
-                "instruction_ingredients", "reviews", "favorite_recipes",
-                "personal_instruction_notes", "tags", "recipe_tags", "recipe_images",
-                "description_blocks"
-        };
-
-        for (String table : tables) {
-            jdbcTemplate.execute("TRUNCATE TABLE " + table);
-        }
-
-        jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
+        SeedDatabaseReset.truncateAllTables(jdbcTemplate);
     }
 
     private List<Unit> seedUnits() {

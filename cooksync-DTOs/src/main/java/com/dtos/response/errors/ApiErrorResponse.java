@@ -1,11 +1,10 @@
 package com.dtos.response.errors;
 
 import java.time.Instant;
-import java.util.List;
 
 /**
  * Data Transfer Object standardizing REST API error response structures across the system.
- * Encapsulates HTTP status code, error classification, error message, path URI, and field-level validation errors.
+ * Encapsulates HTTP status code, error classification, error message, and path URI.
  *
  * @param timestamp ISO timestamp when the error occurred
  * @param status numeric HTTP response status code
@@ -13,9 +12,8 @@ import java.util.List;
  * @param errorCode system-defined specific error classification code
  * @param message descriptive human-readable error summary
  * @param path request URI path that produced the error
- * @param validationErrors list of field-level validation error details, if applicable
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record ApiErrorResponse(
@@ -24,19 +22,26 @@ public record ApiErrorResponse(
         String error,
         String errorCode,
         String message,
-        String path,
-        List<ValidationError> validationErrors
+        String path
 ) {
 
     /**
-     * Data Transfer Object detailing a specific field validation failure.
+     * Builds an {@code ApiErrorResponse} stamped with the current instant, the single
+     * construction path used by every error-producing call site (the global exception
+     * advisor and the JWT authentication entry point alike).
      *
-     * @param field target object property name that failed validation
-     * @param message failure message describing constraint violation
-     * @author Yaron Serlin
-     * @version 1.0
-     * @since 02/08/2026
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param status numeric HTTP response status code
+     * @param error HTTP status phrase string
+     * @param errorCode system-defined specific error classification code
+     * @param message descriptive human-readable error summary
+     * @param path request URI path that produced the error
+     * @return a new {@code ApiErrorResponse} timestamped with {@link Instant#now()}
      */
-    public record ValidationError(String field, String message) {
+    public static ApiErrorResponse of(int status, String error, String errorCode, String message, String path) {
+        return new ApiErrorResponse(Instant.now(), status, error, errorCode, message, path);
     }
 }

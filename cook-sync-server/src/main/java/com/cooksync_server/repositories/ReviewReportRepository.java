@@ -1,9 +1,3 @@
-/**
- * Server-side persistence-layer component of the Reviews feature. Defines the Spring Data JPA
- * query surface over {@code ReviewReport} entities, used by {@code ReviewServiceImp} to persist
- * individual moderation reports and by the recipe/review/account-deletion cleanup paths to
- * bulk-remove reports whose parent review, recipe, or reporter is being deleted.
- */
 package com.cooksync_server.repositories;
 
 import java.util.List;

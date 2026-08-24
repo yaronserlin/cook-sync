@@ -25,15 +25,24 @@ import java.security.GeneralSecurityException;
  */
 public final class TokenStore {
 
+    /** Name of the encrypted {@link SharedPreferences} file this class reads/writes through. */
     private static final String PREFS_FILE_NAME = "cooksync_secure_prefs";
 
+    /** Preference key for the current JWT access token. */
     private static final String KEY_ACCESS_TOKEN = "access_token";
+    /** Preference key for the current JWT refresh token. */
     private static final String KEY_REFRESH_TOKEN = "refresh_token";
+    /** Preference key for the signed-in user's ID. */
     private static final String KEY_USER_ID = "user_id";
+    /** Preference key for the signed-in user's cached first name. */
     private static final String KEY_FIRST_NAME = "first_name";
+    /** Preference key for the signed-in user's cached last name. */
     private static final String KEY_LAST_NAME = "last_name";
+    /** Preference key for the signed-in user's cached admin-privilege flag. */
     private static final String KEY_IS_ADMIN = "is_admin";
+    /** Preference key for the signed-in user's cached avatar URL. */
     private static final String KEY_AVATAR_URL = "avatar_url";
+    /** Preference key for the signed-in user's cached email address. */
     private static final String KEY_EMAIL = "email";
 
     private static volatile SharedPreferences preferences;

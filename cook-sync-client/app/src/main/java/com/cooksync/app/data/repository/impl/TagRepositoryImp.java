@@ -24,26 +24,34 @@ public class TagRepositoryImp extends BaseRepository implements TagRepository {
 
     private final ApiService apiService;
 
+    /**
+     * Constructs the repository against the shared authenticated Retrofit service.
+     */
     public TagRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getAllTags(MutableLiveData<ApiResult<List<TagResponse>>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getAllTags)));
+        fetchAsync(apiService::getAllTags, resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getPopularTags(int limit, MutableLiveData<ApiResult<List<TagResponse>>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getPopularTags(limit))));
+        executeAsync(apiService.getPopularTags(limit), resultTarget);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createTag(String name, MutableLiveData<ApiResult<TagResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        TagRequestDTO request = new TagRequestDTO(name);
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.createCustomTag(request))));
+        executeAsync(apiService.createCustomTag(new TagRequestDTO(name)), resultTarget);
     }
 }

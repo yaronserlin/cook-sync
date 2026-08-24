@@ -8,7 +8,7 @@ import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
 import com.cooksync_server.entities.Unit;
-import com.cooksync_server.exceptions.ResourceAllReadyExistsException;
+import com.cooksync_server.exceptions.ResourceAlreadyExistsException;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.mappers.UnitMapper;
 import com.cooksync_server.repositories.UnitRepository;
@@ -49,7 +49,7 @@ public class UnitServiceImp implements UnitService{
      *
      * @param request unit creation request DTO
      * @return UnitResponse DTO of created unit
-     * @throws ResourceAllReadyExistsException if a unit with the same code or name already exists
+     * @throws ResourceAlreadyExistsException if a unit with the same code or name already exists
      */
     @Transactional
     public UnitResponse createUnit(UnitRequestDTO request) {
@@ -57,10 +57,10 @@ public class UnitServiceImp implements UnitService{
         String formattedName = StringUtils.capitalize(request.name().toLowerCase().trim());
 
         if (unitRepository.existsByCodeIgnoreCase(formattedCode)) {
-            throw new ResourceAllReadyExistsException("Unit code '" + formattedCode + "'", formattedCode);
+            throw new ResourceAlreadyExistsException("Unit code '" + formattedCode + "'", formattedCode);
         }
         if (unitRepository.existsByNameIgnoreCase(formattedName)) {
-            throw new ResourceAllReadyExistsException("Unit name '" + formattedName + "'", formattedName);
+            throw new ResourceAlreadyExistsException("Unit name '" + formattedName + "'", formattedName);
         }
 
         Unit newUnit = Unit.builder()

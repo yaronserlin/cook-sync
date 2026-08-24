@@ -30,6 +30,7 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
+    /** Access token lifetime: 15 minutes, after which the client must refresh. */
     private static final long ACCESS_TOKEN_VALIDITY_MS = 1000L * 60 * 15;
 
     @Value("${jwt.secret}")

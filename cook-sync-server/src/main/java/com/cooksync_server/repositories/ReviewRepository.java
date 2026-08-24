@@ -1,9 +1,3 @@
-/**
- * Server-side persistence-layer component of the Reviews feature. Defines the Spring Data JPA
- * query surface over {@code Review} entities that {@code ReviewServiceImp} builds its business
- * logic on, and that the account-deletion subsystem uses to hide, restore, or permanently purge a
- * departing user's reviews.
- */
 package com.cooksync_server.repositories;
 
 import java.util.List;

@@ -24,14 +24,19 @@ public class UnitRepositoryImp extends BaseRepository implements UnitRepository 
 
     private final ApiService apiService;
 
+    /**
+     * Constructs the repository against the shared authenticated Retrofit service.
+     */
     public UnitRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void getAllUnits(MutableLiveData<ApiResult<List<UnitResponse>>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getUnits)));
+        fetchAsync(apiService::getUnits, resultTarget);
     }
 
     /**
@@ -39,8 +44,7 @@ public class UnitRepositoryImp extends BaseRepository implements UnitRepository 
      */
     @Override
     public void createUnit(UnitRequestDTO request, MutableLiveData<ApiResult<UnitResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.createUnit(request))));
+        executeAsync(apiService.createUnit(request), resultTarget);
     }
 
     /**
@@ -48,7 +52,6 @@ public class UnitRepositoryImp extends BaseRepository implements UnitRepository 
      */
     @Override
     public void deleteUnit(String id, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteUnit(id))));
+        executeAsync(apiService.deleteUnit(id), resultTarget);
     }
 }

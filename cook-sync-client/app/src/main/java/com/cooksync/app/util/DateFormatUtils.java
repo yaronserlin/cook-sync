@@ -1,5 +1,8 @@
 package com.cooksync.app.util;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -29,7 +32,8 @@ public final class DateFormatUtils {
      * @return the parsed date, or {@code null} if {@code isoTimestamp} is {@code null}, blank,
      *         or not a valid ISO date
      */
-    public static LocalDate parseIsoDate(String isoTimestamp) {
+    @Nullable
+    public static LocalDate parseIsoDate(@Nullable String isoTimestamp) {
         if (isoTimestamp == null || isoTimestamp.isBlank()) {
             return null;
         }
@@ -53,7 +57,8 @@ public final class DateFormatUtils {
      * @param isoTimestamp the timestamp string, e.g. a DTO's {@code createdAt} value
      * @return a human-readable relative-time label, or "" if {@code isoTimestamp} is unparseable
      */
-    public static String formatRelativeDay(String isoTimestamp) {
+    @NonNull
+    public static String formatRelativeDay(@Nullable String isoTimestamp) {
         LocalDate date = parseIsoDate(isoTimestamp);
         if (date == null) {
             return "";

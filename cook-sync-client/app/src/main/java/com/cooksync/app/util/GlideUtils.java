@@ -5,6 +5,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
@@ -33,7 +35,7 @@ public final class GlideUtils {
      * @param url the image URL to load
      * @param target the view to load the image into
      */
-    public static void loadThumbnail(RequestManager requestManager, String url, ImageView target) {
+    public static void loadThumbnail(RequestManager requestManager, @Nullable String url, ImageView target) {
         request(requestManager, url).centerCrop().into(target);
     }
 
@@ -47,7 +49,7 @@ public final class GlideUtils {
      * @param url the image URL to load
      * @param target the view to load the image into
      */
-    public static void loadPreview(RequestManager requestManager, String url, ImageView target) {
+    public static void loadPreview(RequestManager requestManager, @Nullable String url, ImageView target) {
         request(requestManager, url).into(target);
     }
 
@@ -61,11 +63,11 @@ public final class GlideUtils {
      * @param url the image URL to load
      * @return a center-cropped request builder with the shared placeholder/error drawables applied
      */
-    public static RequestBuilder<Drawable> requestThumbnail(RequestManager requestManager, String url) {
+    public static RequestBuilder<Drawable> requestThumbnail(RequestManager requestManager, @Nullable String url) {
         return request(requestManager, url).centerCrop();
     }
 
-    private static RequestBuilder<Drawable> request(RequestManager requestManager, String url) {
+    private static RequestBuilder<Drawable> request(RequestManager requestManager, @Nullable String url) {
         return requestManager.load(url)
                 .placeholder(R.drawable.bg_skeleton_bone)
                 .error(R.drawable.ic_image_failed);
@@ -85,7 +87,7 @@ public final class GlideUtils {
      * @param initialsView the view to show the initials fallback in
      * @param initials the initials text to show when no photo is available
      */
-    public static void renderAvatarOrInitials(RequestManager requestManager, String url,
+    public static void renderAvatarOrInitials(RequestManager requestManager, @Nullable String url,
                                                ImageView imageView, TextView initialsView, String initials) {
         if (url == null || url.isEmpty()) {
             imageView.setImageDrawable(null);

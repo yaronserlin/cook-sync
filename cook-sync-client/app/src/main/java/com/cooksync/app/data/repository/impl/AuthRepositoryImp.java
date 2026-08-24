@@ -27,8 +27,6 @@ import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
-import java.io.IOException;
-
 /**
  * Concrete implementation of {@link AuthRepository} that delegates every call to the remote
  * REST API via Retrofit, executes the network work on a dedicated background thread pool
@@ -84,8 +82,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void register(RegisterRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.register(request))));
+        executeAsync(apiService.register(request), resultTarget);
     }
 
     /**
@@ -113,8 +110,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void resendRegistrationOtp(ResendRegistrationOtpRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.resendRegistrationOtp(request))));
+        executeAsync(apiService.resendRegistrationOtp(request), resultTarget);
     }
 
     /**
@@ -128,10 +124,9 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
     public void logout(MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            try {
-                apiService.logout().execute();
-            } catch (IOException e) {
-                android.util.Log.w("AuthRepositoryImp", "Server logout request failed", e);
+            ApiResult<Void> serverResult = executeCall(apiService.logout());
+            if (serverResult instanceof ApiResult.Error<Void> error) {
+                android.util.Log.w("AuthRepositoryImp", "Server logout request failed: " + error.getMessage());
             }
             SessionManager.getInstance().logout();
             resultTarget.postValue(new ApiResult.Success<>(null));
@@ -179,8 +174,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void changePassword(ChangePasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.changePassword(request))));
+        executeAsync(apiService.changePassword(request), resultTarget);
     }
 
     /**
@@ -207,8 +201,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void getCurrentUserProfile(MutableLiveData<ApiResult<UserResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getCurrentUser())));
+        executeAsync(apiService.getCurrentUser(), resultTarget);
     }
 
     /**
@@ -216,8 +209,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void getUserProfile(String userId, MutableLiveData<ApiResult<PublicUserProfileResponse>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getUserProfile(userId))));
+        executeAsync(apiService.getUserProfile(userId), resultTarget);
     }
 
     /**
@@ -225,8 +217,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void updatePrivacySettings(PrivacySettingsUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updatePrivacySettings(request))));
+        executeAsync(apiService.updatePrivacySettings(request), resultTarget);
     }
 
     /**
@@ -311,8 +302,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void forgotPassword(ForgotPasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.forgotPassword(request))));
+        executeAsync(apiService.forgotPassword(request), resultTarget);
     }
 
     /**
@@ -320,8 +310,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
      */
     @Override
     public void resetPassword(ResetPasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
-        resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.resetPassword(request))));
+        executeAsync(apiService.resetPassword(request), resultTarget);
     }
 
 }

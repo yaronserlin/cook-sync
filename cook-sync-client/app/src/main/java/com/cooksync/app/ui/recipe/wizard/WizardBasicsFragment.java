@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.cooksync.app.util.DimensionUtils;
 import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
@@ -118,8 +119,8 @@ public class WizardBasicsFragment extends Fragment {
             pill.setTextSize(12.5f);
             pill.setTextColor(getResources().getColor(R.color.color_accent, null));
             pill.setBackgroundResource(R.drawable.bg_tag_outline);
-            int paddingH = Math.round(13 * getResources().getDisplayMetrics().density);
-            int paddingV = Math.round(7 * getResources().getDisplayMetrics().density);
+            int paddingH = DimensionUtils.dpToPx(requireContext(), 13);
+            int paddingV = DimensionUtils.dpToPx(requireContext(), 7);
             pill.setPadding(paddingH, paddingV, paddingH, paddingV);
             pill.setOnClickListener(v -> tagController.selectPopularTag(name));
             cgPopularTags.addView(pill);
@@ -185,10 +186,7 @@ public class WizardBasicsFragment extends Fragment {
         });
         rvDescriptionBlocks.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvDescriptionBlocks.setAdapter(descriptionAdapter);
-        descriptionTouchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback((from, to) -> {
-            Collections.swap(viewModel.getDescriptionBlocks(), from, to);
-            descriptionAdapter.notifyItemMoved(from, to);
-        }));
+        descriptionTouchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback(descriptionAdapter::moveItem));
         descriptionTouchHelper.attachToRecyclerView(rvDescriptionBlocks);
         descriptionAdapter.setItemTouchHelper(descriptionTouchHelper);
 

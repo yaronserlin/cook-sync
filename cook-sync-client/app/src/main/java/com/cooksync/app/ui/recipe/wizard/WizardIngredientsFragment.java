@@ -18,7 +18,6 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.dtos.response.unit.UnitResponse;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -57,10 +56,7 @@ public class WizardIngredientsFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
 
-        touchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback((from, to) -> {
-            Collections.swap(viewModel.getIngredients(), from, to);
-            adapter.notifyItemMoved(from, to);
-        }));
+        touchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback(adapter::moveItem));
         touchHelper.attachToRecyclerView(recyclerView);
         adapter.setItemTouchHelper(touchHelper);
 

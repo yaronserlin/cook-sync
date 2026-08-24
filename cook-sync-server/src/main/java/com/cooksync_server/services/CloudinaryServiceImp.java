@@ -1,10 +1,3 @@
-/**
- * Server-side business-layer component of the Cloudinary image-upload feature. Wraps the
- * Cloudinary Java SDK: signs short-lived upload authorizations so the API secret never leaves
- * the server, resolves per-user upload folder paths, and performs asynchronous asset/folder
- * deletion on behalf of {@code RecipeServiceImp}, {@code UserProfileServiceImp}, and
- * {@code AccountDeletionServiceImp}.
- */
 package com.cooksync_server.services;
 
 import java.util.List;

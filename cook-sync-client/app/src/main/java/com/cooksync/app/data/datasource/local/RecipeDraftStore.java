@@ -34,9 +34,12 @@ import java.util.Objects;
  */
 public final class RecipeDraftStore {
 
+    /** Name of the plain {@link SharedPreferences} file this class reads/writes through. */
     private static final String PREFS_FILE_NAME = "cooksync_recipe_draft_prefs";
+    /** Preference key for the serialized JSON array of every pinned draft. */
     private static final String KEY_DRAFTS_JSON = "drafts_json";
 
+    /** Shared Gson instance used to (de)serialize the draft list. */
     private static final Gson GSON = new Gson();
 
     private RecipeDraftStore() {

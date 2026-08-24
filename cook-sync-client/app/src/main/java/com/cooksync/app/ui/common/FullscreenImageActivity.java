@@ -1,4 +1,5 @@
 package com.cooksync.app.ui.common;
+
 import com.cooksync.app.ui.base.BaseActivity;
 
 import android.graphics.drawable.Drawable;
@@ -39,6 +40,12 @@ public class FullscreenImageActivity extends BaseActivity {
     /** The image URL to display, loaded via Glide. Required. */
     public static final String EXTRA_IMAGE_URL = "extra_image_url";
 
+    /**
+     * Reads the target image URL from the launching intent, finishing immediately if it is
+     * missing, then enters immersive mode and starts the image load.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -232,7 +232,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
         findViewById(R.id.btn_review).setOnClickListener(v -> {
             Intent intent = new Intent();
-            intent.putExtra(ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID));
+            intent.putExtra(Navigator.EXTRA_RECIPE_ID, getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID));
             Navigator.start(this, ReviewActivity.class, intent);
         });
 

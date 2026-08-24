@@ -1,9 +1,3 @@
-/**
- * Server-side business-layer component of the Reviews feature. Implements review creation,
- * deletion, moderation reporting, and average-rating recomputation, orchestrating
- * {@code ReviewRepository}, {@code ReviewReportRepository}, {@code RecipeRepository}, and
- * {@code UserRepository} on behalf of {@code ReviewController}.
- */
 package com.cooksync_server.services;
 
 import java.math.BigDecimal;
