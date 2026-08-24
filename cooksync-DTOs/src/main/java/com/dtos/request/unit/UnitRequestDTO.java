@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Data Transfer Object for creating or updating a measurement unit definition.
+ * Data Transfer Object for creating a measurement unit definition.
  * Encapsulates full unit display name and short unit symbol code.
  *
  * @param name the full name of the measurement unit, between 2 and 50 characters
  * @param code the short symbol code representing the unit, up to 10 characters
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record UnitRequestDTO(

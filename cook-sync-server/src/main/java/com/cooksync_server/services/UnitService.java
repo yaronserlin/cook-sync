@@ -8,7 +8,7 @@ import com.dtos.response.unit.UnitResponse;
  * Service interface for managing measurement unit definitions.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public interface UnitService {
@@ -23,18 +23,11 @@ public interface UnitService {
     PagedResponse<UnitResponse> getAllUnits(int page, int size);
 
     /**
-     * Retrieves a measurement unit by ID.
-     *
-     * @param id target unit ID
-     * @return UnitResponse DTO
-     */
-    UnitResponse getUnitById(String id);
-
-    /**
      * Creates a new measurement unit definition, ensuring code and name uniqueness.
      *
      * @param request unit creation request DTO
      * @return UnitResponse DTO of the created unit
+     * @throws com.cooksync_server.exceptions.ResourceAllReadyExistsException if a unit with the same code or name already exists
      */
     UnitResponse createUnit(UnitRequestDTO request);
 
@@ -42,6 +35,7 @@ public interface UnitService {
      * Deletes a measurement unit by ID.
      *
      * @param id target unit ID
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no unit with the given ID exists
      */
     void deleteUnit(String id);
 }

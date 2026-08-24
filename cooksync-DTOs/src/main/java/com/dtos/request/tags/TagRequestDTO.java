@@ -4,12 +4,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Data Transfer Object for creating or renaming a category tag.
+ * Data Transfer Object for creating (or finding an existing) category tag.
  * Encapsulates tag label validation constraints.
  *
  * @param name the display name of the tag, must be between 2 and 50 characters
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record TagRequestDTO(

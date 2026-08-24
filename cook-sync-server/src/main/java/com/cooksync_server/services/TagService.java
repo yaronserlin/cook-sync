@@ -7,10 +7,10 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
 
 /**
- * Service interface for recipe tag catalog management and custom tag creation.
+ * Service interface for recipe tag catalog browsing and custom tag creation.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public interface TagService {
@@ -33,42 +33,10 @@ public interface TagService {
     List<TagResponse> getPopularTags(int limit);
 
     /**
-     * Retrieves a tag by unique ID.
-     *
-     * @param id target tag ID
-     * @return TagResponse DTO
-     */
-    TagResponse getTagById(String id);
-
-    /**
      * Finds an existing tag by name, or creates a new one if it does not already exist.
      *
      * @param request tag request DTO
      * @return TagResponse DTO
      */
     TagResponse getOrCreateTag(TagRequestDTO request);
-
-    /**
-     * Creates a new tag, ensuring uniqueness against existing tag names.
-     *
-     * @param request tag creation request DTO
-     * @return TagResponse DTO of the created tag
-     */
-    TagResponse createTag(TagRequestDTO request);
-
-    /**
-     * Updates an existing tag's name.
-     *
-     * @param id target tag ID
-     * @param request tag update request DTO
-     * @return TagResponse DTO of the updated tag
-     */
-    TagResponse updateTag(String id, TagRequestDTO request);
-
-    /**
-     * Deletes a tag by ID.
-     *
-     * @param id target tag ID
-     */
-    void deleteTag(String id);
 }

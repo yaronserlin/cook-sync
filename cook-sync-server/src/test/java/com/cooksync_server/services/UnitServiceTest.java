@@ -30,7 +30,7 @@ import com.dtos.response.unit.UnitResponse;
  * Unit test suite verifying measurement unit retrieval, creation uniqueness, and deletion in UnitServiceImp.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 12/08/2026
  */
 @ExtendWith(MockitoExtension.class)
@@ -58,13 +58,6 @@ class UnitServiceTest {
 
         assertEquals(1, response.content().size());
         assertEquals("Gram", response.content().get(0).name());
-    }
-
-    @Test
-    void getUnitById_ShouldThrowResourceNotFoundException_WhenMissing() {
-        when(unitRepository.findById("missing")).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> unitService.getUnitById("missing"));
     }
 
     @Test

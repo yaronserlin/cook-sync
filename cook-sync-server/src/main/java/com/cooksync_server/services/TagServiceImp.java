@@ -10,8 +10,6 @@ import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
 import com.cooksync_server.entities.Tag;
-import com.cooksync_server.exceptions.ResourceAllReadyExistsException;
-import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.mappers.TagMapper;
 import com.cooksync_server.repositories.TagRepository;
 
@@ -21,7 +19,7 @@ import lombok.RequiredArgsConstructor;
  * Service class handling recipe tag catalog management and custom tag creation.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 @Service
@@ -65,20 +63,6 @@ public class TagServiceImp implements TagService{
     }
 
     /**
-     * Retrieves a tag by unique ID.
-     *
-     * @param id target tag ID
-     * @return TagResponse DTO
-     * @throws ResourceNotFoundException if no tag with the given ID exists
-     */
-    @Transactional(readOnly = true)
-    public TagResponse getTagById(String id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tag", id));
-        return TagMapper.toResponse(tag);
-    }
-
-    /**
      * Finds an existing tag by name or creates a new one if not existing.
      *
      * @param request tag request DTO
@@ -91,66 +75,5 @@ public class TagServiceImp implements TagService{
                 .map(TagMapper::toResponse)
                 .orElseGet(() -> TagMapper.toResponse(
                         tagRepository.save(Tag.builder().name(formattedName).build())));
-    }
-
-    /**
-     * Creates a new tag ensuring uniqueness against existing tag names.
-     *
-     * @param request tag creation request DTO
-     * @return TagResponse DTO of created tag
-     * @throws ResourceAllReadyExistsException if a tag with the same name already exists
-     */
-    @Transactional
-    public TagResponse createTag(TagRequestDTO request) {
-        String formattedName = request.name().trim().toLowerCase();
-        ensureNameAvailable(formattedName, null);
-
-        Tag newTag = Tag.builder()
-                .name(formattedName)
-                .build();
-
-        return TagMapper.toResponse(tagRepository.save(newTag));
-    }
-
-    /**
-     * Updates an existing tag name.
-     *
-     * @param id target tag ID
-     * @param request tag update request DTO
-     * @return TagResponse DTO of updated tag
-     * @throws ResourceNotFoundException if no tag with the given ID exists
-     * @throws ResourceAllReadyExistsException if another tag with the same name already exists
-     */
-    @Transactional
-    public TagResponse updateTag(String id, TagRequestDTO request) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tag", id));
-
-        String formattedName = request.name().trim().toLowerCase();
-        ensureNameAvailable(formattedName, id);
-
-        tag.setName(formattedName);
-        return TagMapper.toResponse(tagRepository.save(tag));
-    }
-
-    /**
-     * Deletes a tag by ID.
-     *
-     * @param id target tag ID
-     * @throws ResourceNotFoundException if no tag with the given ID exists
-     */
-    @Transactional
-    public void deleteTag(String id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tag", id));
-        tagRepository.delete(tag);
-    }
-
-    private void ensureNameAvailable(String formattedName, String excludeId) {
-        tagRepository.findByNameIgnoreCase(formattedName)
-                .filter(existing -> excludeId == null || !existing.getId().equals(excludeId))
-                .ifPresent(existing -> {
-                    throw new ResourceAllReadyExistsException("Tag: '" + formattedName + "'", existing.getId());
-                });
     }
 }

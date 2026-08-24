@@ -1,7 +1,6 @@
 package com.cooksync_server.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,18 +18,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.cooksync_server.entities.Tag;
-import com.cooksync_server.exceptions.ResourceAllReadyExistsException;
-import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.repositories.TagRepository;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
 
 /**
- * Unit test suite verifying tag catalog retrieval, creation uniqueness, and deletion in TagServiceImp.
+ * Unit test suite verifying tag catalog retrieval and get-or-create de-duplication in TagServiceImp.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 12/08/2026
  */
 @ExtendWith(MockitoExtension.class)
@@ -61,13 +58,6 @@ class TagServiceTest {
     }
 
     @Test
-    void getTagById_ShouldThrowResourceNotFoundException_WhenMissing() {
-        when(tagRepository.findById("missing")).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> tagService.getTagById("missing"));
-    }
-
-    @Test
     void getOrCreateTag_ShouldReturnExistingTag_WhenAlreadyPresent() {
         TagRequestDTO request = new TagRequestDTO("Dessert");
         when(tagRepository.findByNameIgnoreCase("dessert")).thenReturn(Optional.of(sampleTag));
@@ -88,29 +78,5 @@ class TagServiceTest {
         TagResponse response = tagService.getOrCreateTag(request);
 
         assertEquals("vegan", response.name());
-    }
-
-    @Test
-    void createTag_ShouldThrowResourceAllReadyExistsException_WhenNameTaken() {
-        TagRequestDTO request = new TagRequestDTO("Dessert");
-        when(tagRepository.findByNameIgnoreCase("dessert")).thenReturn(Optional.of(sampleTag));
-
-        assertThrows(ResourceAllReadyExistsException.class, () -> tagService.createTag(request));
-    }
-
-    @Test
-    void deleteTag_ShouldThrowResourceNotFoundException_WhenMissing() {
-        when(tagRepository.findById("missing")).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> tagService.deleteTag("missing"));
-    }
-
-    @Test
-    void deleteTag_ShouldDelete_WhenFound() {
-        when(tagRepository.findById("tag-1")).thenReturn(Optional.of(sampleTag));
-
-        tagService.deleteTag("tag-1");
-
-        verify(tagRepository).delete(sampleTag);
     }
 }

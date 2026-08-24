@@ -1,6 +1,5 @@
 package com.cooksync_server.services;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +42,7 @@ import com.cooksync_server.repositories.RecipeSpecifications;
 import com.cooksync_server.repositories.TagRepository;
 import com.cooksync_server.repositories.UnitRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.cooksync_server.mappers.IngredientMapper;
 import com.cooksync_server.mappers.RecipeMapper;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 
@@ -430,12 +430,7 @@ public class RecipeServiceImp implements RecipeService{
             if (unit == null) {
                 throw new ResourceNotFoundException("Unit", ingDto.unitId());
             }
-            Ingredient ingredient = Ingredient.builder()
-                    .recipe(recipe)
-                    .name(ingDto.name())
-                    .quantity(BigDecimal.valueOf(ingDto.quantity()))
-                    .unit(unit)
-                    .build();
+            Ingredient ingredient = IngredientMapper.fromRequest(recipe, ingDto, unit);
             ingredients.add(ingredient);
             if (ingDto.tmpId() != null) {
                 tmpIdToIngredient.put(ingDto.tmpId(), ingredient);

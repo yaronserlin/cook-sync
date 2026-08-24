@@ -28,14 +28,6 @@ public interface TagRepository extends JpaRepository<Tag, String> {
     Optional<Tag> findByNameIgnoreCase(String name);
 
     /**
-     * Checks if a tag with the specified case-insensitive name exists.
-     *
-     * @param name tag name string
-     * @return true if matching tag exists
-     */
-    boolean existsByNameIgnoreCase(String name);
-
-    /**
      * Retrieves a paginated list of all tags.
      *
      * @param pageable pagination and sorting information

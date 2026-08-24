@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
  * Service class managing measurement unit creation, retrieval, and deletion.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 @Service
@@ -42,20 +42,6 @@ public class UnitServiceImp implements UnitService{
     @Transactional(readOnly = true)
     public PagedResponse<UnitResponse> getAllUnits(int page, int size) {
         return PagedResponseMapper.findAllPaged(unitRepository, page, size, UnitMapper::toResponse);
-    }
-
-    /**
-     * Retrieves a measurement unit by ID.
-     *
-     * @param id target unit ID
-     * @return UnitResponse DTO
-     * @throws ResourceNotFoundException if no unit with the given ID exists
-     */
-    @Transactional(readOnly = true)
-    public UnitResponse getUnitById(String id) {
-        Unit unit = unitRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Unit", id));
-        return UnitMapper.toResponse(unit);
     }
 
     /**

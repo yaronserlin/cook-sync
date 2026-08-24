@@ -20,10 +20,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 /**
- * REST Controller providing granular management endpoints for recipe ingredient components.
+ * REST Controller providing granular management endpoints for recipe ingredient components —
+ * appending, editing, and removing individual ingredient rows on an existing recipe, each
+ * referencing a {@code Unit} by ID. Distinct from {@link RecipeController}'s nested
+ * ingredient-list handling at whole-recipe creation/update time, which serves the same
+ * {@code IngredientResponse} DTO shape but goes through {@code RecipeServiceImp} instead.
+ * Access is ownership-based rather than role-based: every endpoint here requires the caller to
+ * either own the ingredient's parent recipe or hold admin privileges, enforced via
+ * {@link com.cooksync_server.services.OwnershipValidator} inside the service layer rather than
+ * {@code @PreAuthorize}.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 @RestController

@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
  * Service class handling granular CRUD operations for recipe ingredient items with ownership authorization validation.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 @Service
@@ -55,12 +55,7 @@ public class IngredientServiceImp implements IngredientService {
         Unit unit = unitRepository.findById(request.unitId())
                 .orElseThrow(() -> new ResourceNotFoundException("Unit", request.unitId()));
 
-        Ingredient ingredient = Ingredient.builder()
-                .recipe(recipe)
-                .name(request.name())
-                .quantity(BigDecimal.valueOf(request.quantity()))
-                .unit(unit)
-                .build();
+        Ingredient ingredient = IngredientMapper.fromRequest(recipe, request, unit);
 
         return IngredientMapper.toResponse(ingredientRepository.save(ingredient));
     }

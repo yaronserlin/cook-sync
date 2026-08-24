@@ -19,27 +19,24 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.services.AdminService;
-import com.cooksync_server.services.TagService;
 import com.cooksync_server.services.UnitService;
-import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.admin.AdminStatsResponse;
-import com.dtos.response.tags.TagResponse;
 import com.dtos.response.unit.UnitResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Web-layer test suite verifying that {@code @PreAuthorize("hasRole('ADMIN')")}-protected
- * endpoints on {@link AdminController}, {@link UnitController}, and {@link TagsController}
- * actually reject non-admin callers and accept admin callers. Loads only the MVC/method-security
- * slice (no database, no JWT filter chain) — {@link MethodSecurityTestConfig} enables
- * {@code @PreAuthorize} processing so {@code @WithMockUser}'s roles are actually evaluated.
+ * endpoints on {@link AdminController} and {@link UnitController} actually reject non-admin
+ * callers and accept admin callers. Loads only the MVC/method-security slice (no database, no
+ * JWT filter chain) — {@link MethodSecurityTestConfig} enables {@code @PreAuthorize} processing
+ * so {@code @WithMockUser}'s roles are actually evaluated.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 12/08/2026
  */
-@WebMvcTest(controllers = {AdminController.class, UnitController.class, TagsController.class})
+@WebMvcTest(controllers = {AdminController.class, UnitController.class})
 @Import(AdminEndpointsSecurityTest.MethodSecurityTestConfig.class)
 class AdminEndpointsSecurityTest {
 
@@ -54,9 +51,6 @@ class AdminEndpointsSecurityTest {
 
     @MockitoBean
     private UnitService unitService;
-
-    @MockitoBean
-    private TagService tagService;
 
     /**
      * {@link com.cooksync_server.config.JwtAuthenticationFilter} is a servlet {@code Filter}, so
@@ -104,32 +98,6 @@ class AdminEndpointsSecurityTest {
                 .thenReturn(new UnitResponse("unit-1", "g", "Gram", null, null));
 
         mockMvc.perform(post("/api/units")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void createTag_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
-        TagRequestDTO request = new TagRequestDTO("Dessert");
-
-        mockMvc.perform(post("/api/tags")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void createTag_ShouldReturnCreated_ForAdminUser() throws Exception {
-        TagRequestDTO request = new TagRequestDTO("Dessert");
-        when(tagService.createTag(org.mockito.ArgumentMatchers.any()))
-                .thenReturn(new TagResponse("tag-1", "dessert", null, null));
-
-        mockMvc.perform(post("/api/tags")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

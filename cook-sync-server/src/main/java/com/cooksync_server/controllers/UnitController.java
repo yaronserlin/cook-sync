@@ -24,10 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST Controller managing measurement unit definitions.
- * Publicly exposes unit retrieval endpoints, while creation and deletion require 'ADMIN' authority.
+ * Any authenticated user may list units (needed for the recipe wizard's unit picker);
+ * creation and deletion require 'ADMIN' authority.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 @Slf4j
@@ -56,20 +57,6 @@ public class UnitController {
         log.debug("Fetching all units from the system");
         PagedResponse<UnitResponse> units = unitService.getAllUnits(page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, units, null, "All units retrieved successfully"));
-    }
-
-    /**
-     * Retrieves a specific measurement unit by ID.
-     *
-     * @param id target unit unique identifier
-     * @return response entity containing UnitResponse DTO
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UnitResponse>> getUnitById(@PathVariable String id) {
-        log.debug("Fetching unit with ID: {}", id);
-        UnitResponse unit = unitService.getUnitById(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, unit, null, "Unit retrieved successfully"));
     }
 
     /**
