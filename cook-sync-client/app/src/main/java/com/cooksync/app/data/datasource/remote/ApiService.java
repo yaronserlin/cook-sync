@@ -283,7 +283,7 @@ public interface ApiService {
      * @param size number of items per page
      * @return call yielding a paged collection of recipe previews
      */
-    @GET("api/recipes/public/paged")
+    @GET("api/recipes/paged")
     Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicFeed(
             @Query("page") int page,
             @Query("size") int size
@@ -299,7 +299,7 @@ public interface ApiService {
      * @param size number of items per page
      * @return call yielding a paged collection of matching recipe previews
      */
-    @GET("api/recipes/public/search")
+    @GET("api/recipes/search")
     Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(
             @Query("q") String query,
             @Query("author") String author,
@@ -316,7 +316,7 @@ public interface ApiService {
      * @param size number of items per page
      * @return call yielding a paged collection of recipe previews
      */
-    @GET("api/recipes/public/tag/{tagName}")
+    @GET("api/recipes/tag/{tagName}")
     Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getRecipesByTag(
             @Path("tagName") String tagName,
             @Query("page") int page,
@@ -329,7 +329,7 @@ public interface ApiService {
      * @param id the unique identifier of the recipe
      * @return call yielding the full recipe detail
      */
-    @GET("api/recipes/public/{id}")
+    @GET("api/recipes/{id}")
     Call<ApiResponse<RecipeResponse>> getRecipeDetail(
             @Path("id") String id
     );

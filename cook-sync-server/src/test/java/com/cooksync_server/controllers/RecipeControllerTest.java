@@ -84,7 +84,7 @@ class RecipeControllerTest {
         PagedResponse<RecipePreviewResponse> paged = new PagedResponse<>(List.of(samplePreview()), 0, 20, 1, 1, true);
         when(recipeService.getAllRecipesPaged(eq(0), eq(20), isNull(), isNull(), isNull())).thenReturn(paged);
 
-        mockMvc.perform(get("/api/recipes/public/paged"))
+        mockMvc.perform(get("/api/recipes/paged"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.content[0].id").value("recipe-1"));
@@ -98,7 +98,7 @@ class RecipeControllerTest {
                 List.of(), null, List.of());
         when(recipeService.getRecipeById("recipe-1")).thenReturn(response);
 
-        mockMvc.perform(get("/api/recipes/public/recipe-1"))
+        mockMvc.perform(get("/api/recipes/recipe-1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Pasta"));
     }
@@ -108,7 +108,7 @@ class RecipeControllerTest {
     void getRecipeById_ShouldReturnNotFound_WhenRecipeMissing() throws Exception {
         when(recipeService.getRecipeById("missing")).thenThrow(new ResourceNotFoundException("Recipe", "missing"));
 
-        mockMvc.perform(get("/api/recipes/public/missing"))
+        mockMvc.perform(get("/api/recipes/missing"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false));
     }
@@ -190,7 +190,7 @@ class RecipeControllerTest {
         when(recipeService.searchRecipes(eq("pasta"), isNull(), isNull(), isNull(), isNull(), isNull(), eq(0), eq(20)))
                 .thenReturn(paged);
 
-        mockMvc.perform(get("/api/recipes/public/search").param("q", "pasta"))
+        mockMvc.perform(get("/api/recipes/search").param("q", "pasta"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content[0].title").value("Pasta"));
     }

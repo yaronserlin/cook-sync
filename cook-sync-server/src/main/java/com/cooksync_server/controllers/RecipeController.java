@@ -54,7 +54,7 @@ public class RecipeController {
      * @param minRating optional minimum average rating threshold
      * @return response entity containing PagedResponse of RecipePreviewResponse DTOs
      */
-    @GetMapping("/public/paged")
+    @GetMapping("/paged")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getAllRecipesPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -72,7 +72,7 @@ public class RecipeController {
      * @param id target recipe unique identifier
      * @return response entity containing full RecipeResponse DTO
      */
-    @GetMapping("/public/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RecipeResponse>> getRecipeById(@PathVariable String id) {
         RecipeResponse recipe = recipeService.getRecipeById(id);
         return ResponseEntity.ok(new ApiResponse<>(true, recipe, null, "Recipe retrieved successfully"));
@@ -96,7 +96,7 @@ public class RecipeController {
      * @param size page size limit
      * @return response entity containing search result list of RecipePreviewResponse DTOs
      */
-    @GetMapping("/public/search")
+    @GetMapping("/search")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String author,
@@ -126,7 +126,7 @@ public class RecipeController {
      * @param size page size limit
      * @return response entity containing list of RecipePreviewResponse DTOs
      */
-    @GetMapping("/public/tag/{tagName}")
+    @GetMapping("/tag/{tagName}")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getRecipesByTag(
             @PathVariable String tagName,
             @RequestParam(required = false) String sortBy,
