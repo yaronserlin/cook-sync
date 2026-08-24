@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -545,10 +546,24 @@ public class CookingModeActivity extends BaseActivity {
     }
 
     private void vibrate() {
-        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        Vibrator vibrator = getVibrator();
         if (vibrator == null || !vibrator.hasVibrator()) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-        else vibrator.vibrate(500);
+        else legacyVibrate(vibrator);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void legacyVibrate(Vibrator vibrator) {
+        vibrator.vibrate(500);
+    }
+
+    @SuppressWarnings("deprecation")
+    private Vibrator getVibrator() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vibratorManager = (VibratorManager) getSystemService(VIBRATOR_MANAGER_SERVICE);
+            return vibratorManager != null ? vibratorManager.getDefaultVibrator() : null;
+        }
+        return (Vibrator) getSystemService(VIBRATOR_SERVICE);
     }
 
     private void confirmExit() {

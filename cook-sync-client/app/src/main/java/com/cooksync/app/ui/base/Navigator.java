@@ -147,6 +147,7 @@ public final class Navigator {
      *
      * @param activity the activity that just finished
      */
+    @SuppressWarnings("deprecation")
     static void applyCloseTransition(@NonNull Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             activity.overrideActivityTransition(
@@ -166,6 +167,7 @@ public final class Navigator {
      *
      * @param from the activity that just started another activity
      */
+    @SuppressWarnings("deprecation")
     private static void applyOpenTransition(@NonNull Activity from) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             from.overrideActivityTransition(

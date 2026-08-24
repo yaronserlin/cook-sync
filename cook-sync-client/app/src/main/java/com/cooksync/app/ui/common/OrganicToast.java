@@ -1,11 +1,14 @@
 package com.cooksync.app.ui.common;
 
 import android.app.Activity;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -190,20 +193,20 @@ public final class OrganicToast {
             // Set base color for the first item in layer-list
             Drawable baseLayer = progressBg.getDrawable(0);
             if (baseLayer != null) {
-                baseLayer.setColorFilter(ContextCompat.getColor(activity, type.baseColor), PorterDuff.Mode.SRC_IN);
+                tintDrawable(baseLayer, ContextCompat.getColor(activity, type.baseColor));
             }
 
             // Set dark color for the clip layer
             ClipDrawable fill = (ClipDrawable) progressBg.findDrawableByLayerId(R.id.toast_fill_clip);
             if (fill != null && fill.getDrawable() != null) {
-                Objects.requireNonNull(fill.getDrawable()).setColorFilter(ContextCompat.getColor(activity, type.darkColor), PorterDuff.Mode.SRC_IN);
+                tintDrawable(Objects.requireNonNull(fill.getDrawable()), ContextCompat.getColor(activity, type.darkColor));
             }
             toastView.setBackground(progressBg);
         } else {
             Drawable bg = ContextCompat.getDrawable(activity, R.drawable.bg_pill_solid);
             if (bg != null) {
                 bg = bg.mutate();
-                bg.setColorFilter(ContextCompat.getColor(activity, type.baseColor), PorterDuff.Mode.SRC_IN);
+                tintDrawable(bg, ContextCompat.getColor(activity, type.baseColor));
                 toastView.setBackground(bg);
             }
         }
@@ -228,6 +231,22 @@ public final class OrganicToast {
                     if (progress < 1.0f) handler.postDelayed(this, 16);
                 }
             });
+        }
+    }
+
+    /**
+     * Applies a solid-color tint to a drawable, using {@link BlendModeColorFilter} on API 29+
+     * and falling back to the deprecated {@link PorterDuff}-based filter below that level.
+     *
+     * @param drawable the drawable to tint
+     * @param color the ARGB color to apply
+     */
+    @SuppressWarnings("deprecation")
+    private static void tintDrawable(@NonNull Drawable drawable, int color) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            drawable.setColorFilter(new BlendModeColorFilter(color, BlendMode.SRC_IN));
+        } else {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
     }
 }

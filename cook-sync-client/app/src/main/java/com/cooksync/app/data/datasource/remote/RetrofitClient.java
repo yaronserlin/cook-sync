@@ -3,6 +3,7 @@ package com.cooksync.app.data.datasource.remote;
 import com.cooksync.app.BuildConfig;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +37,7 @@ public final class RetrofitClient {
     private static volatile ApiService bareApiService;
 
     /** Shared, lenient Gson instance used to (de)serialize every request/response body. */
-    private static final Gson GSON = new GsonBuilder().setLenient().create();
+    private static final Gson GSON = new GsonBuilder().setStrictness(Strictness.LENIENT).create();
 
     private RetrofitClient() {
     }

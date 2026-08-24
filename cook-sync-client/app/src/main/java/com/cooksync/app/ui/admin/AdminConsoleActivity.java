@@ -2,6 +2,7 @@ package com.cooksync.app.ui.admin;
 import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -50,7 +51,7 @@ public class AdminConsoleActivity extends BaseActivity {
         }
         setContentView(R.layout.activity_admin_console);
 
-        getWindow().setStatusBarColor(getColor(R.color.color_neutral_900));
+        applyStatusBarColor();
         WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
                 .setAppearanceLightStatusBars(false);
 
@@ -110,6 +111,18 @@ public class AdminConsoleActivity extends BaseActivity {
         tagsViewModel.loadDuplicateTagGroups();
         usersViewModel.refreshUsers(null, null);
         unitsViewModel.loadUnits();
+    }
+
+    /**
+     * Colors the status bar to match the console's dark header. On API 35+, edge-to-edge is
+     * enforced by the platform and {@code setStatusBarColor} is a no-op, so this only has an
+     * effect below that level.
+     */
+    @SuppressWarnings("deprecation")
+    private void applyStatusBarColor() {
+        if (Build.VERSION.SDK_INT < 35) {
+            getWindow().setStatusBarColor(getColor(R.color.color_neutral_900));
+        }
     }
 
     /**
