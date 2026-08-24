@@ -102,6 +102,7 @@
     <string name="action_add_note">Add a note</string>
     <string name="action_make_public">Make public</string>
     <string name="action_make_private">Make private</string>
+    <string name="action_edit_recipe">Edit recipe</string>
 
     <!-- Footer -->
     <string name="footer_privacy">Your data is yours. We don\'t sell your recipes or private notes.</string>
@@ -172,6 +173,7 @@
     <string name="my_recipes_empty_title">No recipes yet</string>
     <string name="my_recipes_empty_subtitle">Recipes you publish will show up here.</string>
     <string name="my_recipes_search_hint">Search your recipes&#8230;</string>
+    <string name="my_recipes_subtitle_format">%1$d recipes · %2$d with private notes</string>
     <string name="recipe_now_public">Recipe is now public</string>
     <string name="recipe_now_private">Recipe is now private</string>
     <string name="recipe_deleted">Recipe deleted</string>

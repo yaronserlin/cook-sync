@@ -30,12 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lists every recipe (published or private) the current user has authored, with search,
- * sort/difficulty/tag filtering, a Public/Private chip filter, and per-recipe management
- * actions (toggle visibility, delete) via an overflow menu.
+ * Client-layer (Android) entry-point screen of the "My Recipes" feature: lists every recipe
+ * (published or private) the current user has authored, fetched via {@link MyRecipesViewModel}
+ * from the server's {@code GET /api/recipes/mine} endpoint and rendered as
+ * {@code RecipePreviewResponse} DTOs shared with the server. Supports search, sort/difficulty/
+ * tag filtering, a Public/Private chip filter, and per-recipe management actions (edit, toggle
+ * visibility, delete) via an overflow menu. Owns the screen's view wiring only; all data state
+ * lives in {@link MyRecipesViewModel}.
  *
  * @author Yaron Serlin
- * @version 1.2
+ * @version 1.4
  * @since 04/08/2026
  */
 public class MyRecipesActivity extends RecipeListActivity {
@@ -54,6 +58,14 @@ public class MyRecipesActivity extends RecipeListActivity {
         return R.id.nav_my_recipes;
     }
 
+    /**
+     * Inflates the shared list layout via {@link RecipeListActivity}, binds
+     * {@link MyRecipesViewModel} via {@link ViewModelFactory}, wires up the row adapter and its
+     * observers, and kicks off the tag-catalog load. The recipe library itself is fetched from
+     * {@link #onResume()} instead, which always runs immediately after this method too.
+     *
+     * @param savedInstanceState unused; this screen restores no instance state of its own
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,10 +76,16 @@ public class MyRecipesActivity extends RecipeListActivity {
         setupObservers();
 
         showSkeleton(true);
-        viewModel.loadMyRecipes();
         viewModel.loadTags();
     }
 
+    /**
+     * Re-fetches the user's recipe library on every visibility change, including this screen's
+     * first launch (there's no separate {@code onCreate} fetch — {@code onResume} always runs
+     * right after {@code onCreate} too, so a second call there would just double the initial
+     * network request), so returning here after publishing, editing, or discarding a draft
+     * always shows current data.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -122,6 +140,7 @@ public class MyRecipesActivity extends RecipeListActivity {
         tvEmptyTitle.setText(R.string.my_recipes_empty_title);
         tvEmptySubtitle.setText(R.string.my_recipes_empty_subtitle);
         searchView.setQueryHint(getString(R.string.my_recipes_search_hint));
+        tvSubtitle.setVisibility(View.VISIBLE);
 
         adapter = new RecipeRowCardAdapter();
         adapter.setTrailingAction(RecipeRowCardAdapter.TrailingAction.OPTIONS_MENU);
@@ -169,6 +188,8 @@ public class MyRecipesActivity extends RecipeListActivity {
                 adapter.setRecipes(recipes);
 
                 tvTitle.setText(getString(R.string.my_recipes_title_format, viewModel.getPublishedCount()));
+                tvSubtitle.setText(getString(R.string.my_recipes_subtitle_format,
+                        viewModel.getTotalCount(), viewModel.getWithPrivateNotesCount()));
                 updateFilterButton();
 
                 if (!recipes.isEmpty()) {
@@ -218,6 +239,13 @@ public class MyRecipesActivity extends RecipeListActivity {
         setupPublishProgressObserver();
     }
 
+    /**
+     * Subscribes to the process-wide {@link com.cooksync.app.data.service.RecipePublishManager}
+     * singleton so a background publish begun on the wizard screen (which the user can navigate
+     * away from mid-upload) is still reflected here as a progress card, even though this screen
+     * didn't initiate it — including auto-refreshing the recipe list and drafts row once it
+     * completes.
+     */
     private void setupPublishProgressObserver() {
         com.cooksync.app.data.service.RecipePublishManager.getInstance().getPublishState().observe(this, state -> {
             if (state == null || state.status == com.cooksync.app.data.service.RecipePublishManager.PublishState.Status.IDLE) {

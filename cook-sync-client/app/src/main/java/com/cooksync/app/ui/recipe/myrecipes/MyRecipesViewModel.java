@@ -22,13 +22,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Manages data state for {@link MyRecipesActivity}: the current user's own recipes, search/
- * sort/filter over that list (client-side, since {@code GET /api/recipes/mine} returns the
- * whole set unpaginated), and the outcome of management actions (delete, visibility toggle)
- * triggered from the list.
+ * Client-layer (Android) ViewModel backing {@link MyRecipesActivity}: owns the current user's
+ * own recipe library, fetched in full via {@link RecipeRepository} from the server's
+ * {@code GET /api/recipes/mine} endpoint (returning {@link RecipePreviewResponse} DTOs shared
+ * with the server), the available-tags catalog (via {@link TagRepository}), search/sort/filter
+ * over that list — client-side, since the endpoint returns the whole set unpaginated — and the
+ * outcome of management actions (delete, visibility toggle) triggered from the list.
  *
  * @author Yaron Serlin
- * @version 1.2
+ * @version 1.4
  * @since 04/08/2026
  */
 public class MyRecipesViewModel extends AbstractFilterableListViewModel {
@@ -75,6 +77,14 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
 
+    /**
+     * Fetches full details for a single recipe, used by the overflow menu's "Edit recipe"
+     * action to seed {@link com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity} — the
+     * list itself only holds the lighter {@link RecipePreviewResponse} shape.
+     *
+     * @param recipeId the recipe to fetch
+     * @param resultTarget LiveData target to post the outcome, owned by the caller
+     */
     public void loadRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
         repository.getRecipeDetail(recipeId, resultTarget);
     }
@@ -92,8 +102,6 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
      */
     public LiveData<ApiResult<RecipeResponse>> getVisibilityResult() { return visibilityResult; }
 
-    public String getVisibilityFilter() { return visibilityFilter; }
-
     /**
      * How many of the user's recipes (across the whole library, ignoring the active search/
      * filter) are public — used for the screen's "My recipes · N published" title, which
@@ -103,9 +111,30 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
         return allRecipes.stream().filter(r -> "PUBLIC".equalsIgnoreCase(r.visibility())).count();
     }
 
+    /**
+     * How many recipes are in the user's library in total (across the whole library, ignoring
+     * the active search/filter) — used for the screen's subtitle, alongside
+     * {@link #getWithPrivateNotesCount()}.
+     */
+    public int getTotalCount() {
+        return allRecipes.size();
+    }
+
+    /**
+     * How many of the user's recipes (across the whole library, ignoring the active search/
+     * filter) carry a private note — used for the screen's subtitle.
+     */
+    public long getWithPrivateNotesCount() {
+        return allRecipes.stream().filter(RecipePreviewResponse::hasPersonalNote).count();
+    }
+
     /** {@code true} once the user's recipe library has loaded and contains at least one recipe. */
     public boolean hasAnyRecipes() { return !allRecipes.isEmpty(); }
 
+    /**
+     * Loads the full tag catalog, used to populate the tag-filter options in the shared filters
+     * sheet.
+     */
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
@@ -151,11 +180,15 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
      * Deletes a recipe: waits for the server call to succeed before removing it from the list,
      * then publishes the outcome via {@link #getDeleteResult()}. Unlike {@link #toggleVisibility},
      * this is not optimistic — the recipe stays visible until the server confirms the delete.
+     * Cancels any still-pending deferred visibility toggle for this recipe first, since deleting
+     * it supersedes that change — otherwise the toggle could still fire afterward against a
+     * recipe that no longer exists.
      *
      * @param recipe the recipe to delete, as currently shown
      */
     public void deleteRecipe(RecipePreviewResponse recipe) {
         String recipeId = recipe.id();
+        pendingActions.cancel(recipeId);
         MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
         observeOnce(result, apiResult -> {
             if (apiResult instanceof ApiResult.Success<Void>) {
