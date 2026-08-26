@@ -26,10 +26,6 @@ public final class ChipStyler {
      * Solid accent-fill toggle style used by the recipe wizard's difficulty and visibility
      * chip rows.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param chip the chip to style
      * @param active whether this chip is the currently selected one
      */
@@ -45,10 +41,6 @@ public final class ChipStyler {
     /**
      * Neutral-toned tint-list toggle style used by the admin console's filter chip rows.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param chip the chip to style
      * @param active whether this chip is the currently selected one
      */
@@ -63,10 +55,6 @@ public final class ChipStyler {
      * Accent-fill toggle style with a matching icon tint, used by the "Filters · N" button on
      * every recipe-list screen ({@code HomeActivity} and every {@code RecipeListActivity}
      * subclass) to reflect whether any filter is currently active.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param button the button to style
      * @param active whether at least one filter is currently active

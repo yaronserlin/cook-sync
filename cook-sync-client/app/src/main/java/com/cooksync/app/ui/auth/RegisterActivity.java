@@ -65,10 +65,6 @@ public class RegisterActivity extends BaseActivity {
      * Inflates the registration layout, starts the skeleton shimmer, and schedules a
      * delayed transition to the real form.
      *
-     * Complexity:
-     * Time: O(n) — n is the number of skeleton bone views
-     * Space: O(n)
-     *
      * @param savedInstanceState saved instance state bundle (may be {@code null})
      */
     @Override
@@ -127,10 +123,6 @@ public class RegisterActivity extends BaseActivity {
      * Turns the "Terms of Use" and "Privacy Policy" mentions inside {@link #cbTerms}'s label into
      * tappable links, so the user can actually read what they're agreeing to before checking the
      * box. See {@link LegalLinkSpanner} for the shared span/click behavior.
-     *
-     * Complexity:
-     * Time: O(n) — n is the length of the label text
-     * Space: O(n)
      */
     private void setupTermsLink() {
         LegalLinkSpanner.apply(cbTerms, this, R.string.label_terms_accepted);

@@ -60,10 +60,6 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     /**
      * Constructs the factory, eagerly creating the shared repository instances it hands out to
      * every ViewModel it subsequently builds.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public ViewModelFactory() {
         this.authRepository = new AuthRepositoryImp();
@@ -76,10 +72,6 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
 
     /**
      * Instantiates the requested ViewModel type with its required repositories injected.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param <T> the requested ViewModel type
      * @param modelClass the class of the ViewModel to create

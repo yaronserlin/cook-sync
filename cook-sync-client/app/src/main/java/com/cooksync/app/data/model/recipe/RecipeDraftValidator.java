@@ -28,10 +28,6 @@ public final class RecipeDraftValidator {
     /**
      * Checks whether a single wizard step's required fields are filled in.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of ingredients/instructions in the draft
-     * Space: O(1)
-     *
      * @param draft the draft to validate
      * @param step one of the {@code STEP_*} constants
      * @return {@code true} if the step's required fields are all valid
@@ -46,6 +42,11 @@ public final class RecipeDraftValidator {
         };
     }
 
+    /**
+     * @param draft the draft to inspect
+     * @return {@code true} if the Basics step's required fields (title, difficulty, prep/cook
+     *         time, servings) are all filled in and valid
+     */
     private static boolean isBasicsValid(RecipeDraft draft) {
         return isTitleValid(draft)
                 && isDifficultySet(draft)
@@ -70,6 +71,11 @@ public final class RecipeDraftValidator {
         return draft.difficulty != null && !draft.difficulty.isEmpty();
     }
 
+    /**
+     * @param draft the draft to inspect
+     * @return {@code true} if every non-blank ingredient row is individually valid and at least
+     *         one non-blank row exists
+     */
     private static boolean isIngredientsValid(RecipeDraft draft) {
         boolean hasNonBlankRow = false;
         for (RecipeDraft.DraftIngredient ingredient : draft.ingredients) {
@@ -84,6 +90,10 @@ public final class RecipeDraftValidator {
         return hasNonBlankRow;
     }
 
+    /**
+     * @param ingredient the ingredient row to inspect
+     * @return {@code true} if the row has a name, a positive quantity, and a chosen unit
+     */
     private static boolean isIngredientValid(RecipeDraft.DraftIngredient ingredient) {
         return ingredient.name != null && !ingredient.name.trim().isEmpty()
                 && parsePositiveQuantity(ingredient.quantity) != null
@@ -102,6 +112,11 @@ public final class RecipeDraftValidator {
                 && (ingredient.unitId == null || ingredient.unitId.isEmpty());
     }
 
+    /**
+     * @param draft the draft to inspect
+     * @return {@code true} if every non-blank instruction row has a description and at least one
+     *         non-blank row exists
+     */
     private static boolean isInstructionsValid(RecipeDraft draft) {
         boolean hasNonBlankRow = false;
         for (RecipeDraft.DraftInstruction instruction : draft.instructions) {
@@ -132,10 +147,6 @@ public final class RecipeDraftValidator {
     /**
      * Parses a raw quantity string into a positive {@link Double}, or {@code null} if it isn't
      * a valid positive number (matching the server's {@code @Positive} constraint).
-     *
-     * Complexity:
-     * Time: O(n) where n is the string length
-     * Space: O(1)
      *
      * @param rawQuantity the raw text entered for an ingredient's quantity
      * @return the parsed value, or {@code null} if invalid

@@ -40,10 +40,6 @@ public class TagsController {
     /**
      * Retrieves all recipe tags available in the catalog.
      *
-     * Complexity:
-     * Time: O(T) where T is total tag count
-     * Space: O(T)
-     *
      * @param page page number index
      * @param size page size limit
      * @return response entity containing list of TagResponse DTOs
@@ -59,10 +55,6 @@ public class TagsController {
     /**
      * Retrieves the most-used tags across all recipes, ranked by descending recipe count. Only
      * tags actually attached to at least one recipe are included.
-     *
-     * Complexity:
-     * Time: O(T log T) where T is total tag count
-     * Space: O(limit)
      *
      * @param limit maximum number of popular tags to return
      * @return response entity containing list of TagResponse DTOs ordered by descending usage

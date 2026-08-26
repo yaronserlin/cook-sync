@@ -1,7 +1,7 @@
 package com.dtos.response.tags;
 
 /**
- * Data Transfer Object representing a category or ingredient tag in API responses.
+ * Data Transfer Object representing a recipe classification tag in API responses.
  * Encapsulates tag unique identifier, display label name, and audit timestamps.
  *
  * @param id unique identifier of the tag record

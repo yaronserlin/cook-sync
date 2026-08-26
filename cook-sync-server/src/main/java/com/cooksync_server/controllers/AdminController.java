@@ -44,10 +44,6 @@ public class AdminController {
     /**
      * Retrieves aggregated system stats for the administrative dashboard.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return response entity containing AdminStatsResponse payload
      */
     @GetMapping("/stats")
@@ -58,10 +54,6 @@ public class AdminController {
     /**
      * Retrieves paginated list of registered user accounts, optionally search-filtered by
      * name/email, filtered by enabled status, and sorted.
-     *
-     * Complexity:
-     * Time: O(N) where N is page size
-     * Space: O(N)
      *
      * @param page zero-based page index
      * @param size page size limit
@@ -85,10 +77,6 @@ public class AdminController {
     /**
      * Retrieves list of review entries flagged as reported.
      *
-     * Complexity:
-     * Time: O(R) where R is reported review count
-     * Space: O(R)
-     *
      * @return response entity containing list of ReportedReviewResponse DTOs
      */
     @GetMapping("/reviews/reported")
@@ -100,10 +88,6 @@ public class AdminController {
 
     /**
      * Dismisses moderation report for specified review ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target review ID
      * @return response entity acknowledging report dismissal
@@ -117,10 +101,6 @@ public class AdminController {
     /**
      * Suspends user account with specified ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id target user ID
      * @return response entity acknowledging account suspension
      */
@@ -132,10 +112,6 @@ public class AdminController {
 
     /**
      * Enables user account with specified ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id target user ID
      * @return response entity acknowledging account enabling
@@ -151,10 +127,6 @@ public class AdminController {
      * self-service deletion grace period. Refuses to delete the acting admin's own account or
      * any other admin account.
      *
-     * Complexity:
-     * Time: O(P) where P is the account's combined recipe/review/note/favorite graph size
-     * Space: O(P)
-     *
      * @param id target user ID
      * @param authentication the acting admin's authentication, used for the self-deletion guard
      * @return response entity acknowledging permanent deletion
@@ -168,10 +140,6 @@ public class AdminController {
     /**
      * Detects and groups potential duplicate tags for consolidation audit.
      *
-     * Complexity:
-     * Time: O(T) where T is total tag count
-     * Space: O(T)
-     *
      * @return response entity containing list of DuplicateTagGroupResponse DTOs
      */
     @GetMapping("/tags/duplicates")
@@ -183,10 +151,6 @@ public class AdminController {
 
     /**
      * Merges source duplicate tag into canonical target tag and deletes source.
-     *
-     * Complexity:
-     * Time: O(R) where R is count of recipes tagged with source tag
-     * Space: O(1)
      *
      * @param request tag merge payload containing source and target tag IDs
      * @return response entity acknowledging tag merge completion

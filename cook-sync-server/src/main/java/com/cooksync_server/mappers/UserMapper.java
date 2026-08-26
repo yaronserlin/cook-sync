@@ -20,7 +20,7 @@ public final class UserMapper {
     /**
      * Converts a {@link User} entity into its {@link UserResponse} DTO representation.
      *
-     * @param user source User entity, may be {@code null}
+     * @param user target User entity, may be {@code null}
      * @return the populated UserResponse, or {@code null} if {@code user} is {@code null}
      */
     public static UserResponse toResponse(User user) {
@@ -52,7 +52,7 @@ public final class UserMapper {
      * representation, excluding fields ({@code email}, {@code isAdmin}, {@code enabled},
      * {@code status}) that are not appropriate to disclose to another user.
      *
-     * @param user source User entity, may be {@code null}
+     * @param user target User entity, may be {@code null}
      * @return the populated PublicUserProfileResponse, or {@code null} if {@code user} is {@code null}
      */
     public static PublicUserProfileResponse toPublicProfileResponse(User user) {

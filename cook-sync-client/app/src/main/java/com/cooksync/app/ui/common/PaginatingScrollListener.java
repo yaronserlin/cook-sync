@@ -26,10 +26,6 @@ public final class PaginatingScrollListener {
      * {@link #DEFAULT_PREFETCH_THRESHOLD} items of the end of the list — used by the admin
      * console's list tabs to prefetch the next page slightly ahead of the user reaching it.
      *
-     * Complexity:
-     * Time: O(1) per scroll callback
-     * Space: O(1)
-     *
      * @param layoutManager the RecyclerView's layout manager, used to read scroll position
      * @param onLoadNext invoked once the threshold is crossed while still scrolling downward
      * @return the assembled listener, ready to pass to {@code RecyclerView#addOnScrollListener}
@@ -54,10 +50,6 @@ public final class PaginatingScrollListener {
      * Builds a listener that fires {@code onLoadNext} only once the list can no longer scroll
      * further down — used by the Home feed and Search results, whose lists are shorter and
      * don't benefit from prefetching ahead of the exact end.
-     *
-     * Complexity:
-     * Time: O(1) per scroll callback
-     * Space: O(1)
      *
      * @param onLoadNext invoked once the RecyclerView has reached its scroll bottom
      * @return the assembled listener, ready to pass to {@code RecyclerView#addOnScrollListener}

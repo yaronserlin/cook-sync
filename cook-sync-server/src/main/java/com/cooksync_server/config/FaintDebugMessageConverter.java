@@ -27,10 +27,6 @@ public class FaintDebugMessageConverter extends CompositeConverter<ILoggingEvent
      * Wraps the already-formatted message in the ANSI "faint" escape sequence when the event is
      * DEBUG level or more verbose, otherwise returns it unchanged.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param event the logging event being formatted, used only for its level
      * @param in the message text produced by the wrapped {@code %msg} conversion
      * @return the message, faint-styled if the event is DEBUG/TRACE, otherwise unchanged

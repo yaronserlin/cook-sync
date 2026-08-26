@@ -26,10 +26,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
      * Counts how many recipes are tagged with a specific tag ID, for the admin duplicate-tag
      * merge UI's "recipes using this tag" indicator.
      *
-     * Complexity:
-     * Time: O(1) (indexed join-table lookup)
-     * Space: O(1)
-     *
      * @param tagId target tag unique identifier
      * @return number of recipes associated with the tag
      */
@@ -38,10 +34,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
 
     /**
      * Retrieves all recipes authored by a specific user account ID.
-     *
-     * Complexity:
-     * Time: O(N)
-     * Space: O(N)
      *
      * @param userId unique user identifier
      * @return list of authored recipe entities
@@ -55,10 +47,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
      * excludes the author's private recipes, since it is used to render a page other users can
      * view.
      *
-     * Complexity:
-     * Time: O(S) where S is page size
-     * Space: O(S)
-     *
      * @param userId unique user identifier
      * @param visibility visibility setting state, expected to always be {@code PUBLIC} here
      * @param pageable page request criteria
@@ -69,10 +57,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
 
     /**
      * Paginated retrieval of public recipes for feed infinite scrolling.
-     *
-     * Complexity:
-     * Time: O(S) where S is page size
-     * Space: O(S)
      *
      * @param visibility visibility setting state
      * @param pageable page request criteria
@@ -107,10 +91,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
      * Fetches a recipe's description blocks in isolation, in author-intended sort order.
      * Paired with {@link #findByIdWithDetails(String)} within the same transaction so
      * Hibernate attaches the ordered list to the already-loaded managed Recipe instance.
-     *
-     * Complexity:
-     * Time: O(B) where B is description block count
-     * Space: O(B)
      *
      * @param id target recipe unique identifier
      * @return optional containing the recipe with its description blocks initialized

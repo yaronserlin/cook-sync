@@ -53,10 +53,6 @@ public final class CloudinaryUploader {
      * Uploads the file at {@code fileUri} to Cloudinary using a freshly issued signature,
      * initializing the SDK against the signature's cloud name on first use.
      *
-     * Complexity:
-     * Time: O(1) plus one asynchronous network upload
-     * Space: O(1)
-     *
      * @param context the calling screen's context
      * @param fileUri content/file URI of the image to upload (e.g. from a photo picker)
      * @param folder target Cloudinary folder, or {@code null}/blank to use the signature's
@@ -123,10 +119,6 @@ public final class CloudinaryUploader {
      * per-user upload folder shares this one implementation rather than reimplementing the
      * format independently.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param baseFolder the environment-specific root folder, from {@code MediaRepository#getBaseFolder}
      * @param userEmail the owning user's email address
      * @param subPath optional trailing path segment (e.g. {@code "avatar"} or a recipe title), or
@@ -143,10 +135,6 @@ public final class CloudinaryUploader {
      * Initializes {@link MediaManager} against the given cloud name exactly once per process.
      * Safe to call repeatedly with the same cloud name; each additional call after the first is a
      * no-op.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param context application context used for SDK initialization
      * @param cloudName the Cloudinary cloud name to target

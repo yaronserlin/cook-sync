@@ -29,10 +29,6 @@ final class PagedResponseMapper {
      * Maps every entity in a {@link Page} to its DTO form and wraps the result in a {@link PagedResponse}
      * carrying the original page's pagination metadata.
      *
-     * Complexity:
-     * Time: O(N) where N is the page's content size
-     * Space: O(N)
-     *
      * @param page source page of entities
      * @param mapper entity-to-DTO mapping function
      * @param <E> source entity type
@@ -50,10 +46,6 @@ final class PagedResponseMapper {
      * {@link PagedResponse} of DTOs in one call. Covers the plain "list everything, paginated"
      * shape shared by simple reference-data lookups (e.g. {@link UnitServiceImp#getAllUnits},
      * {@link TagServiceImp#getAllTags}) that need no filtering or sorting beyond page/size.
-     *
-     * Complexity:
-     * Time: O(N) where N is the page's content size
-     * Space: O(N)
      *
      * @param repository source JPA repository to page through
      * @param page zero-based page index

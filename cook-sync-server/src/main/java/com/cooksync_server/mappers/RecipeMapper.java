@@ -32,10 +32,6 @@ public final class RecipeMapper {
      * Maps structured description blocks; falls back to synthesizing blocks from
      * legacy flat description and non-primary images when no blocks are persisted.
      *
-     * Complexity:
-     * Time: O(R + T + I + S + B) where R=reviews, T=tags, I=ingredients, S=instructions, B=descriptionBlocks
-     * Space: O(R + T + I + S + B)
-     *
      * @param recipe target Recipe entity
      * @return populated RecipeResponse instance or null
      */
@@ -71,10 +67,6 @@ public final class RecipeMapper {
     /**
      * Converts a Recipe entity into a lightweight RecipePreviewResponse DTO.
      *
-     * Complexity:
-     * Time: O(T) where T is tag count
-     * Space: O(T)
-     *
      * @param recipe target Recipe entity
      * @return populated RecipePreviewResponse instance
      */
@@ -84,10 +76,6 @@ public final class RecipeMapper {
 
     /**
      * Converts a Recipe entity into a RecipePreviewResponse with personal note text.
-     *
-     * Complexity:
-     * Time: O(T) where T is tag count
-     * Space: O(T)
      *
      * @param recipe target Recipe entity
      * @param hasPersonalNote flag indicating user attached note
@@ -123,10 +111,6 @@ public final class RecipeMapper {
      * Maps recipe description blocks from entity to DTO list.
      * Falls back to synthesizing blocks from legacy flat description and non-primary images
      * when no explicit blocks are persisted on the recipe.
-     *
-     * Complexity:
-     * Time: O(B) where B is description block count
-     * Space: O(B)
      *
      * @param recipe target Recipe entity
      * @return ordered list of DescriptionBlockDTO instances

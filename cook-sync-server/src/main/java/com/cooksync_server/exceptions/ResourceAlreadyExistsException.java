@@ -12,10 +12,6 @@ public class ResourceAlreadyExistsException extends RuntimeException {
     /**
      * Constructs a ResourceAlreadyExistsException with resource name and key.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param resourceName name of the conflicting resource entity
      * @param resourceId unique identifier string causing the duplication conflict
      */

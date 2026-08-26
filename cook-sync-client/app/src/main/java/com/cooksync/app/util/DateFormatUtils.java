@@ -24,10 +24,6 @@ public final class DateFormatUtils {
     /**
      * Parses the date portion of an ISO-8601 timestamp string.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param isoTimestamp the timestamp string, e.g. a DTO's {@code createdAt} value
      * @return the parsed date, or {@code null} if {@code isoTimestamp} is {@code null}, blank,
      *         or not a valid ISO date
@@ -49,10 +45,6 @@ public final class DateFormatUtils {
      * "3 days ago", "2 months ago", ...). Unlike {@link RelativeTimeFormatter}, which formats an
      * epoch-millis instant down to minute/hour precision, this compares calendar dates only, since
      * the server's {@code createdAt}/{@code updatedAt} strings carry no timezone offset.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param isoTimestamp the timestamp string, e.g. a DTO's {@code createdAt} value
      * @return a human-readable relative-time label, or "" if {@code isoTimestamp} is unparseable

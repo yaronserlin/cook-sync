@@ -31,10 +31,6 @@ public class TagServiceImp implements TagService{
     /**
      * Retrieves all tag entries configured in the system.
      *
-     * Complexity:
-     * Time: O(T) where T is total tag count
-     * Space: O(T)
-     *
      * @param page page number index
      * @param size page size limit
      * @return list of TagResponse DTOs
@@ -46,10 +42,6 @@ public class TagServiceImp implements TagService{
 
     /**
      * Retrieves the most-used tags across all recipes, ranked by descending recipe count.
-     *
-     * Complexity:
-     * Time: O(T log T) where T is total tag count (server-side grouping and ordering)
-     * Space: O(limit)
      *
      * @param limit maximum number of popular tags to return
      * @return list of TagResponse DTOs ordered by descending usage

@@ -35,10 +35,6 @@ public class AdminUnitsViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given repository, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param unitRepository the repository used for the Units tab's CRUD calls
      */
     public AdminUnitsViewModel(UnitRepository unitRepository) {
@@ -54,10 +50,6 @@ public class AdminUnitsViewModel extends BaseViewModel {
 
     /**
      * Loads every measurement unit for the Units tab.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void loadUnits() {
         unitRepository.getAllUnits(unitsResult);
@@ -65,10 +57,6 @@ public class AdminUnitsViewModel extends BaseViewModel {
 
     /**
      * Creates a new measurement unit.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param name display name of the new unit
      * @param code short symbol code of the new unit
@@ -79,10 +67,6 @@ public class AdminUnitsViewModel extends BaseViewModel {
 
     /**
      * Deletes a measurement unit.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id unique identifier of the unit to delete
      */
@@ -96,10 +80,6 @@ public class AdminUnitsViewModel extends BaseViewModel {
      * its adapter immediately, and this call only reaches the server if
      * {@link #cancelPendingDelete} isn't called first (e.g. via the undo toast).
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param id unique identifier of the unit to delete
      */
     public void scheduleDeleteUnit(String id) {
@@ -109,10 +89,6 @@ public class AdminUnitsViewModel extends BaseViewModel {
     /**
      * Cancels a still-pending {@link #scheduleDeleteUnit} before it reaches the server. Does
      * nothing if the undo window already elapsed.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param id unique identifier of the unit whose deletion should be undone
      * @return {@code true} if a pending deletion was actually cancelled

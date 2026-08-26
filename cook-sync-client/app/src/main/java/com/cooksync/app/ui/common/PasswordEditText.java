@@ -75,10 +75,6 @@ public class PasswordEditText extends AppCompatEditText {
     /**
      * Flips between masked and visible password entry, swaps the trailing icon, and restores
      * cursor position — changing {@code inputType} otherwise resets the selection to 0.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void togglePasswordVisibility() {
         passwordVisible = !passwordVisible;
@@ -93,10 +89,6 @@ public class PasswordEditText extends AppCompatEditText {
     /**
      * Swaps the trailing compound drawable and the field's content description to match the
      * current visibility state.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void applyToggleIcon() {
         Drawable icon = passwordVisible ? iconEye : iconEyeOff;

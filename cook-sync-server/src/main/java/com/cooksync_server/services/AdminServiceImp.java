@@ -60,8 +60,6 @@ public class AdminServiceImp implements AdminService {
     /**
      * Calculates system-wide aggregate stats for admin dashboard monitoring.
      *
-     * Complexity: Time: O(1) Space: O(1)
-     *
      * @return AdminStatsResponse containing counts of reported reviews,
      * recipes, reviews, tags, and users
      */
@@ -82,8 +80,6 @@ public class AdminServiceImp implements AdminService {
     /**
      * Retrieves paginated, optionally search-filtered and sorted list of
      * registered users.
-     *
-     * Complexity: Time: O(S) where S is page size limit Space: O(S)
      *
      * @param page page number index
      * @param size page size limit
@@ -109,8 +105,6 @@ public class AdminServiceImp implements AdminService {
     /**
      * Retrieves all review entries currently flagged as reported.
      *
-     * Complexity: Time: O(R) where R is reported review count Space: O(R)
-     *
      * @return list of ReportedReviewResponse DTOs
      */
     @Override
@@ -127,9 +121,8 @@ public class AdminServiceImp implements AdminService {
     /**
      * Dismisses moderation report flag on a specific review ID.
      *
-     * Complexity: Time: O(1) Space: O(1)
-     *
      * @param reviewId target review ID
+     * @throws ResourceNotFoundException if no review with the given ID exists
      */
     @Transactional
     @Override
@@ -160,9 +153,8 @@ public class AdminServiceImp implements AdminService {
      * self-deletion-pending) and left set would misleadingly suggest an active
      * countdown that in fact no longer applies to this account.
      *
-     * Complexity: Time: O(R) where R is the user's review count Space: O(1)
-     *
      * @param userId target user ID
+     * @throws ResourceNotFoundException if no user with the given ID exists
      */
     @Transactional
     @Override
@@ -186,9 +178,8 @@ public class AdminServiceImp implements AdminService {
      * pending deletion timestamp (harmless no-op if the account was only
      * suspended, never mid-deletion), and un-hides its reviews.
      *
-     * Complexity: Time: O(R) where R is the user's review count Space: O(1)
-     *
      * @param userId target user ID
+     * @throws ResourceNotFoundException if no user with the given ID exists
      */
     @Transactional
     @Override
@@ -206,11 +197,10 @@ public class AdminServiceImp implements AdminService {
      * any other admin account (prevents admins from removing one another
      * through this console).
      *
-     * Complexity: Time: O(P) where P is the account's combined
-     * recipe/review/note/favorite graph size Space: O(P)
-     *
      * @param userId target user ID
      * @param actingAdminEmail email of the admin performing the deletion
+     * @throws ResourceNotFoundException if no user with the given ID exists
+     * @throws UnauthorizedActionException if the target is the acting admin's own account or another admin account
      */
     @Transactional
     @Override
@@ -231,8 +221,6 @@ public class AdminServiceImp implements AdminService {
     /**
      * Scans catalog tags to detect duplicate tag groups based on normalized
      * name formatting.
-     *
-     * Complexity: Time: O(T) where T is total tag count Space: O(T)
      *
      * @return list of DuplicateTagGroupResponse DTOs
      */
@@ -263,10 +251,9 @@ public class AdminServiceImp implements AdminService {
      * Merges source duplicate tag into canonical target tag using direct SQL
      * and deletes source tag.
      *
-     * Complexity: Time: O(R) where R is count of recipes tagged with source tag
-     * Space: O(1)
-     *
      * @param request tag merge request DTO containing source and target tag IDs
+     * @throws IllegalArgumentException if the source and target tag IDs are the same
+     * @throws ResourceNotFoundException if the source or target tag cannot be found
      */
     @Transactional
     @Override

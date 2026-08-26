@@ -46,7 +46,7 @@ public class IngredientController {
      *
      * @param recipeId target recipe ID
      * @param request ingredient creation payload DTO
-     * @param authentication active Spring Security user token
+     * @param authentication active user authentication token
      * @return response entity containing created IngredientResponse DTO
      */
     @PostMapping("/recipes/{recipeId}/ingredients")
@@ -65,7 +65,7 @@ public class IngredientController {
      *
      * @param ingredientId target ingredient ID
      * @param request ingredient update payload DTO
-     * @param authentication active Spring Security user token
+     * @param authentication active user authentication token
      * @return response entity containing updated IngredientResponse DTO
      */
     @PutMapping("/ingredients/{ingredientId}")
@@ -82,7 +82,7 @@ public class IngredientController {
      * Deletes an ingredient entry from a recipe.
      *
      * @param ingredientId target ingredient ID
-     * @param authentication active Spring Security user token
+     * @param authentication active user authentication token
      * @return response entity acknowledging ingredient deletion
      */
     @DeleteMapping("/ingredients/{ingredientId}")

@@ -32,6 +32,7 @@ public interface RecipeService {
      *
      * @param id target recipe ID
      * @return RecipeResponse DTO
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no recipe with the given ID exists
      */
     RecipeResponse getRecipeById(String id);
 
@@ -70,6 +71,7 @@ public interface RecipeService {
      * @param page page index
      * @param size page size limit
      * @return PagedResponse containing RecipePreviewResponse DTOs
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given email exists
      */
     PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, int page, int size);
 
@@ -82,6 +84,7 @@ public interface RecipeService {
      * @param page page index
      * @param size page size limit
      * @return PagedResponse containing RecipePreviewResponse DTOs, empty if the user opted out
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given ID exists
      */
     PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, int page, int size);
 
@@ -91,6 +94,7 @@ public interface RecipeService {
      * @param request recipe creation request DTO
      * @param userEmail creator user email address
      * @return created RecipeResponse DTO
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the creator user, a referenced tag, or a referenced unit cannot be found
      */
     RecipeResponse createRecipe(RecipeCreateRequestDTO request, String userEmail);
 
@@ -101,6 +105,8 @@ public interface RecipeService {
      * @param request recipe update request DTO
      * @param userEmail user email address
      * @return updated RecipeResponse DTO
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the recipe, acting user, a referenced tag, or a referenced unit cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     RecipeResponse updateRecipe(String recipeId, RecipeCreateRequestDTO request, String userEmail);
 
@@ -111,6 +117,8 @@ public interface RecipeService {
      * @param request visibility update request DTO
      * @param userEmail user email address
      * @return updated RecipeResponse DTO
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the recipe or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     RecipeResponse updateVisibility(String recipeId, RecipeVisibilityUpdateRequestDTO request, String userEmail);
 
@@ -119,6 +127,8 @@ public interface RecipeService {
      *
      * @param recipeId target recipe ID
      * @param userEmail user email address
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the recipe or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     void deleteRecipe(String recipeId, String userEmail);
 }

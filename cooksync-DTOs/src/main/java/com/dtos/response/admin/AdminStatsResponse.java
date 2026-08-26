@@ -7,7 +7,7 @@ package com.dtos.response.admin;
  * @param reportedReviews total count of pending reported reviews requiring moderation
  * @param recipes total count of system recipes
  * @param reviews total count of submitted user reviews
- * @param tags total count of unique ingredient and category tags
+ * @param tags total count of distinct recipe classification tags in the catalog
  * @param users total count of registered user accounts
  * @author Yaron Serlin
  * @version 1.0

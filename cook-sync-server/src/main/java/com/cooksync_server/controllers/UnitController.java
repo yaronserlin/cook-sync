@@ -42,10 +42,6 @@ public class UnitController {
     /**
      * Retrieves all measurement units configured in the system.
      *
-     * Complexity:
-     * Time: O(U) where U is total unit count
-     * Space: O(U)
-     *
      * @param page page number index
      * @param size page size limit
      * @return response entity containing list of UnitResponse DTOs

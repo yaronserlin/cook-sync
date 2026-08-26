@@ -51,10 +51,6 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
      * favorited, since writing a note is a strong signal of interest; this is one-directional —
      * later deleting the note that triggered it does not remove the favorite.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request note creation or update request DTO
      * @param userEmail user email address
      * @throws ResourceNotFoundException if the user or recipe cannot be found, or if
@@ -98,13 +94,10 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     /**
      * Retrieves general recipe-level personal note (where instruction IS NULL).
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param userEmail user email address
      * @return NoteResponse DTO or null if no note attached
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional(readOnly = true)
     public NoteResponse getNote(String recipeId, String userEmail) {
@@ -119,15 +112,12 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     /**
      * Retrieves all personal notes created by user for a recipe (general + step-specific notes).
      *
-     * Complexity:
-     * Time: O(N) where N is user note count for recipe
-     * Space: O(N)
-     *
      * @param recipeId target recipe ID
      * @param userEmail user email address
      * @param page page number
      * @param size page size
      * @return PagedResponse of NoteResponse DTOs
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional(readOnly = true)
     public PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size) {
@@ -151,12 +141,10 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     /**
      * Deletes a personal note following author verification.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param noteId target note ID
      * @param userEmail user email address
+     * @throws ResourceNotFoundException if no note matches {@code noteId}
+     * @throws UnauthorizedActionException if {@code userEmail} does not match the note's author
      */
     @Transactional
     public void deleteNote(String noteId, String userEmail) {

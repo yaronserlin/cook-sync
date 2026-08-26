@@ -26,6 +26,7 @@ public interface RefreshTokenService {
      *
      * @param userId unique user identifier
      * @return the created RefreshToken entity
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userId}
      */
     RefreshToken createRefreshToken(String userId);
 

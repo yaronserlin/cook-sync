@@ -30,10 +30,6 @@ public record ApiErrorResponse(
      * construction path used by every error-producing call site (the global exception
      * advisor and the JWT authentication entry point alike).
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param status numeric HTTP response status code
      * @param error HTTP status phrase string
      * @param errorCode system-defined specific error classification code

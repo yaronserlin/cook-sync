@@ -19,10 +19,6 @@ public final class UserNameFormatter {
     /**
      * Joins a first and last name into a single trimmed display name, tolerating either being null.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param firstName the user's first name, or null
      * @param lastName the user's last name, or null
      * @return the trimmed "first last" display name, or "" if both are null

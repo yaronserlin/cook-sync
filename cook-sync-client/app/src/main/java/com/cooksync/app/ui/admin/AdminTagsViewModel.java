@@ -48,17 +48,15 @@ public class AdminTagsViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given repository, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param adminRepository the repository used for the duplicate-tags list and merge calls
      */
     public AdminTagsViewModel(AdminRepository adminRepository) {
         this.adminRepository = adminRepository;
     }
 
+    /** @return observable duplicate-tag groups list (Loading → Success/Error) */
     public LiveData<ApiResult<List<DuplicateTagGroupResponse>>> getTagGroupsResult() { return tagGroupsResult; }
+    /** @return one-shot result of the most recent {@link #mergeGroup} call */
     public LiveData<Event<ApiResult<Void>>> getTagMergeResult() { return tagMergeResult; }
 
     /** Resets pagination and reloads the duplicate tag groups from the first page. */

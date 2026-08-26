@@ -101,7 +101,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * Toggles the recipe's favorite state. Adding is sent immediately; removing is deferred by
-     * {@link #BaseRepository.UNDO_WINDOW_MS} so a tap on the toast's "Undo" action (see
+     * {@link BaseRepository#UNDO_WINDOW_MS} so a tap on the toast's "Undo" action (see
      * {@link #undoRemoveFavorite}) can cancel it before it's ever sent. If an add is requested
      * while its matching remove is still pending, the pending remove is simply cancelled
      * rather than sending an add for something the server still has.
@@ -155,7 +155,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * Deletes a review the current user authored. The caller is expected to hide the review
-     * immediately; the actual server call is delayed by {@link #BaseRepository.UNDO_WINDOW_MS} so a tap on the
+     * immediately; the actual server call is delayed by {@link BaseRepository#UNDO_WINDOW_MS} so a tap on the
      * toast's "Undo" action (see {@link #undoDeleteReview}) can cancel it before it's ever
      * sent — a delete the user undoes in time never reaches the server at all.
      *
@@ -204,10 +204,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * Finds the recipe-wide private note (as opposed to a per-instruction-step note) in a
      * loaded notes list.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of loaded notes
-     * Space: O(1)
-     *
      * @param notes the currently loaded notes for this recipe (see {@link #getNotesResult()})
      * @return the recipe-wide note, or {@code null} if none exists
      */
@@ -220,10 +216,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * Finds the private note attached to a specific instruction step in a loaded notes list.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of loaded notes
-     * Space: O(1)
      *
      * @param notes the currently loaded notes for this recipe (see {@link #getNotesResult()})
      * @param instructionId the instruction step to find the note for
@@ -285,10 +277,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
      * Counts how many of {@code reviews} carry each whole-star rating, for the rating-breakdown
      * bars on the reviews-summary card.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of reviews
-     * Space: O(1)
-     *
      * @param reviews every review on the recipe, unfiltered
      * @return a 6-element array indexed 1..5 by star value (index 0 is unused)
      */
@@ -303,10 +291,6 @@ public class RecipeDetailViewModel extends BaseViewModel {
     /**
      * Filters {@code reviews} to the given star rating (if any) and sorts the result per
      * {@code sort}, for the reviews list shown below the rating-breakdown card.
-     *
-     * Complexity:
-     * Time: O(n log n) where n is the number of reviews
-     * Space: O(n)
      *
      * @param reviews every review on the recipe, unfiltered
      * @param starFilter show only reviews with this exact whole-star rating, or {@code null} for all

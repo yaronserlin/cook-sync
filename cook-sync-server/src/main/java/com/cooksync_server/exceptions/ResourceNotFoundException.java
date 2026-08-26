@@ -12,10 +12,6 @@ public class ResourceNotFoundException extends RuntimeException {
     /**
      * Constructs a new ResourceNotFoundException with formatted entity details message.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param resourceName name of target entity resource (e.g. User, Recipe)
      * @param resourceId lookup identifier used in failed query
      */

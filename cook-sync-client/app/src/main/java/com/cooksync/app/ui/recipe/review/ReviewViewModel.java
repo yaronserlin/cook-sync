@@ -39,10 +39,6 @@ public class ReviewViewModel extends BaseViewModel {
      * Validates the rating and title, then submits the review. Fails silently into
      * {@link #validationError} if either check doesn't pass.
      *
-     * Complexity:
-     * Time: O(n) where n is the combined length of the title and comment
-     * Space: O(1)
-     *
      * @param recipeId the recipe being reviewed
      * @param rating the star rating, expected 1-5
      * @param rawTitle raw text from the review-title field

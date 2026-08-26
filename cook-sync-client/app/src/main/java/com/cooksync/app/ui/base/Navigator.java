@@ -47,10 +47,6 @@ public final class Navigator {
      * Starts {@code target} from {@code from} with no extras, applying the app's standard enter
      * transition.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param from   the activity initiating the navigation
      * @param target the activity class to start
      */
@@ -63,10 +59,6 @@ public final class Navigator {
      * {@code extras}, if given, is expected to carry only {@code putExtra} data and/or intent
      * flags (no component set) — both are merged onto the intent actually used to start
      * {@code target}, since {@link Intent#putExtras(Intent)} alone does not copy flags.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param from   the activity initiating the navigation
      * @param target the activity class to start
@@ -82,10 +74,6 @@ public final class Navigator {
      * {@code newIntentWith...} factory method) from {@code from}, applying the app's standard
      * enter transition.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param from   the activity initiating the navigation
      * @param intent the intent to start, already targeting a destination activity
      */
@@ -100,10 +88,6 @@ public final class Navigator {
      * no foreground activity to hand a transition to. Adds {@link Intent#FLAG_ACTIVITY_NEW_TASK}
      * automatically if {@code extras} did not already set it, since starting an activity from a
      * non-activity context requires it.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param context a non-activity context (typically the {@code Application})
      * @param target  the activity class to start
@@ -125,10 +109,6 @@ public final class Navigator {
      * sites that read more clearly paired with it (e.g. "start the next screen, then finish this
      * one"); the exit transition itself is applied by {@link BaseActivity#finish()}, not here.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param activity the activity to finish
      */
     public static void finish(@NonNull Activity activity) {
@@ -140,10 +120,6 @@ public final class Navigator {
      * exclusively by {@link BaseActivity#finish()} so every close in the app is covered from one
      * place, regardless of whether it went through {@link #finish(Activity)} or a screen's own
      * bare {@code finish()} call, including hardware/gesture back.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param activity the activity that just finished
      */
@@ -161,10 +137,6 @@ public final class Navigator {
      * Applies the app's standard enter transition immediately after {@code from} has started
      * another activity.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param from the activity that just started another activity
      */
     @SuppressWarnings("deprecation")
@@ -180,10 +152,6 @@ public final class Navigator {
     /**
      * Builds an intent targeting {@code target}, merging in {@code extras}' bundle and flags if
      * given.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param context the context to build the intent with
      * @param target  the activity class to target

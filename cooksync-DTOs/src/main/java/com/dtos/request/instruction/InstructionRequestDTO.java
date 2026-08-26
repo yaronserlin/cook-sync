@@ -13,7 +13,10 @@ import java.util.UUID;
  * @param description the step-by-step instruction text, must not be blank
  * @param hasTimer flag indicating whether this step requires a countdown timer
  * @param timeSeconds optional timer duration in seconds if hasTimer is true
- * @param ingredientIds list of associated ingredient unique identifiers
+ * @param ingredientIds the {@code tmpId} values of this step's ingredients (parsed as UUIDs), as
+ *                       supplied on the sibling {@code IngredientRequestDTO} entries of the same
+ *                       {@code RecipeCreateRequestDTO}; the server resolves each one to the
+ *                       ingredient it correlates with once persisted
  * @param imageUrl optional web URL for an illustrative instruction image
  * @author Yaron Serlin
  * @version 1.0

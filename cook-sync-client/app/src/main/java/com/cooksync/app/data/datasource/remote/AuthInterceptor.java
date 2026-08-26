@@ -61,10 +61,6 @@ public class AuthInterceptor implements Interceptor {
     /**
      * Determines whether a request targets an endpoint that must not carry an access token.
      *
-     * Complexity:
-     * Time: O(k) where k is the number of public endpoint suffixes (constant)
-     * Space: O(1)
-     *
      * @param request the outgoing request
      * @return {@code true} if the request path matches a public endpoint
      */

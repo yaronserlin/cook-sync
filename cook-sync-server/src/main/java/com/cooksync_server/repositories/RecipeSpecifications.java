@@ -76,10 +76,6 @@ public final class RecipeSpecifications {
     /**
      * Unified multi-token search matching title, author name, tag, or ingredient name.
      *
-     * Complexity:
-     * Time: O(K) where K is number of query tokens
-     * Space: O(K)
-     *
      * @param rawQuery search query string
      * @return composite Specification predicate
      */
@@ -105,10 +101,6 @@ public final class RecipeSpecifications {
 
     /**
      * Combines multiple Specifications with AND operators, skipping null entries.
-     *
-     * Complexity:
-     * Time: O(S) where S is number of non-null specifications
-     * Space: O(1)
      *
      * @param specs varargs array of Specification instances
      * @return combined Specification predicate

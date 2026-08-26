@@ -37,10 +37,6 @@ public class FlywayConfig {
      * mistake that made this repair necessary. Restricting it to the case where a failed
      * migration is actually present keeps that drift detection intact on every healthy boot.
      *
-     * Complexity:
-     * Time: O(n) over the recorded migrations
-     * Space: O(n) for the migration info snapshot
-     *
      * @return strategy repairing the schema history when needed, then migrating
      */
     @Bean

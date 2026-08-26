@@ -99,10 +99,6 @@ public class JwtUtil {
     /**
      * Extracts user granted authorities from roles claim within JWT payload.
      *
-     * Complexity:
-     * Time: O(R) where R is count of user roles
-     * Space: O(R)
-     *
      * @param token JWT string
      * @return collection of granted authority objects
      */

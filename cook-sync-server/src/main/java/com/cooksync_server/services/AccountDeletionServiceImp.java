@@ -65,10 +65,6 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * the user authored from public view, and revokes active sessions. The user's recipes are
      * hidden implicitly, since public listings already filter on {@code createdBy.enabled}.
      *
-     * Complexity:
-     * Time: O(R) where R is the user's review count
-     * Space: O(1)
-     *
      * @param user the account requesting deletion, already password-verified by the caller
      */
     @Override
@@ -93,10 +89,6 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * admin reactivates a suspended or deactivated account ({@code AdminServiceImp#enableUser}) —
      * the same "bring this account back to normal" operation either way.
      *
-     * Complexity:
-     * Time: O(R) where R is the user's review count
-     * Space: O(1)
-     *
      * @param user the account being restored
      */
     @Override
@@ -116,11 +108,6 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * Scheduled entry point that permanently purges every account whose 30-day deletion grace
      * period has lapsed without the user logging back in. Intended to be invoked by a daily
      * cron trigger.
-     *
-     * Complexity:
-     * Time: O(U * (P + N)) where U is the expired-account count, P is each user's recipe/review
-     * graph size, and N is the personal-note/favorite cleanup cost per account
-     * Space: O(P) per account processed
      */
     @Override
     @Transactional
@@ -144,10 +131,6 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * delegates directly to {@link #purgeAccount(User)}, the same erasure logic the scheduled
      * job uses, without the status/cutoff filtering. Used for admin-initiated hard deletes.
      *
-     * Complexity:
-     * Time: O(P) where P is the account's combined recipe/review/note/favorite graph size
-     * Space: O(P)
-     *
      * @param user the account to purge immediately
      */
     @Override
@@ -169,10 +152,6 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * key to {@code users} (see {@code V2__realign_otp_tables.sql} and
      * {@code V4__email_change_tokens.sql}), so both must be cleaned up explicitly here or a
      * purged user would leave an orphaned row behind.
-     *
-     * Complexity:
-     * Time: O(P) where P is the user's combined recipe/review/note/favorite graph size
-     * Space: O(P)
      *
      * @param user the expired account to purge
      */

@@ -58,10 +58,6 @@ public class LegalDocumentActivity extends BaseActivity {
      * Parses a body string resource's {@code <b>}/{@code <br/>} markup into a styled
      * {@link CharSequence} ready to be handed to a {@link TextView}.
      *
-     * Complexity:
-     * Time: O(n) — n is the body text length
-     * Space: O(n)
-     *
      * @param bodyRes the string resource id holding the document's HTML-formatted body
      * @return the parsed, styled body text
      */

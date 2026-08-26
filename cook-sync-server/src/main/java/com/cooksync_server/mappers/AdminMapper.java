@@ -19,10 +19,6 @@ public final class AdminMapper {
     /**
      * Converts a Review entity into a ReportedReviewResponse DTO for administrative moderation console.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param review target Review entity instance
      * @param latestReport the most recently submitted {@link ReviewReport} for this review, or
      *                     null if it has never been reported (or the report history predates

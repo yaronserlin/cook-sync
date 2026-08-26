@@ -40,10 +40,6 @@ public final class LegalLinkSpanner {
      * land on a span, so tapping a link opens the corresponding document instead of triggering
      * the view's own click behavior (e.g. toggling a checkbox).
      *
-     * Complexity:
-     * Time: O(n) — n is the length of the resolved text
-     * Space: O(n)
-     *
      * @param view       the text view to render the linked text into
      * @param host       the hosting activity, used to resolve strings/colors and start
      *                   {@link LegalDocumentActivity}
@@ -67,10 +63,6 @@ public final class LegalLinkSpanner {
      * Styles the first occurrence of {@code linkText} within {@code fullText} as a bold,
      * accent-colored {@link ClickableSpan} that opens {@code documentType} on
      * {@link LegalDocumentActivity}. A no-op if {@code linkText} is not found.
-     *
-     * Complexity:
-     * Time: O(n) — n is the length of {@code fullText}
-     * Space: O(1)
      *
      * @param spannable    the spannable being built, mutated in place
      * @param fullText     the full text {@code spannable} wraps

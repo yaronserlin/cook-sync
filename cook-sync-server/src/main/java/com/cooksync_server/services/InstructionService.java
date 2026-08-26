@@ -19,6 +19,8 @@ public interface InstructionService {
      * @param request instruction step creation request DTO
      * @param userEmail authenticated user email address
      * @return InstructionResponse DTO of the saved step
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the recipe or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     InstructionResponse addInstructionToRecipe(String recipeId, InstructionRequestDTO request, String userEmail);
 
@@ -29,6 +31,8 @@ public interface InstructionService {
      * @param request instruction step update request DTO
      * @param userEmail authenticated user email address
      * @return InstructionResponse DTO of the updated step
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the instruction or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the instruction's recipe owner nor an administrator
      */
     InstructionResponse updateInstruction(String instructionId, InstructionRequestDTO request, String userEmail);
 
@@ -37,6 +41,8 @@ public interface InstructionService {
      *
      * @param instructionId target instruction step ID
      * @param userEmail authenticated user email address
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the instruction or acting user cannot be found
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the instruction's recipe owner nor an administrator
      */
     void deleteInstruction(String instructionId, String userEmail);
 }

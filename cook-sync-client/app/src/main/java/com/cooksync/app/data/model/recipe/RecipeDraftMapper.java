@@ -31,10 +31,6 @@ public final class RecipeDraftMapper {
      * {@link RecipeDraftValidator#isStepValid(RecipeDraft, int)} for
      * {@link RecipeDraftValidator#STEP_REVIEW}.
      *
-     * Complexity:
-     * Time: O(n) where n is the combined number of ingredients and instructions
-     * Space: O(n)
-     *
      * @param draft the draft to convert
      * @return the equivalent create-recipe request payload
      */

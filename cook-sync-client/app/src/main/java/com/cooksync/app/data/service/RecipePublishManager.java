@@ -157,10 +157,6 @@ public class RecipePublishManager {
     /**
      * Starts background publishing for the provided draft, updating progress on {@link #getPublishState()}.
      *
-     * Complexity:
-     * Time: O(n) where n is pending images + tags + network upload time
-     * Space: O(1)
-     *
      * @param draft the recipe draft to upload and publish
      */
     public void startPublish(RecipeDraft draft) {

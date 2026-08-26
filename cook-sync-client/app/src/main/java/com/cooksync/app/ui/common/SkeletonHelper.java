@@ -57,10 +57,6 @@ public class SkeletonHelper {
      * as a shimmer target. Useful when a skeleton layout is a {@link ViewGroup}
      * with multiple bones at different nesting levels.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of views in the hierarchy
-     * Space: O(d) where d is the depth of the view tree (recursion stack)
-     *
      * @param container the root of the skeleton layout
      * @return this instance for method chaining
      */
@@ -73,10 +69,6 @@ public class SkeletonHelper {
     /**
      * Starts (or restarts) the shimmer animation. Safe to call even if the animator is
      * already running — it will be cancelled and recreated cleanly.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void start() {
         if (animator != null && animator.isRunning()) {
@@ -104,10 +96,6 @@ public class SkeletonHelper {
 
     /**
      * Stops the shimmer animation and restores all targets to full opacity.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of registered target views
-     * Space: O(1)
      */
     public void stop() {
         if (animator != null) {
@@ -124,10 +112,6 @@ public class SkeletonHelper {
     /**
      * Stops the animation and removes all registered targets. Call this when the
      * host Activity or Fragment is destroyed to avoid retaining view references.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of registered target views
-     * Space: O(1)
      */
     public void release() {
         stop();
@@ -139,10 +123,6 @@ public class SkeletonHelper {
     /**
      * Recursively collects leaf {@link View}s (non-{@link ViewGroup} children, plus
      * {@link ViewGroup}s that have no children) from the given root into {@code out}.
-     *
-     * Complexity:
-     * Time: O(n) where n is the total number of views in the hierarchy
-     * Space: O(d) where d is the depth of the view tree
      *
      * @param group the current root group to traverse
      * @param out   the accumulator list

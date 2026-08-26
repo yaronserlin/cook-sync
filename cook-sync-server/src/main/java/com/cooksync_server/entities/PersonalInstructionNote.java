@@ -66,10 +66,6 @@ public class PersonalInstructionNote {
 
     /**
      * Initializes timestamps prior to database persistence.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PrePersist
     protected void onCreate() {
@@ -79,10 +75,6 @@ public class PersonalInstructionNote {
 
     /**
      * Updates modification timestamp prior to entity updates.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @PreUpdate
     protected void onUpdate() {
@@ -91,10 +83,6 @@ public class PersonalInstructionNote {
 
     /**
      * Helper method binding instruction relationship using an ID without database lookup.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param instructionId target instruction step ID or null for recipe-wide note
      */

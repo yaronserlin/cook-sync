@@ -39,10 +39,6 @@ public final class ReportReviewDialog {
     /**
      * Shows the report dialog.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param context the hosting screen's context
      * @param callback invoked with the chosen reason and comment; never called if the user cancels
      */

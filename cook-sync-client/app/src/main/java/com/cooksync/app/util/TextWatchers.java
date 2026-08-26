@@ -23,10 +23,6 @@ public final class TextWatchers {
      * Builds a {@link TextWatcher} that ignores the before/during callbacks and invokes
      * {@code onChanged} with the field's full text once it settles after each edit.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param onChanged invoked with the field's current text after each change
      * @return the assembled watcher, ready to pass to {@code EditText#addTextChangedListener}
      */

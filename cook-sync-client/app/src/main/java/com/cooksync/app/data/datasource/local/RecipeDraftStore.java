@@ -49,10 +49,6 @@ public final class RecipeDraftStore {
      * Persists {@code draft}, replacing any previously stored draft with the same
      * {@link RecipeDraft#draftId} or appending it as a new entry otherwise.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of stored drafts
-     * Space: O(n)
-     *
      * @param draft the draft to persist
      */
     public static void save(RecipeDraft draft) {
@@ -74,10 +70,6 @@ public final class RecipeDraftStore {
     /**
      * Loads every currently stored draft.
      *
-     * Complexity:
-     * Time: O(n) where n is the serialized size of all stored drafts
-     * Space: O(n)
-     *
      * @return the stored drafts, most-recently-added first is not guaranteed — callers that
      *         care about order should sort by {@link RecipeDraft#savedAtMillis}
      */
@@ -92,10 +84,6 @@ public final class RecipeDraftStore {
 
     /**
      * Loads a single stored draft by id.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of stored drafts
-     * Space: O(n)
      *
      * @param draftId the draft's client-generated id
      * @return the stored draft, or {@code null} if none matches
@@ -112,10 +100,6 @@ public final class RecipeDraftStore {
     /**
      * Returns whether at least one draft is currently stored.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of stored drafts
-     * Space: O(1)
-     *
      * @return {@code true} if any draft exists
      */
     public static boolean hasDraft() {
@@ -125,10 +109,6 @@ public final class RecipeDraftStore {
     /**
      * Removes a single stored draft, e.g. after a successful publish or an explicit discard.
      * Other stored drafts are left untouched.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of stored drafts
-     * Space: O(n)
      *
      * @param draftId the draft's client-generated id
      */

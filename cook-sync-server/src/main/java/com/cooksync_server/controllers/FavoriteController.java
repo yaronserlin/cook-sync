@@ -34,10 +34,6 @@ public class FavoriteController {
     /**
      * Retrieves all recipe preview entries bookmarked as favorite by the authenticated user.
      *
-     * Complexity:
-     * Time: O(F) where F is count of user's favorite recipes
-     * Space: O(F)
-     *
      * @param authentication active user authentication token
      * @param page zero-based page index
      * @param size page size limit

@@ -80,10 +80,6 @@ public class SettingsViewModel extends BaseViewModel {
      * Constructs the ViewModel with its collaborating repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param authRepository the repository used for profile/password/email/account calls
      * @param mediaRepository the repository used for Cloudinary upload-signature requests
      * @param recipeRepository the repository used to fetch the Favorites/My recipes counts
@@ -98,10 +94,6 @@ public class SettingsViewModel extends BaseViewModel {
     /**
      * Fetches the current user's full profile — including city, bio, and privacy preferences —
      * used to pre-fill the Account Details screen.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void loadAccountDetails() {
         authRepository.getCurrentUserProfile(accountDetailsResult);
@@ -112,10 +104,6 @@ public class SettingsViewModel extends BaseViewModel {
      * picked avatar image. First resolves the server-configured root upload folder, then builds
      * the target folder as {@code [baseFolder]/[userEmail]/avatar} before requesting the
      * signature itself.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void requestUploadSignature() {
         MutableLiveData<ApiResult<String>> baseFolderResult = new MutableLiveData<>();
@@ -141,10 +129,6 @@ public class SettingsViewModel extends BaseViewModel {
      * Persists a newly uploaded avatar's URL against the user's account. Called after the image
      * itself has already been uploaded to Cloudinary directly by the view layer.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param avatarUrl the secure URL Cloudinary returned for the uploaded image
      */
     public void updateAvatar(String avatarUrl) {
@@ -156,10 +140,6 @@ public class SettingsViewModel extends BaseViewModel {
      * password. On success the server has emailed a verification code to the new address; the
      * address and password are stashed so {@link #resendEmailChangeOtp()} can re-submit the same
      * request, and the resend cooldown starts immediately since a fresh code was just sent.
-     *
-     * Complexity:
-     * Time: O(n) where n is the combined length of the email and password
-     * Space: O(1)
      *
      * @param rawNewEmail        raw text from the new-email field
      * @param rawCurrentPassword raw text from the current-password field
@@ -190,10 +170,6 @@ public class SettingsViewModel extends BaseViewModel {
      * address/password stashed from the original call, restarting the resend cooldown on
      * success. Backs the email-change OTP dialog's "Resend code" action. No-op while the
      * cooldown from a previous send is still running.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void resendEmailChangeOtp() {
         resendWithCooldown(emailOtpResendCooldownSeconds, emailOtpCooldownTimer, requestEmailChangeResult,
@@ -203,10 +179,6 @@ public class SettingsViewModel extends BaseViewModel {
     /**
      * Validates and submits the OTP code verifying the pending email change. On success, clears
      * the stashed pending address/password, since the change is now complete.
-     *
-     * Complexity:
-     * Time: O(n) where n is the length of the code
-     * Space: O(1)
      *
      * @param rawCode raw text from the OTP code field
      */
@@ -236,10 +208,6 @@ public class SettingsViewModel extends BaseViewModel {
      * navigate away on success without racing any individual call. A client-side validation
      * failure (invalid name, weak password, mismatched repeat) fails fast and fires no network
      * call at all.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param rawFirstName          raw text from the first-name field
      * @param rawLastName           raw text from the last-name field
@@ -322,10 +290,6 @@ public class SettingsViewModel extends BaseViewModel {
      * Validates and submits an account-deletion request, starting the server's 30-day grace
      * period.
      *
-     * Complexity:
-     * Time: O(n) where n is the password length
-     * Space: O(1)
-     *
      * @param rawCurrentPassword raw text from the current-password confirmation field
      */
     public void deleteAccount(String rawCurrentPassword) {
@@ -339,10 +303,6 @@ public class SettingsViewModel extends BaseViewModel {
 
     /**
      * Logs the current user out of the app.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void logout() {
         authRepository.logout(logoutResult);
@@ -351,10 +311,6 @@ public class SettingsViewModel extends BaseViewModel {
     /**
      * Fetches the current user's favorite recipes, from which the "Favorites" row's subtitle
      * count is derived.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void loadFavoritesCount() {
         recipeRepository.getFavorites(favoritesResult);
@@ -363,10 +319,6 @@ public class SettingsViewModel extends BaseViewModel {
     /**
      * Fetches the current user's own recipes, from which the "My recipes" row's subtitle count
      * is derived.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public void loadMyRecipesCount() {
         recipeRepository.getMyRecipes(myRecipesResult);
@@ -406,10 +358,6 @@ public class SettingsViewModel extends BaseViewModel {
      * baseline, deciding whether leaving the screen should prompt a "discard changes?"
      * confirmation. The Activity supplies the current values since it owns the widgets; this
      * method owns only the "what counts as changed" rule.
-     *
-     * Complexity:
-     * Time: O(n) where n is the combined length of the text fields
-     * Space: O(1)
      *
      * @param firstName current value of the first-name field
      * @param lastName current value of the last-name field

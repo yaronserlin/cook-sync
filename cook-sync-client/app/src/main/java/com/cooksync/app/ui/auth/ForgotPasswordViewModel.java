@@ -58,10 +58,6 @@ public class ForgotPasswordViewModel extends BaseViewModel {
      * Validates and submits the forgot-password email request. On success, starts the resend
      * cooldown for the reset stage that's about to be revealed.
      *
-     * Complexity:
-     * Time: O(n) where n is the length of the email string
-     * Space: O(1)
-     *
      * @param rawEmail raw text from the email {@code EditText}
      */
     public void requestReset(String rawEmail) {
@@ -92,10 +88,6 @@ public class ForgotPasswordViewModel extends BaseViewModel {
 
     /**
      * Validates and submits the new password using the emailed reset code.
-     *
-     * Complexity:
-     * Time: O(n) where n is the combined length of the password fields
-     * Space: O(1)
      *
      * @param rawCode            raw text from the reset-code {@code EditText}
      * @param rawNewPassword     raw text from the new-password {@code EditText}

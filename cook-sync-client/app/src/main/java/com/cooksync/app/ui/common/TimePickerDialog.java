@@ -51,10 +51,6 @@ public final class TimePickerDialog {
     /**
      * Displays the time picker dialog using the specified title, initial seconds, and mode.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param context the hosting context
      * @param title the dialog title resource ID
      * @param initialSeconds initial duration in seconds

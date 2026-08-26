@@ -29,10 +29,6 @@ public class AdminStatsViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given repository, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param adminRepository the repository used to fetch the moderation/content stats
      */
     public AdminStatsViewModel(AdminRepository adminRepository) {

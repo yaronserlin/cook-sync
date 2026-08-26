@@ -47,10 +47,6 @@ public final class InstructionTextFormatter {
      * flagging any that read as a parenthetical aside (e.g. an ingredient substitution note) so
      * the caller can visually mute it.
      *
-     * Complexity:
-     * Time: O(n) where n is the description's length
-     * Space: O(n)
-     *
      * @param description the step's raw instruction text, may be {@code null}/blank
      * @return the split sentences, in order; empty if {@code description} is {@code null}/blank
      */
@@ -75,10 +71,6 @@ public final class InstructionTextFormatter {
      * ingredient name that doesn't literally appear in the text (or whose name is itself an
      * unmatchable pattern) is simply skipped — this is a readability aid, not a requirement that
      * every ingredient be found.
-     *
-     * Complexity:
-     * Time: O(n * m) where n is the text length and m is the number of ingredient names
-     * Space: O(k) where k is the number of matches found
      *
      * @param text the already sentence-joined instruction text to search
      * @param ingredientNames this step's ingredient names, may contain blanks
@@ -110,10 +102,6 @@ public final class InstructionTextFormatter {
      * Picks the step-text font size that keeps a short instruction large and prominent while
      * letting a long one still fit comfortably, rather than a single fixed size that's either
      * too small for a one-liner or overflowing for a paragraph.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param description the step's instruction text, may be {@code null}
      * @return the text size in SP, ready to pass to {@code TextView#setTextSize}

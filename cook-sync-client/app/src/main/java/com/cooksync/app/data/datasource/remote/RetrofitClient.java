@@ -46,10 +46,6 @@ public final class RetrofitClient {
      * Returns the shared, authenticated {@link ApiService}. Lazily constructed once (double-
      * checked locking). The instance is shared across all callers in the process.
      *
-     * Complexity:
-     * Time: O(1) after first call
-     * Space: O(1)
-     *
      * @return the authenticated API service
      */
     public static ApiService getInstance() {
@@ -68,10 +64,6 @@ public final class RetrofitClient {
      * {@link TokenAuthenticator}. The authenticator receives a bare service so it can
      * call the refresh endpoint without re-entering itself.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return a configured {@link ApiService} with JWT support
      */
     private static ApiService buildAuthenticatedService() {
@@ -89,10 +81,6 @@ public final class RetrofitClient {
      * Returns (or lazily creates) the bare, unauthenticated {@link ApiService} used solely
      * inside {@link TokenAuthenticator} for token-refresh calls.
      *
-     * Complexity:
-     * Time: O(1) after first call
-     * Space: O(1)
-     *
      * @return a bare API service without auth headers or authenticator
      */
     public static ApiService getBareService() {
@@ -108,10 +96,6 @@ public final class RetrofitClient {
 
     /**
      * Builds a Retrofit instance backed by a plain OkHttp client with no auth logic.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return a bare {@link ApiService}
      */
@@ -129,10 +113,6 @@ public final class RetrofitClient {
      * Returns a pre-configured {@link OkHttpClient.Builder} shared by both client variants.
      * Attaches an HTTP logging interceptor in DEBUG builds only, and sets generous connect/
      * read/write timeouts to tolerate a slow-to-wake backend (see {@link #TIMEOUT_SECONDS}).
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return a partially configured builder
      */
@@ -152,10 +132,6 @@ public final class RetrofitClient {
     /**
      * Builds a {@link Retrofit} instance pointed at {@link BuildConfig#BASE_URL}, using
      * Gson for JSON (de)serialization.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param client the configured OkHttp client to attach
      * @return a fully built Retrofit instance

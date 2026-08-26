@@ -103,10 +103,6 @@ public class DataSeeder implements CommandLineRunner {
      * Uploads a remote image URL to Cloudinary and returns the generated secure Cloudinary URL.
      * If Cloudinary is unavailable or upload fails, gracefully falls back to the original URL.
      *
-     * Complexity:
-     * Time: O(1) per unique image (network dependent)
-     * Space: O(N) where N is unique image count cached
-     *
      * @param imageUrl original image HTTP URL
      * @param folder Cloudinary target folder (e.g., "[baseFolder]/[userEmail]/avatar", "[baseFolder]/[userEmail]/[recipeTitle]")
      * @param publicId exact Cloudinary public ID name

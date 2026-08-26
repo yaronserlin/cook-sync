@@ -75,10 +75,6 @@ public abstract class AbstractFilterableListViewModel extends BaseViewModel impl
      * invokes {@link #onFiltersChanged()} so the subclass can re-filter its already-loaded data
      * or issue a new fetch, whichever its data source requires.
      *
-     * Complexity:
-     * Time: O(t) where t is the number of selected tags
-     * Space: O(t)
-     *
      * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
      * @param difficulty one of "Easy", "Medium", "Hard", or {@code null} for no filter
      * @param tags the selected tag names (possibly empty, never {@code null})

@@ -5,10 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 /**
- * Data Transfer Object for creating or updating a recipe ingredient record.
- * Encapsulates temporary identifiers, item name, numeric quantity, and unit associations.
+ * Data Transfer Object for creating or updating a recipe ingredient record, submitted as one entry
+ * of a {@code RecipeCreateRequestDTO}'s ingredient list.
  *
- * @param tmpId client-side transient identifier for list item tracking
+ * @param tmpId client-generated UUID string identifying this not-yet-persisted ingredient within
+ *              the request; the server maps it to the ingredient it saves so that any sibling
+ *              {@code InstructionRequestDTO#ingredientIds} referencing the same value can be
+ *              linked to it once persisted
  * @param name the ingredient display name, must not be blank
  * @param quantity the ingredient numeric amount, must be a positive number
  * @param unitId the unique identifier of the measurement unit, must not be null

@@ -52,10 +52,6 @@ public class TokenAuthenticator implements Authenticator {
      * Refreshes the access token and retries the failed request, or gives up and forces a
      * logout if the refresh token itself is invalid.
      *
-     * Complexity:
-     * Time: O(1) plus one synchronous network round-trip on the first 401 in a burst
-     * Space: O(1)
-     *
      * @param route the failed request's route, unused
      * @param response the 401 response that triggered this authenticator
      * @return a rebuilt request carrying the new access token, or {@code null} to give up
@@ -124,10 +120,6 @@ public class TokenAuthenticator implements Authenticator {
     /**
      * Counts how many times this request chain has already been retried, walking the
      * {@code priorResponse} links, to guarantee this authenticator cannot loop forever.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of prior responses (bounded by {@link #MAX_RETRY_ATTEMPTS})
-     * Space: O(1)
      *
      * @param response the current response
      * @return the number of prior chained responses

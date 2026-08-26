@@ -68,10 +68,6 @@ public final class InputSanitizer {
      * Trims whitespace from the input and returns the result, or an empty string if
      * {@code null} is supplied.
      *
-     * Complexity:
-     * Time: O(n) where n is the length of the string
-     * Space: O(n)
-     *
      * @param raw the raw string from a UI field
      * @return trimmed string, never {@code null}
      */
@@ -84,10 +80,6 @@ public final class InputSanitizer {
      * Returns {@code true} if the (already-trimmed) input contains any character pattern
      * considered dangerous for the field types this app uses. Call this on the trimmed
      * value before running field-specific validation rules.
-     *
-     * Complexity:
-     * Time: O(n) where n is the length of the string
-     * Space: O(1)
      *
      * @param input trimmed field value (may be blank)
      * @return {@code true} if a dangerous pattern is detected
@@ -113,10 +105,6 @@ public final class InputSanitizer {
      * <p>Rejects digits, emoji, control characters, and all punctuation not in the
      * allowed set — preventing names like {@code "'; DROP TABLE users; --"} from
      * being accepted at the form level.</p>
-     *
-     * Complexity:
-     * Time: O(n) where n is the length of the string
-     * Space: O(1)
      *
      * @param name the trimmed name value to check
      * @return {@code true} if the name contains only safe characters

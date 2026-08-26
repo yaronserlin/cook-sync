@@ -21,10 +21,6 @@ public final class InstructionMapper {
     /**
      * Converts an Instruction entity into an InstructionResponse DTO.
      *
-     * Complexity:
-     * Time: O(I) where I is count of associated ingredients
-     * Space: O(I)
-     *
      * @param instruction target Instruction entity instance
      * @return populated InstructionResponse DTO instance or null
      */

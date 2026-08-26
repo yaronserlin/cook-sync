@@ -37,10 +37,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles ResourceNotFoundException and responds with HTTP 404 NOT_FOUND.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
@@ -52,10 +48,6 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles ResourceAlreadyExistsException and responds with HTTP 409 CONFLICT.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
@@ -69,10 +61,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles UnauthorizedActionException and responds with HTTP 403 FORBIDDEN.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
@@ -84,10 +72,6 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles InvalidCredentialsException and responds with HTTP 401 UNAUTHORIZED.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
@@ -101,10 +85,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles UserAlreadyExistsException and responds with HTTP 409 CONFLICT.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
@@ -116,10 +96,6 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles InvalidOtpException and responds with HTTP 400 BAD_REQUEST.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
@@ -133,10 +109,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles OtpExpiredException and responds with HTTP 400 BAD_REQUEST.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
@@ -149,10 +121,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles TooManyOtpAttemptsException and responds with HTTP 429 TOO_MANY_REQUESTS.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
@@ -164,10 +132,6 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles payload validation failures from MethodArgumentNotValidException and responds with HTTP 400.
-     *
-     * Complexity:
-     * Time: O(V) where V is total count of validation field errors
-     * Space: O(V)
      *
      * @param ex target validation exception
      * @return response entity with validation errors list
@@ -186,10 +150,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles database constraint and integrity violations and responds with HTTP 409 CONFLICT.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex target data integrity exception
      * @return response entity with conflict error payload
      */
@@ -201,10 +161,6 @@ public class GlobalExceptionHandler {
 
     /**
      * Handles malformed request JSON bodies and responds with HTTP 400 BAD_REQUEST.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ex message parsing exception
      * @return response entity with bad request payload
@@ -218,10 +174,6 @@ public class GlobalExceptionHandler {
     /**
      * Handles AccessDeniedException and responds with HTTP 403 FORBIDDEN.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param ex access denied exception instance
      * @return response entity containing forbidden error payload
      */
@@ -234,10 +186,6 @@ public class GlobalExceptionHandler {
     /**
      * Fallback exception handler catching uncaught exceptions and returning HTTP 500.
      * Sanitizes response message to avoid leaking internal trace or implementation details.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param ex unhandled exception instance
      * @return response entity containing generic error payload

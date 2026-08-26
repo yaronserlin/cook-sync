@@ -18,7 +18,7 @@ import com.dtos.response.tags.TagResponse;
  * @param reviewCount aggregate count of user reviews
  * @param averageRating computed average user rating score
  * @param createdAt ISO formatted creation timestamp string
- * @param tags list of associated category and ingredient tag DTOs
+ * @param tags list of the recipe's classification tag DTOs
  * @param primaryImageUrl web URL for the cover thumbnail photo
  * @param hasPersonalNote boolean flag indicating whether current user attached a private note
  * @param personalNoteText textual content of the user's private note, if present

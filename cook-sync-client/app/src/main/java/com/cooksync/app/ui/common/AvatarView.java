@@ -71,10 +71,6 @@ public class AvatarView extends FrameLayout {
      * The URL is requested through {@link CloudinaryImageUtils#thumbnailUrl} so only a
      * small, cropped thumbnail is downloaded rather than the full-resolution asset.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param url the profile photo URL, may be {@code null}/blank
      * @param name full name to generate fallback initials from
      */
@@ -106,10 +102,6 @@ public class AvatarView extends FrameLayout {
 
     /**
      * Hides the image and shows the initials badge derived from {@code name}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param name full name to generate initials from, may be {@code null}/blank
      */

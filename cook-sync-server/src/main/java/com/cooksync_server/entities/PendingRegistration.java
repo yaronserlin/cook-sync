@@ -49,9 +49,19 @@ public class PendingRegistration {
     @Column(nullable = false)
     private String passwordHash;
 
+    /**
+     * Whether the user accepted the terms of use when submitting this registration. Carried
+     * over verbatim to {@link User#isTermsAccepted()} once the OTP is confirmed and the real
+     * account row is created.
+     */
     @Column(nullable = false)
     private boolean termsAccepted;
 
+    /**
+     * Whether the user opted into marketing communications when submitting this registration.
+     * Carried over verbatim to {@link User#isMarketingOptIn()} once the OTP is confirmed and the
+     * real account row is created.
+     */
     @Column(nullable = false)
     private boolean marketingOptIn;
 

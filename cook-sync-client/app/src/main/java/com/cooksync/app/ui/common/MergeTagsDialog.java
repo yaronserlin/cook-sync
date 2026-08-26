@@ -48,10 +48,6 @@ public final class MergeTagsDialog {
     /**
      * Shows the merge dialog for one duplicate tag group.
      *
-     * Complexity:
-     * Time: O(n) over the group's variant count, to build the radio options
-     * Space: O(n)
-     *
      * @param context the hosting screen's context
      * @param group the duplicate tag group to resolve
      * @param callback invoked with the chosen canonical tag; never called if the user cancels

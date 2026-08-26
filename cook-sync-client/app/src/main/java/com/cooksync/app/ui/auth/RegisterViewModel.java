@@ -61,10 +61,6 @@ public class RegisterViewModel extends BaseViewModel {
      *
      * <p>Rate-limited to one attempt per {@value #SUBMIT_COOLDOWN_MS} ms.</p>
      *
-     * Complexity:
-     * Time: O(n) where n is the combined length of all field values
-     * Space: O(1)
-     *
      * @param rawFirstName      raw text from the first-name {@code EditText}
      * @param rawLastName       raw text from the last-name {@code EditText}
      * @param rawEmail          raw text from the email {@code EditText}

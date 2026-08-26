@@ -24,10 +24,6 @@ public class AccountPurgeScheduler {
 
     /**
      * Runs once daily and delegates to {@link AccountDeletionServiceImp#purgeExpiredAccounts()}.
-     *
-     * Complexity:
-     * Time: O(U * P) where U is the expired-account count and P is each account's data graph size
-     * Space: O(P)
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void purgeExpiredAccounts() {

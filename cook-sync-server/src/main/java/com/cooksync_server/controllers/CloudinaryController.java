@@ -27,10 +27,6 @@ public class CloudinaryController {
     /**
      * Generates a signed upload signature payload for client-side direct media uploads.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param folder target folder path the client intends to upload into, or {@code null} to
      *               use the server-configured default
      * @param publicId target asset public ID the client intends to upload as, or {@code null}
@@ -49,10 +45,6 @@ public class CloudinaryController {
      * Returns the environment-specific root Cloudinary folder (e.g. {@code "cooksync-dev"}
      * locally, {@code "CookSyncApp"} in production), so client apps can build upload folder
      * paths without hardcoding an environment-specific value.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return response entity containing the configured base folder name
      */

@@ -69,10 +69,6 @@ public class RecipeDraft {
      * Converts an existing server {@link com.dtos.response.recipe.RecipeResponse} into an
      * in-progress {@link RecipeDraft} ready for editing in the wizard.
      *
-     * Complexity:
-     * Time: O(n + m) where n is ingredient count and m is instruction step count
-     * Space: O(n + m)
-     *
      * @param recipe the server recipe model to edit
      * @return equivalent RecipeDraft prepopulated with recipe attributes
      */

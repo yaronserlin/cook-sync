@@ -37,10 +37,6 @@ public class RequestAndResponseLoggingFilter extends OncePerRequestFilter {
     /**
      * Wraps request/response streams to record diagnostic log lines with masked sensitive fields.
      *
-     * Complexity:
-     * Time: O(P) where P is payload length
-     * Space: O(P)
-     *
      * @param request current HTTP request
      * @param response current HTTP response
      * @param filterChain target filter chain

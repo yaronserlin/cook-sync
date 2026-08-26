@@ -24,10 +24,6 @@ public final class DurationFormatter {
     /**
      * Formats a duration in seconds into a human-readable string.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param totalSeconds duration in seconds
      * @return formatted duration string (e.g. "4 sec", "2 min", "1 h 30 min")
      */
@@ -64,10 +60,6 @@ public final class DurationFormatter {
 
     /**
      * Formats a duration in minutes into a human-readable string.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param totalMinutes duration in minutes
      * @return formatted duration string (e.g. "45 min", "1 h 30 min")

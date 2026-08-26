@@ -66,10 +66,6 @@ public class AdminReportsViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param adminRepository the repository used for every admin-only endpoint
      * @param recipeRepository the repository reused for {@code deleteReview}, since removing a
      *                         reported review deletes the same entity a recipe-owner would
@@ -80,8 +76,12 @@ public class AdminReportsViewModel extends BaseViewModel {
     }
 
 
+    /** @return the reported-reviews queue currently loaded, filtered by {@link #reasonFilter} */
     public LiveData<List<ReportedReviewResponse>> getFilteredReports() { return filteredReports; }
+    /** @return one-shot result of a remove/keep/ban action, populated only on failure — the
+     *          queue itself already updates optimistically, so there is no success payload to react to */
     public LiveData<Event<ApiResult<Void>>> getReportActionResult() { return reportActionResult; }
+    /** @return the currently active reason filter, one of the report reason codes or {@link #REASON_ALL} */
     public String getReasonFilter() { return reasonFilter; }
 
     /**
@@ -294,10 +294,6 @@ public class AdminReportsViewModel extends BaseViewModel {
      * that triggered the ban, plus any other reports from the same reviewer) and, via
      * {@link AdminConsoleActivity}, whenever {@link AdminUsersViewModel} disables a user from
      * the Users tab.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of currently loaded reports
-     * Space: O(n)
      *
      * @param userId id of the reviewer whose reports should be hidden, a no-op if {@code null}
      */

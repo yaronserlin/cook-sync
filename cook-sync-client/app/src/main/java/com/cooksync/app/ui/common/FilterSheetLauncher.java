@@ -56,10 +56,6 @@ public final class FilterSheetLauncher {
          * selected. Every screen's "Filters · N" button badge reads this instead of
          * recomputing the same sum itself.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @return the count of active shared filter dimensions
          */
         default int getActiveFilterCount() {
@@ -78,10 +74,6 @@ public final class FilterSheetLauncher {
          * <p>Label formatting for time/rating is injected rather than done here, since a
          * {@code FilterState} is implemented by a ViewModel and must stay free of Android
          * {@code Context}/resource access.</p>
-         *
-         * Complexity:
-         * Time: O(k) where k is the number of active filter dimensions
-         * Space: O(k)
          *
          * @param timeLabel formats a total-time-minutes value into its chip label
          * @param ratingLabel formats a minimum-rating value into its chip label
@@ -117,10 +109,6 @@ public final class FilterSheetLauncher {
     /**
      * Builds a {@link FiltersBottomSheetDialogFragment}, seeds it with {@code availableTags}
      * and the current values from {@code state}, attaches {@code onApplied}, and shows it.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param fragmentManager the host screen's fragment manager
      * @param availableTags tag names known to the app, for the sheet's tag chips

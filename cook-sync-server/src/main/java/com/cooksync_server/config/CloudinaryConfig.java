@@ -32,10 +32,6 @@ public class CloudinaryConfig {
     /**
      * Instantiates and configures the Cloudinary API client bean.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return configured Cloudinary client instance
      */
     @Bean

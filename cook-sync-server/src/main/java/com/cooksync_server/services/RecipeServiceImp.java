@@ -77,10 +77,6 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Retrieves paginated slice of public recipes for feed infinite scrolling.
      *
-     * Complexity:
-     * Time: O(S) where S is page size limit
-     * Space: O(S)
-     *
      * @param page page index
      * @param size page size limit
      * @param sortBy sort criterion: newest (default), rating, fastest
@@ -121,10 +117,6 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Unified multi-token search filtering by keyword, author, and ingredient criteria.
      *
-     * Complexity:
-     * Time: O(M) where M is matching recipe count
-     * Space: O(M)
-     *
      * @param keyword search keyword
      * @param author author name filter
      * @param ingredient ingredient filter
@@ -153,10 +145,6 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Retrieves public recipes tagged with specified tag name.
      *
-     * Complexity:
-     * Time: O(T) where T is matching recipe count
-     * Space: O(T)
-     *
      * @param tagName target tag label name
      * @param sortBy sort criterion: newest (default), rating, fastest
      * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
@@ -181,10 +169,6 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Retrieves all recipes authored by the authenticated user.
      *
-     * Complexity:
-     * Time: O(U) where U is user authored recipe count
-     * Space: O(U)
-     *
      * @param userEmail user email address
      * @param page page index
      * @param size page size limit
@@ -205,10 +189,6 @@ public class RecipeServiceImp implements RecipeService{
      * profile page. Enforces the target's {@code showRecipesPublicly} preference server-side
      * (not just trusting the client to withhold the call), returning an empty page rather than
      * an error if the user opted out.
-     *
-     * Complexity:
-     * Time: O(S) where S is page size
-     * Space: O(S)
      *
      * @param userId target user ID
      * @param page page index
@@ -233,10 +213,6 @@ public class RecipeServiceImp implements RecipeService{
 
     /**
      * Creates a new recipe with nested ingredients, instructions, tags, and images.
-     *
-     * Complexity:
-     * Time: O(I + S + T) where I=ingredients, S=instructions, T=tags
-     * Space: O(I + S + T)
      *
      * @param request recipe creation request DTO
      * @param userEmail creator user email address
@@ -267,10 +243,6 @@ public class RecipeServiceImp implements RecipeService{
 
     /**
      * Updates existing recipe attributes, ingredients, instructions, tags, and images.
-     *
-     * Complexity:
-     * Time: O(I + S + T) where I=ingredients, S=instructions, T=tags
-     * Space: O(I + S + T)
      *
      * @param recipeId target recipe ID
      * @param request recipe update request DTO
@@ -364,10 +336,6 @@ public class RecipeServiceImp implements RecipeService{
      * Applies a recipe request's scalar attributes and tag set onto a recipe entity. Shared by
      * {@link #createRecipe} and {@link #updateRecipe} since both derive the same fields from the
      * same request DTO shape, differing only in whether the entity is new or already persisted.
-     *
-     * Complexity:
-     * Time: O(T) where T is tag count
-     * Space: O(T)
      *
      * @param recipe target recipe entity, new or already persisted
      * @param request recipe create/update request DTO

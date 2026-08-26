@@ -43,10 +43,6 @@ public class RecipeController {
      * Retrieves a paginated slice of public recipes for feed infinite scrolling.
      * Supports server-side sorting and filtering via optional query parameters.
      *
-     * Complexity:
-     * Time: O(S) where S is page size
-     * Space: O(S)
-     *
      * @param page zero-based page index
      * @param size page size limit
      * @param sortBy sort criterion: newest (default), rating, fastest
@@ -82,10 +78,6 @@ public class RecipeController {
      * Executes unified keyword and faceted attribute search across recipe catalog.
      * Supports server-side sorting and filtering via optional query parameters.
      *
-     * Complexity:
-     * Time: O(M) where M is number of matching recipes returned
-     * Space: O(M)
-     *
      * @param q unified free-text search string
      * @param author author name filter string
      * @param ingredient ingredient name filter string
@@ -114,10 +106,6 @@ public class RecipeController {
      * Filters public recipes associated with a specific tag name.
      * Supports server-side sorting and filtering via optional query parameters.
      *
-     * Complexity:
-     * Time: O(T) where T is count of recipes tagged with tag name
-     * Space: O(T)
-     *
      * @param tagName target tag label name
      * @param sortBy sort criterion: newest (default), rating, fastest
      * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
@@ -141,10 +129,6 @@ public class RecipeController {
     /**
      * Retrieves all recipes authored by the currently authenticated user.
      *
-     * Complexity:
-     * Time: O(U) where U is count of user authored recipes
-     * Space: O(U)
-     *
      * @param authentication active user authentication token
      * @param page zero-based page index
      * @param size page size limit
@@ -162,10 +146,6 @@ public class RecipeController {
     /**
      * Creates a new recipe entry in the system.
      *
-     * Complexity:
-     * Time: O(I + S + T) where I=ingredients, S=instructions, T=tags
-     * Space: O(I + S + T)
-     *
      * @param request recipe creation payload DTO
      * @param authentication active user authentication token
      * @return response entity containing created RecipeResponse DTO
@@ -182,10 +162,6 @@ public class RecipeController {
 
     /**
      * Updates an existing recipe entry.
-     *
-     * Complexity:
-     * Time: O(I + S + T) where I=ingredients, S=instructions, T=tags
-     * Space: O(I + S + T)
      *
      * @param id target recipe unique identifier
      * @param request recipe update payload DTO

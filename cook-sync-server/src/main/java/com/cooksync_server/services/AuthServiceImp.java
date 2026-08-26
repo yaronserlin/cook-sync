@@ -100,6 +100,7 @@ public class AuthServiceImp implements AuthService {
      *
      * @param request registration details payload
      * @return PendingRegistrationResponse acknowledging the pending registration and OTP expiry
+     * @throws UserAlreadyExistsException if the email is already registered
      */
     @Transactional
     public PendingRegistrationResponse register(RegisterRequestDTO request) {
@@ -145,6 +146,10 @@ public class AuthServiceImp implements AuthService {
      *
      * @param request OTP verification payload
      * @return AuthResponse containing access token, refresh token, and user info
+     * @throws InvalidOtpException if no pending registration exists for the email, or the submitted code does not match
+     * @throws OtpExpiredException if the pending registration's code has expired
+     * @throws TooManyOtpAttemptsException if the incorrect-attempt limit for the pending code has just been exceeded by this call
+     * @throws UserAlreadyExistsException if the email became registered to another account in the meantime
      */
     @Transactional(noRollbackFor = {InvalidOtpException.class, TooManyOtpAttemptsException.class})
     public AuthResponse verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO request) {
@@ -193,6 +198,7 @@ public class AuthServiceImp implements AuthService {
      *
      * @param request resend request payload
      * @return PendingRegistrationResponse acknowledging the newly issued OTP and its expiry
+     * @throws InvalidOtpException if no pending registration exists for the email
      */
     @Transactional
     public PendingRegistrationResponse resendRegistrationOtp(ResendRegistrationOtpRequestDTO request) {
@@ -215,10 +221,6 @@ public class AuthServiceImp implements AuthService {
      * Purges every pending registration whose OTP has been expired for at least
      * {@link #PENDING_REGISTRATION_PURGE_GRACE_DAYS}, cleaning up abandoned registration
      * attempts that were never verified.
-     *
-     * Complexity:
-     * Time: O(P) where P is expired pending-registration row count
-     * Space: O(1)
      */
     @Transactional
     public void purgeExpiredPendingRegistrations() {
@@ -232,6 +234,8 @@ public class AuthServiceImp implements AuthService {
      *
      * @param request login credentials payload
      * @return AuthResponse containing fresh tokens and user info
+     * @throws InvalidCredentialsException if the email or password does not match
+     * @throws UnauthorizedActionException if the account is disabled and outside its deletion grace period
      */
     @Transactional
     public AuthResponse login(LoginRequestDTO request) {
@@ -269,6 +273,7 @@ public class AuthServiceImp implements AuthService {
      *
      * @param request refresh token request payload
      * @return AuthResponse containing new access token and newly rotated refresh token
+     * @throws UnauthorizedActionException if the refresh token is not in the database or is invalid
      */
     @Transactional
     public AuthResponse refreshToken(TokenRefreshRequestDTO request) {
@@ -286,6 +291,7 @@ public class AuthServiceImp implements AuthService {
      *
      * @param userEmail authenticated user email
      * @return AuthResponse with profile details
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional(readOnly = true)
     public AuthResponse validateToken(String userEmail) {
@@ -299,6 +305,7 @@ public class AuthServiceImp implements AuthService {
      * Revokes active user refresh tokens upon logout.
      *
      * @param userEmail authenticated user email
+     * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional
     public void logout(String userEmail) {

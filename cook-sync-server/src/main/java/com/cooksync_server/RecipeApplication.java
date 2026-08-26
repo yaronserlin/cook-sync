@@ -21,8 +21,6 @@ public class RecipeApplication {
     /**
      * Main execution method launching the Spring Boot framework instance.
      *
-     * Complexity: Time: O(N) Space: O(N)
-     *
      * @param args command-line input arguments
      */
     public static void main(String[] args) {

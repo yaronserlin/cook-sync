@@ -344,10 +344,6 @@ public class AccountDetailsActivity extends BaseActivity {
      * never fires twice for the same tap and never races the avatar write into
      * {@link SessionManager}. With no pending avatar change, the rest of the form is submitted
      * right away.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void onSaveClicked() {
         if (pendingAvatarUri != null) {
@@ -369,10 +365,6 @@ public class AccountDetailsActivity extends BaseActivity {
      * Cancelling either dialog abandons the whole save attempt — the email-change code the
      * server already issued is simply left to expire, same as an abandoned forgot-password code.
      * With no email change, the batch is submitted right away.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void saveRemainingProfileChanges() {
         String newEmail = etEmail.getText().toString().trim();
@@ -444,10 +436,6 @@ public class AccountDetailsActivity extends BaseActivity {
      * {@link SettingsViewModel#saveAccountChanges}). On success this navigates to
      * {@link SettingsActivity}, so it must run only once any required email confirmation has
      * already been resolved.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void submitAccountChanges() {
         viewModel.saveAccountChanges(
@@ -474,10 +462,6 @@ public class AccountDetailsActivity extends BaseActivity {
     /**
      * Leaves the screen immediately if nothing is unsaved; otherwise asks the user to confirm
      * discarding their edits first.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void attemptExit() {
         if (!hasUnsavedChanges()) {
@@ -496,10 +480,6 @@ public class AccountDetailsActivity extends BaseActivity {
     /**
      * Compares every editable field, plus any pending, not-yet-saved avatar change, against its
      * last-known-saved baseline.
-     *
-     * Complexity:
-     * Time: O(n) where n is the combined length of the editable text fields
-     * Space: O(1)
      *
      * @return {@code true} if any field or the avatar differs from what is actually saved
      */

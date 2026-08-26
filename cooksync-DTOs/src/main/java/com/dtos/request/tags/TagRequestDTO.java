@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Data Transfer Object for creating (or finding an existing) category tag.
+ * Data Transfer Object for creating (or finding an existing) recipe classification tag.
  * Encapsulates tag label validation constraints.
  *
  * @param name the display name of the tag, must be between 2 and 50 characters

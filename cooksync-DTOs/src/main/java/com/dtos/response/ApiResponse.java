@@ -23,10 +23,6 @@ public record ApiResponse<T>(
     /**
      * Constructs a failed API response with error payload and message.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param <T> the expected payload type
      * @param error error details object
      * @param message error description message

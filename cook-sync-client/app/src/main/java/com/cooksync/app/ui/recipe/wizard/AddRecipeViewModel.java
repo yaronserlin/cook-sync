@@ -84,10 +84,6 @@ public class AddRecipeViewModel extends BaseViewModel {
      * Loads one specific stored draft by id into this ViewModel, or starts a fresh draft if it
      * can no longer be found (e.g. already published/discarded elsewhere).
      *
-     * Complexity:
-     * Time: O(n) where n is the number of stored drafts
-     * Space: O(n)
-     *
      * @param draftId the draft's client-generated id, as passed to
      *                 {@link AddRecipeWizardActivity#startResumeDraft}
      */
@@ -392,10 +388,6 @@ public class AddRecipeViewModel extends BaseViewModel {
      * any fallback name that's a case-insensitive duplicate of one already present — so the
      * "Popular tags" row never looks sparse when the server has fewer ranked tags than the row
      * wants to show (e.g. a fresh catalog), without ever showing the same tag name twice.
-     *
-     * Complexity:
-     * Time: O(n * m) where n is {@code fallbackNames}' size and m is the merged list's size
-     * Space: O(min(limit, n + m))
      *
      * @param realNames tag names returned by the server, most-used first
      * @param fallbackNames static fallback names to pad with, in preference order

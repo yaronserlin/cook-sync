@@ -49,6 +49,7 @@ public interface AdminService {
      * Dismisses the moderation report flag on a specific review.
      *
      * @param reviewId target review ID
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no review with the given ID exists
      */
     void dismissReport(String reviewId);
 
@@ -56,6 +57,7 @@ public interface AdminService {
      * Suspends a user account, preventing login and hiding their authored recipes and reviews.
      *
      * @param userId target user ID
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given ID exists
      */
     void suspendUser(String userId);
 
@@ -63,6 +65,7 @@ public interface AdminService {
      * Reactivates a previously suspended or deactivated user account.
      *
      * @param userId target user ID
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given ID exists
      */
     void enableUser(String userId);
 
@@ -74,6 +77,8 @@ public interface AdminService {
      * @param userId target user ID
      * @param actingAdminEmail email of the admin performing the deletion, used for the
      *                          self-deletion guard
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given ID exists
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the target is the acting admin's own account or another admin account
      */
     void deleteUserPermanently(String userId, String actingAdminEmail);
 
@@ -90,6 +95,8 @@ public interface AdminService {
      * Merges a duplicate source tag into a canonical target tag and deletes the source tag.
      *
      * @param request tag merge request DTO containing source and target tag IDs
+     * @throws IllegalArgumentException if the source and target tag IDs are the same
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if the source or target tag cannot be found
      */
     void mergeTags(TagMergeRequestDTO request);
 }

@@ -28,10 +28,6 @@ public final class RelativeTimeFormatter {
     /**
      * Formats a past epoch-millis timestamp relative to now.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param pastMillis epoch millis of the past event
      * @return formatted relative time string (e.g. "Just now", "5 minutes ago", "2 days ago")
      */

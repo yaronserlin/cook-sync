@@ -42,10 +42,6 @@ public class InstructionServiceImp implements InstructionService {
     /**
      * Appends a new cooking instruction step to a recipe.
      *
-     * Complexity:
-     * Time: O(I) where I is count of referenced step ingredient IDs
-     * Space: O(I)
-     *
      * @param recipeId target recipe ID
      * @param request instruction step creation request DTO
      * @param userEmail user email address
@@ -75,10 +71,6 @@ public class InstructionServiceImp implements InstructionService {
 
     /**
      * Updates an existing instruction step details and ingredient associations.
-     *
-     * Complexity:
-     * Time: O(I) where I is count of referenced step ingredient IDs
-     * Space: O(I)
      *
      * @param instructionId target instruction step ID
      * @param request instruction step update request DTO

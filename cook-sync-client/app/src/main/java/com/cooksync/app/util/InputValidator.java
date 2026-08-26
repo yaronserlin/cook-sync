@@ -118,10 +118,6 @@ public final class InputValidator {
      *   <li>Does not exceed {@link #EMAIL_MAX} characters</li>
      * </ol>
      *
-     * Complexity:
-     * Time: O(n) where n is the length of the email string
-     * Space: O(1)
-     *
      * @param raw raw value from the email {@code EditText}
      * @return the validation result
      */
@@ -153,10 +149,6 @@ public final class InputValidator {
      *   <li>No dangerous/injection content</li>
      *   <li>Length between {@value #PASSWORD_MIN} and {@value #PASSWORD_MAX}</li>
      * </ol>
-     *
-     * Complexity:
-     * Time: O(n) where n is the password length
-     * Space: O(1)
      *
      * @param raw raw value from the password {@code EditText}
      * @return the validation result
@@ -190,10 +182,6 @@ public final class InputValidator {
      *   <li>Matches {@link #PASSWORD_POLICY}: uppercase + lowercase + digit + special char</li>
      * </ol>
      *
-     * Complexity:
-     * Time: O(n) where n is the password length
-     * Space: O(1)
-     *
      * @param raw raw value from the new-password {@code EditText}
      * @return the validation result
      */
@@ -220,10 +208,6 @@ public final class InputValidator {
      *   <li>Only Unicode letters, spaces, hyphens, apostrophes, and periods allowed</li>
      *   <li>Length between {@value #NAME_MIN} and {@value #NAME_MAX}</li>
      * </ol>
-     *
-     * Complexity:
-     * Time: O(n) where n is the name length
-     * Space: O(1)
      *
      * @param raw       raw value from the name {@code EditText}
      * @param fieldName human-readable field label used in error messages (e.g. "First name")
@@ -252,10 +236,6 @@ public final class InputValidator {
 
     /**
      * Validates that a repeated-password field matches the primary password field.
-     *
-     * Complexity:
-     * Time: O(n) where n is the password length
-     * Space: O(1)
      *
      * @param password       the primary (validated) password
      * @param repeatPassword the value entered in the repeat-password field

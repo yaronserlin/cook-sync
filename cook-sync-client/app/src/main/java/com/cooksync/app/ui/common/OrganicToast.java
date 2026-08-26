@@ -63,10 +63,6 @@ public final class OrganicToast {
     /**
      * Shows a {@link Type#SUCCESS}-styled toast.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param activity the host activity, used to find the content view and resolve colors
      * @param anchor optional view to anchor the toast above (e.g. a bottom navigation bar)
      * @param message the text to display
@@ -77,10 +73,6 @@ public final class OrganicToast {
 
     /**
      * Shows a {@link Type#ERROR}-styled toast.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param activity the host activity, used to find the content view and resolve colors
      * @param anchor optional view to anchor the toast above (e.g. a bottom navigation bar)
@@ -93,10 +85,6 @@ public final class OrganicToast {
     /**
      * Shows a {@link Type#NEUTRAL}-styled toast with no icon and no action.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param activity the host activity, used to find the content view and resolve colors
      * @param anchor optional view to anchor the toast above (e.g. a bottom navigation bar)
      * @param message the text to display
@@ -108,10 +96,6 @@ public final class OrganicToast {
     /**
      * Shows a {@link Type#NEUTRAL}-styled toast with a leading icon and a trailing action
      * label (e.g. "UNDO") that runs {@code onAction} and dismisses the toast when tapped.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param activity the host activity, used to find the content view and resolve colors
      * @param anchor optional view to anchor the toast above (e.g. a bottom navigation bar)
@@ -131,10 +115,6 @@ public final class OrganicToast {
      * transparent {@link Snackbar} shell, tints its progress-fill background per {@code type},
      * then schedules both the auto-dismiss and a manual ~60fps progress-drain loop on the main
      * {@link Looper}.
-     *
-     * Complexity:
-     * Time: O(1) setup, plus a bounded number of frame callbacks over {@link #DURATION_MS}
-     * Space: O(1)
      *
      * @param activity the host activity, used to find the content view and resolve colors
      * @param anchor optional view to anchor the toast above

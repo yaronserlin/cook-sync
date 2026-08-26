@@ -49,10 +49,6 @@ public class CookSyncApplication extends Application {
      * Returns the process-wide application {@link Context}, available once {@link #onCreate()}
      * has run.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @return the application context
      */
     public static Context getAppContext() {
@@ -62,10 +58,6 @@ public class CookSyncApplication extends Application {
     /**
      * Initializes {@link TokenStore} and {@link SessionManager} singletons, and wires up the
      * forced-logout redirect.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     @Override
     public void onCreate() {
@@ -82,10 +74,6 @@ public class CookSyncApplication extends Application {
      * Reacts to every change in the app-wide login state, redirecting to {@link LoginActivity}
      * only on the true → false transition of an already-active session (i.e. a forced logout),
      * never on the app's initial "no session yet" state.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param loggedIn the session's current logged-in state
      */
@@ -109,10 +97,6 @@ public class CookSyncApplication extends Application {
      * single place a logout-triggered navigation happens, whether the logout was forced
      * (expired/revoked session) or explicitly requested by the user (e.g. from Profile) —
      * only the toast message differs between the two.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param wasForced whether this logout was involuntary (expired/revoked session)
      */

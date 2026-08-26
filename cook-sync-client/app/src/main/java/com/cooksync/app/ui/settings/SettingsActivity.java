@@ -213,10 +213,6 @@ public class SettingsActivity extends BaseActivity {
     /**
      * Binds every settings row's icon, label, subtitle, and click destination, and hides the
      * "Admin console" row entirely for non-admin accounts.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void setupRows() {
         tvFavoritesSub = bindRow(R.id.row_favorites, R.drawable.ic_heart_filled,
@@ -252,10 +248,6 @@ public class SettingsActivity extends BaseActivity {
     /**
      * Binds one {@code item_settings_row} include's icon, label, subtitle, and click listener.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param rowId the id of the {@code <include>} hosting the row
      * @param iconRes the row's icon drawable resource
      * @param label the row's bold label text
@@ -282,10 +274,6 @@ public class SettingsActivity extends BaseActivity {
      * subtitle to match, since the toggles it summarizes are edited on
      * {@link CookingPreferencesActivity} and only become visible here once the user navigates
      * back.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void refreshCookingPreferencesSub() {
         tvCookingSub.setText(CookingPreferencesStore.isScreenAwakeEnabled()

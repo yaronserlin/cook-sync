@@ -73,10 +73,6 @@ public class FullscreenImageActivity extends BaseActivity {
      * Hides the status and navigation bars for a full-bleed black canvas, matching common
      * photo-viewer UX. Bars can still be revealed with an edge swipe and are restored
      * automatically when this activity closes.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     private void enterImmersiveMode() {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
@@ -90,10 +86,6 @@ public class FullscreenImageActivity extends BaseActivity {
      * Loads the photo into the zoomable {@link PhotoView}, keeping it hidden behind the
      * progress spinner until the load actually succeeds, matching the "hide until ready"
      * pattern used for other images in the app.
-     *
-     * Complexity:
-     * Time: O(1) plus one asynchronous image load
-     * Space: O(1)
      *
      * @param imageUrl the image URL to load
      * @param photoView the zoomable target view

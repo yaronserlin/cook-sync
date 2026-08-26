@@ -129,10 +129,6 @@ public class AdminConsoleActivity extends BaseActivity {
      * Applies the active/inactive pill fill and text colors to a tab's custom view, matching
      * {@code CookSync.Button.FilterChip}'s runtime-tint convention.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param tab the tab whose custom view to style
      * @param selected whether this tab is the currently active one
      */

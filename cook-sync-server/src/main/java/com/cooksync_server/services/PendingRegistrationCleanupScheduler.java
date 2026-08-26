@@ -24,10 +24,6 @@ public class PendingRegistrationCleanupScheduler {
 
     /**
      * Runs once a day and delegates to {@link AuthService#purgeExpiredPendingRegistrations()}.
-     *
-     * Complexity:
-     * Time: O(P) where P is expired pending-registration row count
-     * Space: O(1)
      */
     @Scheduled(cron = "0 30 3 * * *")
     public void purgeExpiredPendingRegistrations() {

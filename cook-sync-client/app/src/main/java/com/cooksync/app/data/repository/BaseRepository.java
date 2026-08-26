@@ -56,10 +56,6 @@ public abstract class BaseRepository {
      * payloads (e.g. {@code ApiResponse<Void>}) as well as populated ones, since
      * {@code response.body().data()} is simply {@code null} in the former case.
      *
-     * Complexity:
-     * Time: O(1) plus one synchronous network round-trip
-     * Space: O(1)
-     *
      * @param <T> the type of the successful payload
      * @param call the Retrofit call to execute
      * @return {@link ApiResult.Success} on HTTP 2xx with {@code success=true},
@@ -111,10 +107,6 @@ public abstract class BaseRepository {
      * client-side search/filter/count logic keeps seeing the whole set, while each individual
      * HTTP request still stays bounded to {@link #LOOP_FETCH_PAGE_SIZE} rather than being
      * unbounded.
-     *
-     * Complexity:
-     * Time: O(P) network round-trips, where P is the number of pages the collection spans
-     * Space: O(N) where N is the total item count across all pages
      *
      * @param <T> the type of items contained within each page
      * @param callFactory produces the Retrofit call for a given (page, size) pair

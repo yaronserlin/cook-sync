@@ -27,10 +27,6 @@ final class RecipeImageUtils {
      * Collects all Cloudinary image URLs associated with a given recipe entity (primary/gallery
      * images, instruction step images, and description block images).
      *
-     * Complexity:
-     * Time: O(I + S + B) where I=images, S=instructions, B=descriptionBlocks
-     * Space: O(I + S + B)
-     *
      * @param recipe target recipe entity
      * @return list of image URL strings
      */

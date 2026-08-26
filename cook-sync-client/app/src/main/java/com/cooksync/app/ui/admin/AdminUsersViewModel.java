@@ -68,18 +68,17 @@ public class AdminUsersViewModel extends BaseViewModel {
      * Constructs the ViewModel with the given repository, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param adminRepository the repository used for the user directory and enable/disable calls
      */
     public AdminUsersViewModel(AdminRepository adminRepository) {
         this.adminRepository = adminRepository;
     }
 
+    /** @return observable user directory page (Loading → Success/Error), reflecting the current search/filter/sort */
     public LiveData<ApiResult<List<UserResponse>>> getUsersResult() { return usersResult; }
+    /** @return one-shot result of the most recent {@link #setUserEnabled} call, populated only on failure */
     public LiveData<Event<ApiResult<Void>>> getUserActionResult() { return userActionResult; }
+    /** @return total matching user count from the most recently loaded page, for the count label */
     public long getUsersTotalElements() { return usersTotalElements; }
 
     /**

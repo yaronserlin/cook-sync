@@ -29,10 +29,6 @@ public abstract class ApiResult<T> {
         /**
          * Constructs a successful result.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @param data the payload returned by the operation
          */
         public Success(T data) {
@@ -41,10 +37,6 @@ public abstract class ApiResult<T> {
 
         /**
          * Returns the successful payload.
-         *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
          *
          * @return the payload
          */
@@ -65,10 +57,6 @@ public abstract class ApiResult<T> {
         /**
          * Constructs a failed result.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @param message user-facing description of what went wrong
          * @param cause the underlying exception, or {@code null} if not applicable
          */
@@ -80,10 +68,6 @@ public abstract class ApiResult<T> {
         /**
          * Returns the user-facing error message.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @return the error message
          */
         public String getMessage() {
@@ -92,10 +76,6 @@ public abstract class ApiResult<T> {
 
         /**
          * Returns the underlying exception that caused this failure.
-         *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
          *
          * @return the cause, or {@code null} if not applicable
          */

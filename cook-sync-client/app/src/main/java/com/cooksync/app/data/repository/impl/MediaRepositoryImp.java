@@ -24,10 +24,6 @@ public class MediaRepositoryImp extends BaseRepository implements MediaRepositor
 
     /**
      * Constructs the repository against the shared authenticated Retrofit service.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      */
     public MediaRepositoryImp() {
         this.apiService = RetrofitClient.getInstance();

@@ -29,10 +29,6 @@ public final class RecipeFilterUtils {
      * previously lived independently in both {@code FavoritesViewModel} and
      * {@code MyRecipesViewModel}.
      *
-     * Complexity:
-     * Time: O(n) where n is {@code source.size()}
-     * Space: O(n) for the filtered copy
-     *
      * @param source the unfiltered recipe previews, or {@code null} to yield an empty result
      * @param query the search text, or {@code null}/blank to skip this filter
      * @return a new, filtered list
@@ -57,10 +53,6 @@ public final class RecipeFilterUtils {
     /**
      * Applies difficulty, minimum-rating, maximum-total-time, and tag filters to
      * {@code source}, then sorts the result. Does not mutate {@code source}.
-     *
-     * Complexity:
-     * Time: O(n log n) where n is {@code source.size()}, dominated by the final sort
-     * Space: O(n) for the filtered copy
      *
      * @param source the unfiltered recipe previews, or {@code null} to yield an empty result
      * @param difficulty required difficulty level, or {@code null} to skip this filter
@@ -122,10 +114,6 @@ public final class RecipeFilterUtils {
      * {@code RecipeCardAdapter} and {@code SearchResultAdapter}, in addition to this class's
      * own filter and sort branches above.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipe the recipe preview to measure
      * @return {@link RecipePreviewResponse#prepTimeMinutes()} plus {@link RecipePreviewResponse#cookTimeMinutes()}
      */
@@ -138,10 +126,6 @@ public final class RecipeFilterUtils {
      * used by every recipe card across the app. Extracted from duplicated logic that previously
      * lived independently in {@code RecipeCardAdapter}, {@code SearchResultAdapter}, and
      * {@code RecipeRowCardAdapter}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param averageRating the recipe's computed average rating, or {@code null} if unrated
      * @return {@code "0.0"} if {@code averageRating} is {@code null}, otherwise its value

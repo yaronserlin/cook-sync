@@ -26,10 +26,6 @@ public final class CloudinaryImageUtils {
     /**
      * Builds a square, content-aware-cropped thumbnail URL from a Cloudinary asset URL.
      *
-     * Complexity:
-     * Time: O(n) in the URL length
-     * Space: O(n) in the URL length
-     *
      * @param url the original Cloudinary asset URL, may be {@code null}/blank
      * @param sizePx the target width/height of the thumbnail, in pixels
      * @return the transformed thumbnail URL, or the original {@code url} if it is not a
@@ -52,10 +48,6 @@ public final class CloudinaryImageUtils {
     /**
      * Derives a two-letter initials string from a display name, matching the convention already
      * used across the app's avatar chips.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param displayName the name to derive initials from, may be {@code null}/blank
      * @return up to two uppercase initial characters, or {@code "?"} if unavailable

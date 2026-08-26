@@ -54,10 +54,6 @@ public class LoginActivity extends BaseActivity {
      * Inflates the layout, starts the skeleton shimmer, and kicks off the auto-login
      * token check if a session is present on device.
      *
-     * Complexity:
-     * Time: O(n) — n is the number of skeleton bone views found by {@link BaseActivity}
-     * Space: O(n)
-     *
      * @param savedInstanceState saved instance state bundle (may be {@code null})
      */
     @Override

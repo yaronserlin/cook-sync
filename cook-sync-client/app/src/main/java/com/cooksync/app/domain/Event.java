@@ -20,10 +20,6 @@ public class Event<T> {
     /**
      * Wraps a payload as a new, unhandled event.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param content the event payload
      */
     public Event(T content) {
@@ -32,10 +28,6 @@ public class Event<T> {
 
     /**
      * Returns the payload exactly once; every subsequent call returns {@code null}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @return the payload the first time this is called, {@code null} thereafter
      */

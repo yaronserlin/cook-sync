@@ -40,10 +40,6 @@ public class ReviewController {
     /**
      * Retrieves all review entries for a given recipe ID.
      *
-     * Complexity:
-     * Time: O(R) where R is review count for recipe
-     * Space: O(R)
-     *
      * @param recipeId target recipe ID
      * @param page page number
      * @param size page size

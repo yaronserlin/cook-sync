@@ -83,10 +83,6 @@ public class FavoriteServiceImp implements FavoriteService{
     /**
      * Retrieves all recipe preview entries bookmarked as favorite by the user.
      *
-     * Complexity:
-     * Time: O(F) where F is count of bookmarked favorite recipes
-     * Space: O(F)
-     *
      * @param userEmail authenticated user email address
      * @param page page number
      * @param size page size
@@ -114,10 +110,6 @@ public class FavoriteServiceImp implements FavoriteService{
      * the user opted out. Unlike {@link #getUserFavorites(String, int, int)}, this never attaches
      * personal note data, since another user's private notes must stay hidden regardless of this
      * setting.
-     *
-     * Complexity:
-     * Time: O(F) where F is count of bookmarked favorite recipes
-     * Space: O(F)
      *
      * @param userId target user ID
      * @param page page number

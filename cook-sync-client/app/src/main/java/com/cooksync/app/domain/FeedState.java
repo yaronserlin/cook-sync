@@ -26,10 +26,6 @@ public abstract class FeedState {
         /**
          * Constructs a loading state.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @param initial {@code true} if this is the first page load (no recipes shown yet),
          *                {@code false} if it is a subsequent page appended to an existing list
          */
@@ -39,10 +35,6 @@ public abstract class FeedState {
 
         /**
          * Returns whether this loading state is for the first page rather than a subsequent one.
-         *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
          *
          * @return {@code true} if this is the first page load
          */
@@ -59,10 +51,6 @@ public abstract class FeedState {
         /**
          * Constructs a successful feed state.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @param recipes the recipes loaded so far (the full accumulated list, not just the
          *                latest page)
          * @param hasMore {@code true} if another page is available to load
@@ -75,10 +63,6 @@ public abstract class FeedState {
         /**
          * Returns the recipes loaded so far.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @return the full accumulated recipe list
          */
         public List<RecipePreviewResponse> getRecipes() {
@@ -87,10 +71,6 @@ public abstract class FeedState {
 
         /**
          * Returns whether another page is available to load.
-         *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
          *
          * @return {@code true} if the feed has not yet reached its last page
          */
@@ -106,10 +86,6 @@ public abstract class FeedState {
         /**
          * Constructs a failed feed state.
          *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
-         *
          * @param message user-facing description of what went wrong
          */
         public Error(String message) {
@@ -118,10 +94,6 @@ public abstract class FeedState {
 
         /**
          * Returns the user-facing error message.
-         *
-         * Complexity:
-         * Time: O(1)
-         * Space: O(1)
          *
          * @return the error message
          */

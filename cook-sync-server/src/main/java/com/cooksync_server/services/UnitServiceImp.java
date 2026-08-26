@@ -31,10 +31,6 @@ public class UnitServiceImp implements UnitService{
     /**
      * Retrieves all measurement units configured in the system.
      *
-     * Complexity:
-     * Time: O(U) where U is total unit count
-     * Space: O(U)
-     *
      * @param page page number index
      * @param size page size limit
      * @return list of UnitResponse DTOs

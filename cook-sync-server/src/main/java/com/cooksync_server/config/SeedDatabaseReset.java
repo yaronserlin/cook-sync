@@ -20,10 +20,6 @@ final class SeedDatabaseReset {
      * Truncates every seedable table, temporarily disabling foreign-key checks so
      * the truncation order does not need to respect referential constraints.
      *
-     * Complexity:
-     * Time: O(T) where T is table count
-     * Space: O(1)
-     *
      * @param jdbcTemplate JDBC template used to issue the DDL statements
      */
     static void truncateAllTables(JdbcTemplate jdbcTemplate) {

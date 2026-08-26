@@ -42,10 +42,6 @@ public class NoteController {
     /**
      * Saves or updates a personal note for a recipe or instruction step.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param request note creation or update request DTO
      * @param authentication active user authentication token
      * @return response entity acknowledging note save operation
@@ -60,10 +56,6 @@ public class NoteController {
 
     /**
      * Deletes a personal note by unique note ID.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param noteId target note ID
      * @param authentication active user authentication token
@@ -80,10 +72,6 @@ public class NoteController {
     /**
      * Retrieves the general recipe-wide personal note for specified recipe ID.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeId target recipe ID
      * @param authentication active user authentication token
      * @return response entity containing NoteResponse DTO
@@ -98,10 +86,6 @@ public class NoteController {
 
     /**
      * Retrieves all personal notes attached to a recipe, including general and step-specific notes.
-     *
-     * Complexity:
-     * Time: O(N) where N is user note count for recipe
-     * Space: O(N)
      *
      * @param recipeId target recipe ID
      * @param page page number

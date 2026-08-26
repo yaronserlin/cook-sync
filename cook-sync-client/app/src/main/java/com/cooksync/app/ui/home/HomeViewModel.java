@@ -68,10 +68,6 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
      * Constructs the ViewModel with the given repositories, injected by
      * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param recipeRepository the repository used for feed/favorite calls
      * @param tagRepository the repository used to load the available tags
      */

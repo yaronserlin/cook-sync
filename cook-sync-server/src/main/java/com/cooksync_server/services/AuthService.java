@@ -25,6 +25,7 @@ public interface AuthService {
      *
      * @param request registration details payload
      * @return PendingRegistrationResponse acknowledging the pending registration and OTP expiry
+     * @throws com.cooksync_server.exceptions.auth.UserAlreadyExistsException if the email is already registered
      */
     PendingRegistrationResponse register(RegisterRequestDTO request);
 
@@ -35,6 +36,10 @@ public interface AuthService {
      *
      * @param request OTP verification payload
      * @return AuthResponse containing access token, refresh token, and user info
+     * @throws com.cooksync_server.exceptions.auth.InvalidOtpException if no pending registration exists for the email, or the submitted code does not match
+     * @throws com.cooksync_server.exceptions.auth.OtpExpiredException if the pending registration's code has expired
+     * @throws com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException if the incorrect-attempt limit for the pending code has just been exceeded by this call
+     * @throws com.cooksync_server.exceptions.auth.UserAlreadyExistsException if the email became registered to another account in the meantime
      */
     AuthResponse verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO request);
 
@@ -43,6 +48,7 @@ public interface AuthService {
      *
      * @param request resend request payload
      * @return PendingRegistrationResponse acknowledging the newly issued OTP and its expiry
+     * @throws com.cooksync_server.exceptions.auth.InvalidOtpException if no pending registration exists for the email
      */
     PendingRegistrationResponse resendRegistrationOtp(ResendRegistrationOtpRequestDTO request);
 
@@ -57,6 +63,8 @@ public interface AuthService {
      *
      * @param request login credentials payload
      * @return AuthResponse containing fresh tokens and user info
+     * @throws com.cooksync_server.exceptions.auth.InvalidCredentialsException if the email or password does not match
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the account is disabled and outside its deletion grace period
      */
     AuthResponse login(LoginRequestDTO request);
 
@@ -66,6 +74,7 @@ public interface AuthService {
      *
      * @param request refresh token request payload
      * @return AuthResponse containing the new access token and rotated refresh token
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the refresh token is not in the database or is invalid
      */
     AuthResponse refreshToken(TokenRefreshRequestDTO request);
 
@@ -75,6 +84,7 @@ public interface AuthService {
      *
      * @param userEmail authenticated user email
      * @return AuthResponse with profile details
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userEmail}
      */
     AuthResponse validateToken(String userEmail);
 
@@ -82,6 +92,7 @@ public interface AuthService {
      * Revokes the user's active refresh token upon logout.
      *
      * @param userEmail authenticated user email
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userEmail}
      */
     void logout(String userEmail);
 }

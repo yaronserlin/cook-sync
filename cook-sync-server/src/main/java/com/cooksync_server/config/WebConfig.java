@@ -21,10 +21,6 @@ public class WebConfig implements WebMvcConfigurer {
     /**
      * Configures global CORS mappings for REST API endpoints.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param registry CorsRegistry instance
      */
     @Override

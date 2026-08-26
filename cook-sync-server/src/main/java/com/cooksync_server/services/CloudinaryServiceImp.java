@@ -80,10 +80,6 @@ public class CloudinaryServiceImp implements CloudinaryService {
      * Deletes a single image asset from Cloudinary storage by parsing its public ID.
      * Safely catches any exception to ensure Cloudinary communication errors do not break DB transactions.
      *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
      * @param imageUrl target image URL string
      */
     @Override
@@ -106,10 +102,6 @@ public class CloudinaryServiceImp implements CloudinaryService {
      * {@code @EnableAsync} default executor) so this call returns immediately rather than
      * blocking the caller's database transaction for the duration of the Cloudinary round-trip.
      *
-     * Complexity:
-     * Time: O(N) where N is the number of URLs
-     * Space: O(1)
-     *
      * @param imageUrls list of target image URL strings
      */
     @Override
@@ -127,10 +119,6 @@ public class CloudinaryServiceImp implements CloudinaryService {
     /**
      * Deletes all image assets and the folder itself from Cloudinary storage. Runs
      * asynchronously for the same reason as {@link #deleteImages(List)}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
      *
      * @param folderPath target folder path to delete
      */

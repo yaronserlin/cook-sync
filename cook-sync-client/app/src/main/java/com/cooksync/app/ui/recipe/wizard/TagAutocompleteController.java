@@ -67,10 +67,6 @@ public final class TagAutocompleteController {
     /**
      * Refreshes the autocomplete suggestions to match the full tag catalog.
      *
-     * Complexity:
-     * Time: O(n) where n is the number of tags
-     * Space: O(n)
-     *
      * @param tags every tag currently known to the system
      */
     public void setAvailableTags(@NonNull List<TagResponse> tags) {
@@ -86,10 +82,6 @@ public final class TagAutocompleteController {
      * Submits whatever text is currently typed: selects the matching tag if one exists
      * (case-insensitive), otherwise requests creation of a new tag with that name. No-op if the
      * field is blank. Clears the field either way.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of available tags
-     * Space: O(1)
      */
     public void submitCurrentText() {
         String text = input.getText() == null ? "" : input.getText().toString().trim();
@@ -126,10 +118,6 @@ public final class TagAutocompleteController {
      * pending ones (typed but not yet created server-side; see
      * {@link AddRecipeViewModel#addPendingTag}) render identically as removable chips, since
      * the pending/resolved distinction is purely an internal publish-time concern.
-     *
-     * Complexity:
-     * Time: O(n + p) where n is the number of selected tags and p the number of pending ones
-     * Space: O(n + p)
      *
      * @param selectedTags the already-resolved tags currently attached to the draft
      * @param pendingTagNames names of tags selected but not yet created server-side

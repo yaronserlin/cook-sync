@@ -50,10 +50,6 @@ public final class LocalImageCache {
      * Copies {@code sourceUri} into this app's private cache directory on a background thread,
      * then invokes {@code callback} on the main thread with the resulting {@code file://} URI.
      *
-     * Complexity:
-     * Time: O(n) in the size of the source image, off the calling thread
-     * Space: O(1)
-     *
      * @param context any context; only {@link Context#getApplicationContext()} is retained
      * @param sourceUri the picker-granted URI to copy
      * @param filePrefix prefix for the cached file's name, also passed to {@link #clearCache} to
@@ -90,10 +86,6 @@ public final class LocalImageCache {
     /**
      * Deletes every cached file previously written under the given {@code filePrefix}, once none
      * of them is needed anymore.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of files in the app's cache directory
-     * Space: O(1)
      *
      * @param context any context; only {@link Context#getCacheDir()} is used
      * @param filePrefix the prefix passed to {@link #copyToPrivateCache} for the files to remove

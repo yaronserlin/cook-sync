@@ -55,10 +55,6 @@ public class LoginViewModel extends BaseViewModel {
      * the login call through the repository. Enforces a per-ViewModel rate limit to prevent
      * double-tap submission.
      *
-     * Complexity:
-     * Time: O(n) where n is the combined length of both field values
-     * Space: O(1)
-     *
      * @param rawEmail    raw text from the email {@code EditText}
      * @param rawPassword raw text from the password {@code EditText}
      */

@@ -45,10 +45,6 @@ public class ReviewServiceImp implements ReviewService{
     /**
      * Retrieves all review entries for a recipe ordered by creation date descending.
      *
-     * Complexity:
-     * Time: O(R) where R is review count for recipe
-     * Space: O(R)
-     *
      * @param recipeId target recipe ID
      * @param page page number
      * @param size page size
@@ -69,10 +65,6 @@ public class ReviewServiceImp implements ReviewService{
 
     /**
      * Adds a review to a recipe and recomputes the recipe's aggregate average rating.
-     *
-     * Complexity:
-     * Time: O(R) where R is total review count for recipe
-     * Space: O(1)
      *
      * @param recipeId target recipe ID
      * @param request review creation request DTO
@@ -106,10 +98,6 @@ public class ReviewServiceImp implements ReviewService{
      * Deletes a review entry following authorization checks, recomputes recipe average rating,
      * and clears any moderation reports filed against it first (a non-nullable foreign key
      * would otherwise block the deletion).
-     *
-     * Complexity:
-     * Time: O(R) where R is total review count for recipe
-     * Space: O(1)
      *
      * @param reviewId target review ID
      * @param userEmail user email address
