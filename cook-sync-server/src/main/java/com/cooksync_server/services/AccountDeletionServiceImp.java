@@ -149,9 +149,8 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
      * instructions, images, description blocks, reviews) are cleaned up by Hibernate; and
      * finally the user's remaining reviews, sessions, and any pending password-reset/email-change
      * codes are removed along with the user row itself — neither token table carries a foreign
-     * key to {@code users} (see {@code V2__realign_otp_tables.sql} and
-     * {@code V4__email_change_tokens.sql}), so both must be cleaned up explicitly here or a
-     * purged user would leave an orphaned row behind.
+     * key to {@code users} (see {@code V1__init_schema.sql}), so both must be cleaned up
+     * explicitly here or a purged user would leave an orphaned row behind.
      *
      * @param user the expired account to purge
      */

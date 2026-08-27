@@ -1,5 +1,7 @@
--- Initial MySQL Schema Migration for CookSync Server
--- Created: 2026-08-09
+-- Consolidated MySQL schema for CookSync Server.
+-- Supersedes and replaces the former V1-V4 migrations now that the database
+-- is being recreated from empty; this single file is the full schema as of
+-- 2026-08-27.
 
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -119,7 +121,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     user_id VARCHAR(36) NOT NULL,
     recipe_id VARCHAR(36) NOT NULL,
     rating DECIMAL(2, 1) NOT NULL,
-    title VARCHAR(255) NULL,
+    title VARCHAR(255) NOT NULL,
     comment TEXT NULL,
     reported BOOLEAN NOT NULL DEFAULT FALSE,
     hidden BOOLEAN NOT NULL DEFAULT FALSE,
@@ -156,8 +158,6 @@ CREATE TABLE IF NOT EXISTS recipe_images (
     recipe_id VARCHAR(36) NOT NULL,
     image_url VARCHAR(1000) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
     CONSTRAINT fk_images_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -172,14 +172,34 @@ CREATE TABLE IF NOT EXISTS description_blocks (
     CONSTRAINT fk_desc_blocks_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- password_reset_tokens and email_change_tokens intentionally have no FK to
+-- users and no explicit charset/collation, so both tables adopt whichever
+-- defaults users.id ends up with on any given deployment target. Both hold
+-- only short-lived OTP state (rows are deleted the moment they're consumed
+-- and otherwise expire in minutes), so the missing ON DELETE CASCADE costs
+-- nothing: AccountDeletionService#purgeAccountImmediately deletes them
+-- explicitly before removing the user. The indexes below keep
+-- PasswordResetTokenRepository/EmailChangeTokenRepository's findByUserId and
+-- deleteByUserId paths indexed despite the missing foreign key.
+
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
     code_hash VARCHAR(255) NOT NULL,
     expiry_date DATETIME(6) NOT NULL,
     attempt_count INT NOT NULL DEFAULT 0,
-    CONSTRAINT fk_reset_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    INDEX idx_password_reset_tokens_user (user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS email_change_tokens (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    new_email VARCHAR(255) NOT NULL,
+    code_hash VARCHAR(255) NOT NULL,
+    expiry_date DATETIME(6) NOT NULL,
+    attempt_count INT NOT NULL DEFAULT 0,
+    INDEX idx_email_change_tokens_user (user_id)
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pending_registrations (
     id VARCHAR(36) NOT NULL PRIMARY KEY,

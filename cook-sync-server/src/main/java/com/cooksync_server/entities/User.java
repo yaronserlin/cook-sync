@@ -38,6 +38,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String id;
 
     @Column(name = "first_name", nullable = false, length = 255)

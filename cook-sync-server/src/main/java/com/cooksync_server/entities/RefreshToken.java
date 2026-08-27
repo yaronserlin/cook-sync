@@ -36,6 +36,7 @@ public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String id;
 
     @OneToOne(fetch = FetchType.LAZY)
