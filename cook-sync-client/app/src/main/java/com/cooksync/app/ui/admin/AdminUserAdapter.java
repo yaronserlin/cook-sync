@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,7 +22,7 @@ import java.util.List;
 
 /**
  * Adapter for the Admin Console's Users tab: renders each account row with its status tag and
- * enable/disable toggle, and forwards the mail action to the hosting fragment.
+ * enable/disable toggle.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -38,9 +37,6 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
          * @param enabled the new enabled state requested (opposite of the user's current one)
          */
         void onToggleEnabled(UserResponse user, boolean enabled);
-
-        /** @param user the row whose mail action was tapped */
-        void onEmail(UserResponse user);
 
         /** @param user the row that was long-pressed, to start the permanent-delete flow */
         void onDeleteUser(UserResponse user);
@@ -117,9 +113,6 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
         holder.toggleEnabled.setOnClickListener(v -> {
             if (listener != null) listener.onToggleEnabled(user, !user.enabled());
         });
-        holder.emailButton.setOnClickListener(v -> {
-            if (listener != null) listener.onEmail(user);
-        });
         holder.itemView.setOnLongClickListener(v -> {
             if (listener != null) listener.onDeleteUser(user);
             return true;
@@ -133,7 +126,6 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
         TextView email;
         TextView status;
         MaterialButton toggleEnabled;
-        ImageButton emailButton;
 
         ViewHolder(View view) {
             super(view);
@@ -143,7 +135,6 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
             email = view.findViewById(R.id.tv_user_email);
             status = view.findViewById(R.id.tv_user_status);
             toggleEnabled = view.findViewById(R.id.btn_user_toggle_enabled);
-            emailButton = view.findViewById(R.id.btn_user_email);
         }
     }
 }

@@ -392,7 +392,6 @@
     <string name="admin_merge_option_format">%1$s · %2$d recipes</string>
 
     <string name="admin_users_search_hint">Name or email</string>
-    <string name="admin_email_user_desc">Email this user</string>
     <string name="admin_users_filter_all">All</string>
     <string name="admin_users_filter_active">Active</string>
     <string name="admin_users_filter_deactivated">Deactivated</string>

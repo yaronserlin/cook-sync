@@ -114,17 +114,6 @@
             tools:text="Suspend"
             tools:textColor="@color/color_danger" />
 
-        <ImageButton
-            android:id="@+id/btn_user_email"
-            android:layout_width="@dimen/dp_36"
-            android:layout_height="@dimen/dp_36"
-            android:layout_marginStart="@dimen/dp_6"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/admin_email_user_desc"
-            android:padding="@dimen/dp_8"
-            android:src="@drawable/ic_mail"
-            app:tint="@color/color_text" />
-
     </LinearLayout>
 
 </LinearLayout>

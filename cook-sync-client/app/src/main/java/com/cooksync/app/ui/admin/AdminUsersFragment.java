@@ -1,8 +1,6 @@
 package com.cooksync.app.ui.admin;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -228,15 +226,6 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                             getString(R.string.action_cancel),
                             () -> viewModel.deleteUser(user));
                 });
-    }
-
-    @Override
-    public void onEmail(UserResponse user) {
-        if (user.email() == null) return;
-        Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + user.email()));
-        if (intent.resolveActivity(requireContext().getPackageManager()) != null) {
-            startActivity(intent);
-        }
     }
 
     @Override
