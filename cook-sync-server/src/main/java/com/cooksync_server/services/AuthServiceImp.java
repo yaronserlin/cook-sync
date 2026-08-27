@@ -10,13 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dtos.request.auth.LoginRequestDTO;
-import com.dtos.request.auth.RegisterRequestDTO;
-import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
-import com.dtos.request.auth.TokenRefreshRequestDTO;
-import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
-import com.dtos.response.auth.AuthResponse;
-import com.dtos.response.auth.PendingRegistrationResponse;
 import com.cooksync_server.entities.PendingRegistration;
 import com.cooksync_server.entities.RefreshToken;
 import com.cooksync_server.entities.User;
@@ -29,14 +22,22 @@ import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.exceptions.auth.UserAlreadyExistsException;
 import com.cooksync_server.repositories.PendingRegistrationRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.auth.LoginRequestDTO;
+import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
+import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
+import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.auth.PendingRegistrationResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service class handling user registration (with OTP verification) and session/token
- * authentication: login, refresh-token rotation, and token validation. Profile management lives
- * in {@link UserProfileServiceImp}; password change/reset lives in {@link PasswordServiceImp}.
- * Includes SLF4J structured logging for monitoring security events.
+ * Service class handling user registration (with OTP verification) and
+ * session/token authentication: login, refresh-token rotation, and token
+ * validation. Profile management lives in {@link UserProfileServiceImp};
+ * password change/reset lives in {@link PasswordServiceImp}. Includes SLF4J
+ * structured logging for monitoring security events.
  *
  * @author Yaron Serlin
  * @version 2.0
@@ -46,16 +47,28 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class AuthServiceImp implements AuthService {
 
-    /** Grace period after a deletion request during which logging back in restores the account. */
+    /**
+     * Grace period after a deletion request during which logging back in
+     * restores the account.
+     */
     private static final long DELETION_GRACE_PERIOD_DAYS = 30;
 
-    /** How many minutes a registration OTP code remains valid after being issued or resent. */
+    /**
+     * How many minutes a registration OTP code remains valid after being issued
+     * or resent.
+     */
     private static final int OTP_VALIDITY_MINUTES = 10;
 
-    /** {@link #OTP_VALIDITY_MINUTES} expressed in milliseconds, for {@link Instant} arithmetic. */
+    /**
+     * {@link #OTP_VALIDITY_MINUTES} expressed in milliseconds, for
+     * {@link Instant} arithmetic.
+     */
     private static final long OTP_VALIDITY_MS = OTP_VALIDITY_MINUTES * 60 * 1000L;
 
-    /** Grace period past OTP expiry before an abandoned pending registration is purged. */
+    /**
+     * Grace period past OTP expiry before an abandoned pending registration is
+     * purged.
+     */
     private static final long PENDING_REGISTRATION_PURGE_GRACE_DAYS = 1;
 
     private final UserRepository userRepository;
@@ -68,15 +81,19 @@ public class AuthServiceImp implements AuthService {
     private final String dummyPasswordHash;
 
     /**
-     * Constructs AuthServiceImp with required dependencies and initializes timing attack dummy hash.
+     * Constructs AuthServiceImp with required dependencies and initializes
+     * timing attack dummy hash.
      *
      * @param userRepository repository for user persistence
      * @param passwordEncoder encoder for BCrypt password hashing
      * @param refreshTokenService service for managing session refresh tokens
-     * @param pendingRegistrationRepository repository for unverified registration attempts
+     * @param pendingRegistrationRepository repository for unverified
+     * registration attempts
      * @param emailService service used to deliver registration OTP emails
-     * @param accountDeletionService service handling the self-service account-deletion lifecycle
-     * @param sessionIssuer service issuing access/refresh token pairs for a user
+     * @param accountDeletionService service handling the self-service
+     * account-deletion lifecycle
+     * @param sessionIssuer service issuing access/refresh token pairs for a
+     * user
      */
     public AuthServiceImp(UserRepository userRepository, PasswordEncoder passwordEncoder,
             RefreshTokenService refreshTokenService, PendingRegistrationRepository pendingRegistrationRepository,
@@ -92,14 +109,18 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Initiates registration for a new account: validates the email is not already registered,
-     * stores the submitted profile details and a hashed password in a pending state, and emails
-     * a one-time 6-digit verification code. No account is created and no tokens are issued until
-     * the code is confirmed via {@link #verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO)} —
-     * if the user never completes verification, nothing survives past the pending row's expiry.
+     * Initiates registration for a new account: validates the email is not
+     * already registered, stores the submitted profile details and a hashed
+     * password in a pending state, and emails a one-time 6-digit verification
+     * code. No account is created and no tokens are issued until the code is
+     * confirmed via
+     * {@link #verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO)} — if the
+     * user never completes verification, nothing survives past the pending
+     * row's expiry.
      *
      * @param request registration details payload
-     * @return PendingRegistrationResponse acknowledging the pending registration and OTP expiry
+     * @return PendingRegistrationResponse acknowledging the pending
+     * registration and OTP expiry
      * @throws UserAlreadyExistsException if the email is already registered
      */
     @Transactional
@@ -136,20 +157,26 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Completes registration by validating a submitted OTP code against its pending
-     * registration. On success, creates the real user account from the pending data, deletes the
-     * pending row, and issues initial access and refresh tokens exactly as registration did
-     * prior to the OTP step. Incorrect codes increment the pending registration's attempt count;
-     * once {@link OtpCodeGenerator#MAX_ATTEMPTS} incorrect attempts accumulate, the pending
-     * registration is invalidated and the user must submit the registration form again for a
-     * fresh code.
+     * Completes registration by validating a submitted OTP code against its
+     * pending registration. On success, creates the real user account from the
+     * pending data, deletes the pending row, and issues initial access and
+     * refresh tokens exactly as registration did prior to the OTP step.
+     * Incorrect codes increment the pending registration's attempt count; once
+     * {@link OtpCodeGenerator#MAX_ATTEMPTS} incorrect attempts accumulate, the
+     * pending registration is invalidated and the user must submit the
+     * registration form again for a fresh code.
      *
      * @param request OTP verification payload
-     * @return AuthResponse containing access token, refresh token, and user info
-     * @throws InvalidOtpException if no pending registration exists for the email, or the submitted code does not match
-     * @throws OtpExpiredException if the pending registration's code has expired
-     * @throws TooManyOtpAttemptsException if the incorrect-attempt limit for the pending code has just been exceeded by this call
-     * @throws UserAlreadyExistsException if the email became registered to another account in the meantime
+     * @return AuthResponse containing access token, refresh token, and user
+     * info
+     * @throws InvalidOtpException if no pending registration exists for the
+     * email, or the submitted code does not match
+     * @throws OtpExpiredException if the pending registration's code has
+     * expired
+     * @throws TooManyOtpAttemptsException if the incorrect-attempt limit for
+     * the pending code has just been exceeded by this call
+     * @throws UserAlreadyExistsException if the email became registered to
+     * another account in the meantime
      */
     @Transactional(noRollbackFor = {InvalidOtpException.class, TooManyOtpAttemptsException.class})
     public AuthResponse verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO request) {
@@ -192,13 +219,16 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Regenerates and re-emails a fresh OTP code for an existing pending registration,
-     * restarting its expiry window and resetting its incorrect-attempt count. Used when the
-     * previous code expired or was not received.
+     * Regenerates and re-emails a fresh OTP code for an existing pending
+     * registration, restarting its expiry window and resetting its
+     * incorrect-attempt count. Used when the previous code expired or was not
+     * received.
      *
      * @param request resend request payload
-     * @return PendingRegistrationResponse acknowledging the newly issued OTP and its expiry
-     * @throws InvalidOtpException if no pending registration exists for the email
+     * @return PendingRegistrationResponse acknowledging the newly issued OTP
+     * and its expiry
+     * @throws InvalidOtpException if no pending registration exists for the
+     * email
      */
     @Transactional
     public PendingRegistrationResponse resendRegistrationOtp(ResendRegistrationOtpRequestDTO request) {
@@ -219,10 +249,11 @@ public class AuthServiceImp implements AuthService {
 
     /**
      * Purges every pending registration whose OTP has been expired for at least
-     * {@link #PENDING_REGISTRATION_PURGE_GRACE_DAYS}, cleaning up abandoned registration
-     * attempts that were never verified.
+     * {@link #PENDING_REGISTRATION_PURGE_GRACE_DAYS}, cleaning up abandoned
+     * registration attempts that were never verified.
      */
     @Transactional
+    @Override
     public void purgeExpiredPendingRegistrations() {
         Instant cutoff = Instant.now().minus(PENDING_REGISTRATION_PURGE_GRACE_DAYS, ChronoUnit.DAYS);
         pendingRegistrationRepository.deleteByOtpExpiresAtBefore(cutoff);
@@ -230,12 +261,15 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Authenticates user credentials with constant-time password comparison to prevent timing attacks.
+     * Authenticates user credentials with constant-time password comparison to
+     * prevent timing attacks.
      *
      * @param request login credentials payload
      * @return AuthResponse containing fresh tokens and user info
-     * @throws InvalidCredentialsException if the email or password does not match
-     * @throws UnauthorizedActionException if the account is disabled and outside its deletion grace period
+     * @throws InvalidCredentialsException if the email or password does not
+     * match
+     * @throws UnauthorizedActionException if the account is disabled and
+     * outside its deletion grace period
      */
     @Transactional
     public AuthResponse login(LoginRequestDTO request) {
@@ -263,17 +297,21 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Renews the access token using a valid refresh token payload. The refresh token itself is
-     * rotated on every use: the presented token is deleted and replaced with a newly issued one
-     * (via {@link RefreshTokenServiceImp#createRefreshToken(String)}, which already deletes any
-     * prior token for the user before saving the new one). Because only one refresh token per
-     * user is ever valid at a time, replaying an already-rotated token fails immediately with
-     * {@link UnauthorizedActionException} the next time it is presented, since it no longer
-     * exists in the database.
+     * Renews the access token using a valid refresh token payload. The refresh
+     * token itself is rotated on every use: the presented token is deleted and
+     * replaced with a newly issued one (via
+     * {@link RefreshTokenServiceImp#createRefreshToken(String)}, which already
+     * deletes any prior token for the user before saving the new one). Because
+     * only one refresh token per user is ever valid at a time, replaying an
+     * already-rotated token fails immediately with
+     * {@link UnauthorizedActionException} the next time it is presented, since
+     * it no longer exists in the database.
      *
      * @param request refresh token request payload
-     * @return AuthResponse containing new access token and newly rotated refresh token
-     * @throws UnauthorizedActionException if the refresh token is not in the database or is invalid
+     * @return AuthResponse containing new access token and newly rotated
+     * refresh token
+     * @throws UnauthorizedActionException if the refresh token is not in the
+     * database or is invalid
      */
     @Transactional
     public AuthResponse refreshToken(TokenRefreshRequestDTO request) {
@@ -287,7 +325,8 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Validates active JWT token context and returns user profile details without issuing new tokens.
+     * Validates active JWT token context and returns user profile details
+     * without issuing new tokens.
      *
      * @param userEmail authenticated user email
      * @return AuthResponse with profile details
@@ -315,14 +354,17 @@ public class AuthServiceImp implements AuthService {
     }
 
     /**
-     * Determines whether a disabled account is still within its 30-day account-deletion grace
-     * period and therefore eligible to be restored by logging back in, as opposed to a plain
-     * deactivation (never self-service restorable) or an already-lapsed deletion request (the
-     * scheduled purge job should have already erased it, but login is rejected defensively
-     * either way since {@link #login(LoginRequestDTO)} only reaches this check for existing rows).
+     * Determines whether a disabled account is still within its 30-day
+     * account-deletion grace period and therefore eligible to be restored by
+     * logging back in, as opposed to a plain deactivation (never self-service
+     * restorable) or an already-lapsed deletion request (the scheduled purge
+     * job should have already erased it, but login is rejected defensively
+     * either way since {@link #login(LoginRequestDTO)} only reaches this check
+     * for existing rows).
      *
      * @param user the disabled account attempting to log in
-     * @return true if the account has a pending deletion request within the grace period
+     * @return true if the account has a pending deletion request within the
+     * grace period
      */
     private boolean isWithinDeletionGracePeriod(User user) {
         return user.getStatus() == User.AccountStatus.DEACTIVATED
