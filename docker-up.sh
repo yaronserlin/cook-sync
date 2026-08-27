@@ -11,16 +11,16 @@
 set -euo pipefail
 
 profile=""
-compose_args=()
+cmd=(docker compose up --build)
 for arg in "$@"; do
     case "$arg" in
         --seed)
             profile="seed"
             ;;
         *)
-            compose_args+=("$arg")
+            cmd+=("$arg")
             ;;
     esac
 done
 
-SPRING_PROFILES_ACTIVE="$profile" docker compose up --build "${compose_args[@]}"
+SPRING_PROFILES_ACTIVE="$profile" "${cmd[@]}"
