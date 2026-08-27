@@ -127,14 +127,14 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 .city("Israel")
                 .bio("Admin of this app.")
                 .build();
-        User gaya = User.builder()
-                .firstName("Gaya").lastName("Oppenheimer").email("gayaankor@gmail.com")
+        User creator = User.builder()
+                .firstName("Noa").lastName("Peretz").email("noa.peretz@cooksync.com")
                 .passwordHash(passwordEncoder.encode("Password123!"))
                 .isAdmin(false)
-                .city("Harduf")
+                .city("Galilee")
                 .bio("\"Vegan through the stomach\" - My mission is to make delicious vegan pastry and give it to everyone to see that vegan can be GOOD!")
                 .build();
-        return userRepository.save(gaya);
+        return userRepository.save(creator);
     }
 
     private Map<String, Tag> getTagMap(List<Tag> tags) {

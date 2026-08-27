@@ -44,9 +44,13 @@ import java.util.stream.Collectors;
 
 /**
  * Data Seeder component for initializing the database under the 'seed' active profile.
- * Populates 30 authentic culinary recipes, real user profiles, detailed step instructions with timers,
- * reviews, favorites, and automatically uploads all media assets (avatars, recipe covers, step photos)
- * directly to Cloudinary storage.
+ * Populates 30 authentic culinary recipes, realistic user profiles, detailed step instructions with
+ * timers, reviews, favorites, and personal notes. When Cloudinary credentials
+ * ({@code CLOUDINARY_CLOUD_NAME}/{@code CLOUDINARY_API_KEY}/{@code CLOUDINARY_API_SECRET}) are
+ * configured, every referenced media asset (avatars, recipe covers, step photos) is uploaded to
+ * Cloudinary; otherwise the seeder detects the missing credentials up front, skips upload
+ * attempts entirely, and seeds using the original stock image URLs directly, so the app runs
+ * without a Cloudinary account.
  *
  * @author Yaron Serlin
  * @version 2.0
@@ -85,7 +89,12 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        log.info(">>> Starting database reset and realistic seeding with Cloudinary media upload...");
+        if (isCloudinaryConfigured()) {
+            log.info(">>> Starting database reset and realistic seeding with Cloudinary media upload...");
+        } else {
+            log.warn(">>> Cloudinary credentials are not configured (CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET). "
+                    + "Seeding will use the original stock image URLs directly, skipping upload.");
+        }
 
         clearDatabase();
         List<Unit> units = seedUnits();
@@ -100,8 +109,22 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
+     * Reports whether real Cloudinary credentials are present. When they are not (e.g. local
+     * development or CI without a Cloudinary account), the seeder skips upload attempts entirely
+     * rather than making network calls that are guaranteed to fail.
+     *
+     * @return {@code true} if cloud name, API key, and API secret are all non-blank
+     */
+    private boolean isCloudinaryConfigured() {
+        return cloudinary != null
+                && cloudinary.config.cloudName != null && !cloudinary.config.cloudName.isBlank()
+                && cloudinary.config.apiKey != null && !cloudinary.config.apiKey.isBlank()
+                && cloudinary.config.apiSecret != null && !cloudinary.config.apiSecret.isBlank();
+    }
+
+    /**
      * Uploads a remote image URL to Cloudinary and returns the generated secure Cloudinary URL.
-     * If Cloudinary is unavailable or upload fails, gracefully falls back to the original URL.
+     * If Cloudinary is not configured or the upload fails, gracefully falls back to the original URL.
      *
      * @param imageUrl original image HTTP URL
      * @param folder Cloudinary target folder (e.g., "[baseFolder]/[userEmail]/avatar", "[baseFolder]/[userEmail]/[recipeTitle]")
@@ -109,7 +132,7 @@ public class DataSeeder implements CommandLineRunner {
      * @return Cloudinary secure URL or fallback original URL
      */
     private String uploadToCloudinary(String imageUrl, String folder, String publicId) {
-        if (imageUrl == null || imageUrl.isBlank()) {
+        if (imageUrl == null || imageUrl.isBlank() || !isCloudinaryConfigured()) {
             return imageUrl;
         }
         String cacheKey = folder + "/" + publicId + ":" + imageUrl;
@@ -118,21 +141,19 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         try {
-            if (cloudinary != null) {
-                Map<String, Object> options = new HashMap<>();
-                options.put("folder", folder);
-                options.put("public_id", publicId);
-                options.put("overwrite", true);
-                options.put("resource_type", "auto");
+            Map<String, Object> options = new HashMap<>();
+            options.put("folder", folder);
+            options.put("public_id", publicId);
+            options.put("overwrite", true);
+            options.put("resource_type", "auto");
 
-                @SuppressWarnings("unchecked")
-                Map<String, Object> uploadResult = cloudinary.uploader().upload(imageUrl, options);
-                String secureUrl = (String) uploadResult.get("secure_url");
-                if (secureUrl != null && !secureUrl.isBlank()) {
-                    log.info("Uploaded to Cloudinary: [{}] -> [{}] (Folder: {}, PublicID: {})", imageUrl, secureUrl, folder, publicId);
-                    cloudinaryCache.put(cacheKey, secureUrl);
-                    return secureUrl;
-                }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(imageUrl, options);
+            String secureUrl = (String) uploadResult.get("secure_url");
+            if (secureUrl != null && !secureUrl.isBlank()) {
+                log.info("Uploaded to Cloudinary: [{}] -> [{}] (Folder: {}, PublicID: {})", imageUrl, secureUrl, folder, publicId);
+                cloudinaryCache.put(cacheKey, secureUrl);
+                return secureUrl;
             }
         } catch (Exception e) {
             log.warn("Cloudinary upload failed for [{}] (Folder: {}, PublicID: {}): {}. Using original URL fallback.",
@@ -227,7 +248,7 @@ public class DataSeeder implements CommandLineRunner {
         };
 
         List<User> initialUsers = List.of(
-                User.builder().firstName("Yaron").lastName("Serlin").email("yaron@gmail.com")
+                User.builder().firstName("Yaron").lastName("Serlin").email("yaron@cooksync.com")
                         .passwordHash(passwordEncoder.encode("123456aA!")).isAdmin(true)
                         .city("Tel Aviv").bio("Executive chef & food scientist passionate about Mediterranean and Italian cuisine.").build(),
                 User.builder().firstName("Admin").lastName("User").email("admin@cooksync.com")
@@ -331,15 +352,15 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Spaghetti", "200", getUnit(unitMap, "g")),
-                        createIng("Guanciale or Pancetta", "100", getUnit(unitMap, "g")),
+                        createIng("Guanciale", "100", getUnit(unitMap, "g")),
                         createIng("Egg Yolks", "4", getUnit(unitMap, "piece")),
-                        createIng("Pecorino Romano Cheese", "50", getUnit(unitMap, "g")),
+                        createIng("Pecorino Romano", "50", getUnit(unitMap, "g")),
                         createIng("Black Pepper", "1", getUnit(unitMap, "tsp"))
                 ),
                 List.of(
                         createStep(1, "Bring a large pot of salted water to a boil and cook spaghetti until al dente.", true, 540, "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80", 0),
                         createStep(2, "Crisp sliced guanciale in a skillet over medium heat until golden and fat renders.", true, 360, null, 1),
-                        createStep(3, "Whisk egg yolks with grated Pecorino Romano and freshly cracked pepper until creamy.", false, null, null, 2, 3, 4),
+                        createStep(3, "Whisk egg yolks with grated Pecorino Romano and freshly cracked black pepper until creamy.", false, null, null, 2, 3, 4),
                         createStep(4, "Toss hot drained pasta into the skillet, remove from heat, and quickly stir in the egg mixture to create a glossy emulsion.", false, null, null)
                 )
         ));
@@ -354,16 +375,17 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Eggs", "5", getUnit(unitMap, "piece")),
-                        createIng("Ripe Tomatoes", "4", getUnit(unitMap, "piece")),
+                        createIng("Tomatoes", "4", getUnit(unitMap, "piece")),
                         createIng("Red Bell Pepper", "1", getUnit(unitMap, "piece")),
                         createIng("Garlic Cloves", "3", getUnit(unitMap, "clove")),
-                        createIng("Cumin & Smoked Paprika", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Cumin", "1", getUnit(unitMap, "tsp")),
+                        createIng("Smoked Paprika", "1", getUnit(unitMap, "tsp")),
                         createIng("Crumbled Feta Cheese", "80", getUnit(unitMap, "g"))
                 ),
                 List.of(
-                        createStep(1, "Sauté chopped peppers, onion, and minced garlic in olive oil until tender.", true, 300, null, 2, 3),
-                        createStep(2, "Add diced tomatoes, cumin, and paprika. Simmer until sauce thickens.", true, 600, "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200&q=80", 1, 4),
-                        createStep(3, "Make small wells in sauce, crack in eggs, cover, and gently poach until whites are set.", true, 420, null, 0, 5)
+                        createStep(1, "Sauté chopped red bell pepper, onion, and minced garlic cloves in olive oil until tender.", true, 300, null, 2, 3),
+                        createStep(2, "Add diced tomatoes, cumin, and smoked paprika. Simmer until sauce thickens.", true, 600, "https://images.unsplash.com/photo-1590412200988-a436970781fa?auto=format&fit=crop&w=1200&q=80", 1, 4, 5),
+                        createStep(3, "Make small wells in the sauce, crack in the eggs, cover, and gently poach until the whites are set. Finish with a scatter of crumbled feta cheese.", true, 420, null, 0, 6)
                 )
         ));
 
@@ -378,15 +400,16 @@ public class DataSeeder implements CommandLineRunner {
                 List.of(
                         createIng("Chicken Thighs", "400", getUnit(unitMap, "g")),
                         createIng("Soy Sauce", "3", getUnit(unitMap, "tbsp")),
-                        createIng("Mirin & Sake", "2", getUnit(unitMap, "tbsp")),
-                        createIng("Honey or Sugar", "1", getUnit(unitMap, "tbsp")),
-                        createIng("Steamed Jasmine Rice", "2", getUnit(unitMap, "cup")),
-                        createIng("Steamed Broccoli Florets", "1", getUnit(unitMap, "cup"))
+                        createIng("Mirin", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Sake", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Honey", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Jasmine Rice", "2", getUnit(unitMap, "cup")),
+                        createIng("Broccoli", "1", getUnit(unitMap, "cup"))
                 ),
                 List.of(
-                        createStep(1, "Sear chicken skin-side down in a hot skillet until crispy and golden.", true, 360, null, 0),
-                        createStep(2, "Pour in soy sauce, mirin, sake, and honey, simmering until sauce forms a thick sticky glaze.", true, 300, null, 1, 2, 3),
-                        createStep(3, "Slice chicken, place over steamed rice with broccoli, and drizzle generously with sauce.", false, null, null, 4, 5)
+                        createStep(1, "Sear the chicken thighs skin-side down in a hot skillet until crispy and golden.", true, 360, null, 0),
+                        createStep(2, "Pour in soy sauce, mirin, sake, and honey, simmering until sauce forms a thick sticky glaze.", true, 300, null, 1, 2, 3, 4),
+                        createStep(3, "Slice the chicken, place over steamed jasmine rice with broccoli, and drizzle generously with the teriyaki sauce.", false, null, null, 5, 6)
                 )
         ));
 
@@ -399,16 +422,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Beef Chuck Roast", "1", getUnit(unitMap, "kg")),
-                        createIng("Dried Guajillo & Ancho Chilies", "6", getUnit(unitMap, "piece")),
+                        createIng("Beef Chuck", "1", getUnit(unitMap, "kg")),
+                        createIng("Guajillo Chilies", "3", getUnit(unitMap, "piece")),
+                        createIng("Ancho Chilies", "3", getUnit(unitMap, "piece")),
                         createIng("Beef Broth", "1", getUnit(unitMap, "l")),
                         createIng("Corn Tortillas", "12", getUnit(unitMap, "piece")),
-                        createIng("Shredded Oaxaca Cheese", "200", getUnit(unitMap, "g"))
+                        createIng("Oaxaca Cheese", "200", getUnit(unitMap, "g"))
                 ),
                 List.of(
-                        createStep(1, "Rehydrate dried chilies, blend with garlic and spices, and marinate beef.", false, null, null, 0, 1),
-                        createStep(2, "Slow braise beef in broth until melt-in-your-mouth tender, then shred finely.", true, 7200, null, 2),
-                        createStep(3, "Dip tortillas into consommé, fill with cheese and shredded beef, fold and fry till crispy.", true, 300, null, 3, 4)
+                        createStep(1, "Rehydrate the dried guajillo chilies and ancho chilies, blend with garlic and spices, and marinate the beef chuck.", false, null, null, 1, 2, 0),
+                        createStep(2, "Slow braise the beef chuck in beef broth until melt-in-your-mouth tender, then shred finely.", true, 7200, null, 3),
+                        createStep(3, "Dip the corn tortillas into consommé, fill with oaxaca cheese and shredded beef, fold and fry till crispy.", true, 300, null, 4, 5)
                 )
         ));
 
@@ -424,12 +448,12 @@ public class DataSeeder implements CommandLineRunner {
                         createIng("Chicken Breast Cutlets", "500", getUnit(unitMap, "g")),
                         createIng("Heavy Cream", "1", getUnit(unitMap, "cup")),
                         createIng("Sun-Dried Tomatoes", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Fresh Baby Spinach", "2", getUnit(unitMap, "cup")),
+                        createIng("Fresh Spinach", "2", getUnit(unitMap, "cup")),
                         createIng("Garlic Cloves", "4", getUnit(unitMap, "clove"))
                 ),
                 List.of(
                         createStep(1, "Season and pan-sear chicken breast cutlets until golden on both sides.", true, 480, null, 0),
-                        createStep(2, "Sauté garlic and sun-dried tomatoes, then pour in heavy cream and simmer.", true, 300, null, 1, 2, 4),
+                        createStep(2, "Sauté the garlic cloves and sun-dried tomatoes, then pour in the heavy cream and simmer.", true, 300, null, 1, 2, 4),
                         createStep(3, "Stir in fresh spinach until wilted, return chicken to pan, and spoon sauce over top.", true, 180, null, 3)
                 )
         ));
@@ -443,15 +467,16 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Vine Tomatoes", "3", getUnit(unitMap, "piece")),
-                        createIng("English Cucumber", "1", getUnit(unitMap, "piece")),
+                        createIng("Tomatoes", "3", getUnit(unitMap, "piece")),
+                        createIng("Cucumber", "1", getUnit(unitMap, "piece")),
                         createIng("Kalamata Olives", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Block Greek Feta", "150", getUnit(unitMap, "g")),
-                        createIng("Extra Virgin Olive Oil & Oregano", "3", getUnit(unitMap, "tbsp"))
+                        createIng("Feta Cheese", "150", getUnit(unitMap, "g")),
+                        createIng("Olive Oil", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Oregano", "1", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
                         createStep(1, "Chop tomatoes and cucumber into thick bitesize chunks and slice red onion thinly.", false, null, null, 0, 1),
-                        createStep(2, "Combine vegetables and olives in a bowl, drizzle generously with olive oil and wild oregano.", false, null, null, 2, 4),
+                        createStep(2, "Combine the vegetables and kalamata olives in a bowl, drizzle generously with olive oil and wild oregano.", false, null, null, 2, 4, 5),
                         createStep(3, "Top with a full block of feta cheese and serve chilled with crusty bread.", false, null, null, 3)
                 )
         ));
@@ -468,11 +493,11 @@ public class DataSeeder implements CommandLineRunner {
                         createIng("Egg Whites", "3", getUnit(unitMap, "piece")),
                         createIng("Egg Yolks", "2", getUnit(unitMap, "piece")),
                         createIng("Cake Flour", "40", getUnit(unitMap, "g")),
-                        createIng("Uji Matcha Powder", "1", getUnit(unitMap, "tbsp")),
-                        createIng("Granulated Sugar", "30", getUnit(unitMap, "g"))
+                        createIng("Matcha Powder", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Sugar", "30", getUnit(unitMap, "g"))
                 ),
                 List.of(
-                        createStep(1, "Whisk egg yolks, milk, flour, and matcha powder together into a smooth batter paste.", false, null, null, 1, 2, 3),
+                        createStep(1, "Whisk the egg yolks, milk, cake flour, and matcha powder together into a smooth batter paste.", false, null, null, 1, 2, 3),
                         createStep(2, "Whip egg whites with sugar into stiff, glossy meringue peaks.", true, 300, null, 0, 4),
                         createStep(3, "Fold meringue gently into batter, scoop high onto non-stick pan, cover and cook on low heat.", true, 480, null)
                 )
@@ -487,11 +512,11 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Yellow Onions", "1", getUnit(unitMap, "kg")),
+                        createIng("Onions", "1", getUnit(unitMap, "kg")),
                         createIng("Beef Stock", "1.5", getUnit(unitMap, "l")),
-                        createIng("Dry White Wine", "1", getUnit(unitMap, "cup")),
-                        createIng("Baguette Slices", "4", getUnit(unitMap, "slice")),
-                        createIng("Grated Gruyère Cheese", "150", getUnit(unitMap, "g"))
+                        createIng("White Wine", "1", getUnit(unitMap, "cup")),
+                        createIng("Baguette", "4", getUnit(unitMap, "slice")),
+                        createIng("Gruyère", "150", getUnit(unitMap, "g"))
                 ),
                 List.of(
                         createStep(1, "Slowly caramelize sliced onions in butter until dark golden brown and sweet.", true, 2100, null, 0),
@@ -509,16 +534,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Sourdough Bread", "2", getUnit(unitMap, "slice")),
-                        createIng("Ripe Avocado", "1", getUnit(unitMap, "piece")),
+                        createIng("Sourdough", "2", getUnit(unitMap, "slice")),
+                        createIng("Avocado", "1", getUnit(unitMap, "piece")),
                         createIng("Eggs", "2", getUnit(unitMap, "piece")),
                         createIng("Lemon Juice", "1", getUnit(unitMap, "tbsp")),
-                        createIng("Chili Flakes & Everything Seasoning", "1", getUnit(unitMap, "tsp"))
+                        createIng("Chili Flakes", "1", getUnit(unitMap, "tsp")),
+                        createIng("Everything Seasoning", "1", getUnit(unitMap, "tsp"))
                 ),
                 List.of(
                         createStep(1, "Toast sourdough slices until golden and crispy.", true, 120, null, 0),
                         createStep(2, "Mash ripe avocado with lemon juice, salt, and black pepper.", false, null, null, 1, 3),
-                        createStep(3, "Poach eggs in simmering vinegar water, spread avocado on toast, top with eggs and seasoning.", true, 180, null, 2, 4)
+                        createStep(3, "Poach eggs in simmering vinegar water, spread avocado on toast, top with eggs, chili flakes, and everything seasoning.", true, 180, null, 2, 4, 5)
                 )
         ));
 
@@ -532,10 +558,10 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Salmon Fillets", "400", getUnit(unitMap, "g")),
-                        createIng("Melted Butter", "2", getUnit(unitMap, "tbsp")),
-                        createIng("Minced Garlic", "3", getUnit(unitMap, "clove")),
+                        createIng("Butter", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Garlic", "3", getUnit(unitMap, "clove")),
                         createIng("Lemon Slices", "1", getUnit(unitMap, "piece")),
-                        createIng("Fresh Asparagus", "1", getUnit(unitMap, "bundle"))
+                        createIng("Asparagus", "1", getUnit(unitMap, "bundle"))
                 ),
                 List.of(
                         createStep(1, "Arrange salmon fillets and asparagus on a parchment-lined baking sheet.", false, null, null, 0, 4),
@@ -556,13 +582,14 @@ public class DataSeeder implements CommandLineRunner {
                         createIng("Green Curry Paste", "3", getUnit(unitMap, "tbsp")),
                         createIng("Coconut Milk", "400", getUnit(unitMap, "ml")),
                         createIng("Chicken Breast Strips", "500", getUnit(unitMap, "g")),
-                        createIng("Thai Eggplant or Zucchini", "1", getUnit(unitMap, "cup")),
-                        createIng("Fish Sauce & Palm Sugar", "1", getUnit(unitMap, "tbsp"))
+                        createIng("Thai Eggplant", "1", getUnit(unitMap, "cup")),
+                        createIng("Fish Sauce", "2", getUnit(unitMap, "tsp")),
+                        createIng("Palm Sugar", "1", getUnit(unitMap, "tsp"))
                 ),
                 List.of(
-                        createStep(1, "Fry green curry paste in a thick layer of coconut cream until aromatic oil separates.", true, 180, null, 0, 1),
-                        createStep(2, "Add chicken strips and cook until outer surface turns opaque.", true, 300, null, 2),
-                        createStep(3, "Pour remaining coconut milk, eggplant, fish sauce, simmer, and finish with Thai basil.", true, 600, null, 3, 4)
+                        createStep(1, "Fry the green curry paste in a thick layer of coconut milk until aromatic oil separates.", true, 180, null, 0, 1),
+                        createStep(2, "Add the chicken breast strips and cook until the outer surface turns opaque.", true, 300, null, 2),
+                        createStep(3, "Pour in the remaining coconut milk, thai eggplant, fish sauce, and palm sugar, simmer, and finish with Thai basil.", true, 600, null, 3, 4, 5)
                 )
         ));
 
@@ -576,15 +603,15 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Beef Chuck", "1.2", getUnit(unitMap, "kg")),
-                        createIng("Pinot Noir or Burgundy Wine", "750", getUnit(unitMap, "ml")),
+                        createIng("Red Wine", "750", getUnit(unitMap, "ml")),
                         createIng("Bacon Lardons", "150", getUnit(unitMap, "g")),
                         createIng("Pearl Onions", "200", getUnit(unitMap, "g")),
                         createIng("Cremini Mushrooms", "250", getUnit(unitMap, "g"))
                 ),
                 List.of(
-                        createStep(1, "Sauté bacon lardons until crispy, sear seasoned beef cubes in bacon fat until deep brown.", true, 600, null, 0, 2),
+                        createStep(1, "Sauté the bacon lardons until crispy, sear the seasoned beef chuck cubes in bacon fat until deep brown.", true, 600, null, 0, 2),
                         createStep(2, "Pour in red wine and beef broth, cover pot, and transfer to oven at 160°C to braise.", true, 9000, null, 1),
-                        createStep(3, "Sauté pearl onions and mushrooms separately in butter, stir into beef stew for final 20 minutes.", true, 1200, null, 3, 4)
+                        createStep(3, "Sauté the pearl onions and cremini mushrooms separately in butter, stir into the beef stew for the final 20 minutes.", true, 1200, null, 3, 4)
                 )
         ));
 
@@ -597,16 +624,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Frozen Acai Packet", "100", getUnit(unitMap, "g")),
-                        createIng("Frozen Mixed Berries", "1", getUnit(unitMap, "cup")),
+                        createIng("Frozen Acai", "100", getUnit(unitMap, "g")),
+                        createIng("Mixed Berries", "1", getUnit(unitMap, "cup")),
                         createIng("Almond Milk", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Sliced Banana", "1", getUnit(unitMap, "piece")),
-                        createIng("Granola & Chia Seeds", "3", getUnit(unitMap, "tbsp"))
+                        createIng("Banana", "1", getUnit(unitMap, "piece")),
+                        createIng("Granola", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Chia Seeds", "1", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
                         createStep(1, "Blend frozen acai, mixed berries, and almond milk on high speed until thick and creamy.", false, null, null, 0, 1, 2),
                         createStep(2, "Scoop thick smoothie into a wide chilled bowl.", false, null, null),
-                        createStep(3, "Arrange banana slices, granola, and chia seeds neatly in rows across the top.", false, null, null, 3, 4)
+                        createStep(3, "Arrange banana slices, granola, and chia seeds neatly in rows across the top.", false, null, null, 3, 4, 5)
                 )
         ));
 
@@ -619,16 +647,16 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("80/20 Ground Beef", "200", getUnit(unitMap, "g")),
-                        createIng("American Cheese Slices", "2", getUnit(unitMap, "slice")),
-                        createIng("Brioche Bun", "1", getUnit(unitMap, "piece")),
-                        createIng("Dill Pickle Slices", "4", getUnit(unitMap, "slice")),
-                        createIng("Mayo, Ketchup & Relish Sauce", "2", getUnit(unitMap, "tbsp"))
+                        createIng("Ground Beef", "200", getUnit(unitMap, "g")),
+                        createIng("American Cheese", "2", getUnit(unitMap, "slice")),
+                        createIng("Brioche", "1", getUnit(unitMap, "piece")),
+                        createIng("Pickles", "4", getUnit(unitMap, "slice")),
+                        createIng("Secret Sauce", "2", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
                         createStep(1, "Divide ground beef into two balls and smash flat onto a scorching hot cast iron pan.", true, 120, null, 0),
-                        createStep(2, "Flip patties, place cheese on top, and let melt until crust is dark and cheese is gooey.", true, 60, null, 1),
-                        createStep(3, "Spread secret sauce on butter-toasted brioche, add patties, pickles, and serve immediately.", false, null, null, 2, 3, 4)
+                        createStep(2, "Flip the patties, place american cheese on top, and let melt until the crust is dark and the cheese is gooey.", true, 60, null, 1),
+                        createStep(3, "Spread the secret sauce on butter-toasted brioche, add the patties and pickles, and serve immediately.", false, null, null, 2, 3, 4)
                 )
         ));
 
@@ -642,15 +670,15 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Arborio Rice", "300", getUnit(unitMap, "g")),
-                        createIng("Wild Mushrooms (Porcini/Chanterelle)", "300", getUnit(unitMap, "g")),
-                        createIng("Warm Vegetable Stock", "1", getUnit(unitMap, "l")),
-                        createIng("Dry White Wine", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Grated Parmigiano-Reggiano", "80", getUnit(unitMap, "g"))
+                        createIng("Wild Mushrooms", "300", getUnit(unitMap, "g")),
+                        createIng("Vegetable Stock", "1", getUnit(unitMap, "l")),
+                        createIng("White Wine", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Parmigiano-Reggiano", "80", getUnit(unitMap, "g"))
                 ),
                 List.of(
                         createStep(1, "Sauté sliced wild mushrooms in olive oil until golden, set half aside for garnish.", true, 300, null, 1),
-                        createStep(2, "Toast Arborio rice in shallot oil, deglaze with white wine, then add stock ladle by ladle while stirring.", true, 1200, null, 0, 2, 3),
-                        createStep(3, "Remove from heat, stir in butter, Parmigiano cheese, and mushroom blend until glossy.", false, null, null, 4)
+                        createStep(2, "Toast the Arborio rice in shallot oil, deglaze with white wine, then add the vegetable stock ladle by ladle while stirring.", true, 1200, null, 0, 2, 3),
+                        createStep(3, "Remove from heat, stir in butter, parmigiano-reggiano, and the mushroom blend until glossy.", false, null, null, 4)
                 )
         ));
 
@@ -663,16 +691,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1534080564583-6be75777b70a?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1534080564583-6be75777b70a?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Bomba Paella Rice", "400", getUnit(unitMap, "g")),
-                        createIng("Jumbo Shrimp & Mussels", "400", getUnit(unitMap, "g")),
+                        createIng("Paella Rice", "400", getUnit(unitMap, "g")),
+                        createIng("Shrimp", "300", getUnit(unitMap, "g")),
+                        createIng("Mussels", "300", getUnit(unitMap, "g")),
                         createIng("Saffron Threads", "1", getUnit(unitMap, "pinch")),
                         createIng("Fish Stock", "1", getUnit(unitMap, "l")),
-                        createIng("Sweet Smoked Paprika", "1", getUnit(unitMap, "tsp"))
+                        createIng("Smoked Paprika", "1", getUnit(unitMap, "tsp"))
                 ),
                 List.of(
-                        createStep(1, "Infuse warm fish stock with saffron threads and paprika.", false, null, null, 2, 3, 4),
-                        createStep(2, "Build sofrito base in paella pan, add rice, stir to coat, and pour in saffron broth without stirring.", true, 900, null, 0),
-                        createStep(3, "Nestle seafood into rice during last 10 minutes to form the crispy bottom socarrat crust.", true, 600, null, 1)
+                        createStep(1, "Infuse the warm fish stock with saffron threads and smoked paprika.", false, null, null, 3, 4, 5),
+                        createStep(2, "Build sofrito base in paella pan, add the paella rice, stir to coat, and pour in saffron broth without stirring.", true, 900, null, 0),
+                        createStep(3, "Nestle the shrimp and mussels into the rice during the last 10 minutes to form the crispy bottom socarrat crust.", true, 600, null, 1, 2)
                 )
         ));
 
@@ -685,15 +714,15 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("70% Dark Chocolate", "120", getUnit(unitMap, "g")),
-                        createIng("Unsalted Butter", "100", getUnit(unitMap, "g")),
-                        createIng("Eggs & Yolks", "4", getUnit(unitMap, "piece")),
+                        createIng("Dark Chocolate", "120", getUnit(unitMap, "g")),
+                        createIng("Butter", "100", getUnit(unitMap, "g")),
+                        createIng("Eggs", "4", getUnit(unitMap, "piece")),
                         createIng("Powdered Sugar", "50", getUnit(unitMap, "g")),
                         createIng("All-Purpose Flour", "30", getUnit(unitMap, "g"))
                 ),
                 List.of(
                         createStep(1, "Melt dark chocolate and butter over a water bath until smooth.", false, null, null, 0, 1),
-                        createStep(2, "Whisk eggs and sugar until thick and pale, then gently fold chocolate mixture and flour.", false, null, null, 2, 3, 4),
+                        createStep(2, "Whisk the eggs and powdered sugar until thick and pale, then gently fold in the chocolate mixture and all-purpose flour.", false, null, null, 2, 3, 4),
                         createStep(3, "Pour into greased ramekins and bake at 210°C for 12 minutes until edges are set but center soft.", true, 720, null)
                 )
         ));
@@ -707,16 +736,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Dried Chickpeas (Soaked)", "250", getUnit(unitMap, "g")),
-                        createIng("Fresh Parsley & Cilantro", "1", getUnit(unitMap, "cup")),
-                        createIng("Raw Tahini Paste", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Chickpeas", "250", getUnit(unitMap, "g")),
+                        createIng("Parsley", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Cilantro", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Tahini", "0.5", getUnit(unitMap, "cup")),
                         createIng("Pita Breads", "3", getUnit(unitMap, "piece")),
-                        createIng("Israeli Diced Cucumber & Tomato Salad", "1.5", getUnit(unitMap, "cup"))
+                        createIng("Israeli Salad", "1.5", getUnit(unitMap, "cup"))
                 ),
                 List.of(
-                        createStep(1, "Pulse soaked chickpeas, herbs, garlic, and spices in food processor until coarse meal forms.", false, null, null, 0, 1),
+                        createStep(1, "Pulse the soaked chickpeas, parsley, cilantro, garlic, and spices in a food processor until a coarse meal forms.", false, null, null, 0, 1, 2),
                         createStep(2, "Form falafel balls and deep fry in hot oil until deep golden brown and crispy.", true, 300, null),
-                        createStep(3, "Whisk tahini with lemon juice and cold water, stuff pita with falafel, salad, and tahini.", false, null, null, 2, 3, 4)
+                        createStep(3, "Whisk the tahini with lemon juice and cold water, stuff the pita breads with falafel and israeli salad, and drizzle with the tahini.", false, null, null, 3, 4, 5)
                 )
         ));
 
@@ -730,15 +760,18 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Beef Marrow Bones", "1.5", getUnit(unitMap, "kg")),
-                        createIng("Star Anise, Cinnamon & Ginger", "1", getUnit(unitMap, "pkg")),
-                        createIng("Flat Rice Pho Noodles", "400", getUnit(unitMap, "g")),
-                        createIng("Thin Eye Round Beef Slices", "300", getUnit(unitMap, "g")),
-                        createIng("Fresh Thai Basil & Bean Sprouts", "1", getUnit(unitMap, "handful"))
+                        createIng("Star Anise", "2", getUnit(unitMap, "piece")),
+                        createIng("Cinnamon", "1", getUnit(unitMap, "piece")),
+                        createIng("Ginger", "1", getUnit(unitMap, "piece")),
+                        createIng("Rice Pho Noodles", "400", getUnit(unitMap, "g")),
+                        createIng("Eye Round Beef", "300", getUnit(unitMap, "g")),
+                        createIng("Thai Basil", "1", getUnit(unitMap, "handful")),
+                        createIng("Bean Sprouts", "1", getUnit(unitMap, "handful"))
                 ),
                 List.of(
-                        createStep(1, "Char ginger and onions, simmer beef marrow bones with charred aromatics and spice bag.", true, 14400, null, 0, 1),
-                        createStep(2, "Blanch rice pho noodles in boiling water, divide into serving bowls.", true, 120, null, 2),
-                        createStep(3, "Top noodles with raw beef slices, ladle boiling hot broth over to cook beef instantly, serve with herbs.", false, null, null, 3, 4)
+                        createStep(1, "Char the ginger and onions, simmer the beef marrow bones with the charred aromatics, star anise, and cinnamon in a spice bag.", true, 14400, null, 0, 1, 2, 3),
+                        createStep(2, "Blanch the rice pho noodles in boiling water, divide into serving bowls.", true, 120, null, 4),
+                        createStep(3, "Top the noodles with raw eye round beef slices, ladle the boiling hot broth over to cook the beef instantly, serve with thai basil and bean sprouts.", false, null, null, 5, 6, 7)
                 )
         ));
 
@@ -751,16 +784,16 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Romaine Lettuce Hearts", "2", getUnit(unitMap, "piece")),
-                        createIng("Grilled Chicken Breast", "300", getUnit(unitMap, "g")),
+                        createIng("Romaine Lettuce", "2", getUnit(unitMap, "piece")),
+                        createIng("Chicken Breast", "300", getUnit(unitMap, "g")),
                         createIng("Sourdough Garlic Croutons", "1", getUnit(unitMap, "cup")),
                         createIng("Shaved Parmesan Cheese", "50", getUnit(unitMap, "g")),
-                        createIng("Creamy Caesar Dressing", "4", getUnit(unitMap, "tbsp"))
+                        createIng("Caesar Dressing", "4", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
-                        createStep(1, "Grill seasoned chicken breast cutlets, slice into diagonal strips.", true, 480, null, 1),
-                        createStep(2, "Chop romaine lettuce and toss with homemade Caesar dressing in a large wooden bowl.", false, null, null, 0, 4),
-                        createStep(3, "Top with sliced chicken strips, crunchy croutons, and shaved Parmesan cheese.", false, null, null, 2, 3)
+                        createStep(1, "Grill the seasoned chicken breast, then slice into diagonal strips.", true, 480, null, 1),
+                        createStep(2, "Chop the romaine lettuce and toss with homemade Caesar dressing in a large wooden bowl.", false, null, null, 0, 4),
+                        createStep(3, "Top with the sliced chicken strips, crunchy sourdough garlic croutons, and shaved Parmesan cheese.", false, null, null, 2, 3)
                 )
         ));
 
@@ -773,16 +806,18 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Chicken Thighs (Marinated)", "600", getUnit(unitMap, "g")),
+                        createIng("Chicken Thighs", "600", getUnit(unitMap, "g")),
                         createIng("Tomato Puree", "1.5", getUnit(unitMap, "cup")),
-                        createIng("Heavy Cream & Butter", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Garam Masala & Fenugreek Leaves", "1", getUnit(unitMap, "tbsp")),
-                        createIng("Warm Garlic Naan Bread", "4", getUnit(unitMap, "piece"))
+                        createIng("Heavy Cream", "0.25", getUnit(unitMap, "cup")),
+                        createIng("Butter", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Garam Masala", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Fenugreek Leaves", "1", getUnit(unitMap, "tsp")),
+                        createIng("Naan", "4", getUnit(unitMap, "piece"))
                 ),
                 List.of(
-                        createStep(1, "Sear marinated chicken chunks in a hot skillet or broiler until lightly charred.", true, 420, null, 0),
-                        createStep(2, "Simmer tomato puree with butter, heavy cream, and aromatic Indian spices until silky smooth.", true, 600, null, 1, 2, 3),
-                        createStep(3, "Combine chicken into sauce, simmer for 5 minutes, garnish with cream and serve with warm naan.", true, 300, null, 4)
+                        createStep(1, "Sear the marinated chicken thighs in a hot skillet or broiler until lightly charred.", true, 420, null, 0),
+                        createStep(2, "Simmer the tomato puree with butter, heavy cream, garam masala, and fenugreek leaves until silky smooth.", true, 600, null, 1, 2, 3, 4, 5),
+                        createStep(3, "Combine the chicken into the sauce, simmer for 5 minutes, garnish with cream, and serve with warm naan.", true, 300, null, 6)
                 )
         ));
 
@@ -795,16 +830,18 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Chicken Thigh Cubes", "500", getUnit(unitMap, "g")),
-                        createIng("Lemon Juice & Olive Oil", "4", getUnit(unitMap, "tbsp")),
-                        createIng("Dried Oregano & Garlic", "1", getUnit(unitMap, "tbsp")),
-                        createIng("Greek Tzatziki Dip", "1", getUnit(unitMap, "cup")),
-                        createIng("Warm Pita Pocket", "3", getUnit(unitMap, "piece"))
+                        createIng("Chicken Cubes", "500", getUnit(unitMap, "g")),
+                        createIng("Lemon Juice", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Olive Oil", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Oregano", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Garlic", "3", getUnit(unitMap, "clove")),
+                        createIng("Tzatziki Dip", "1", getUnit(unitMap, "cup")),
+                        createIng("Pita", "3", getUnit(unitMap, "piece"))
                 ),
                 List.of(
-                        createStep(1, "Marinate chicken cubes in olive oil, lemon juice, garlic, and oregano for 30 minutes.", false, null, null, 0, 1, 2),
+                        createStep(1, "Marinate the chicken cubes in olive oil, lemon juice, garlic, and oregano for 30 minutes.", false, null, null, 0, 1, 2, 3, 4),
                         createStep(2, "Thread chicken onto wooden skewers and grill over high heat until charred and tender.", true, 600, null),
-                        createStep(3, "Serve skewers hot off the grill alongside cold tzatziki dip and warmed pita bread.", false, null, null, 3, 4)
+                        createStep(3, "Serve the skewers hot off the grill alongside cold tzatziki dip and warmed pita bread.", false, null, null, 5, 6)
                 )
         ));
 
@@ -817,16 +854,16 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Pizza Dough Ball", "250", getUnit(unitMap, "g")),
+                        createIng("Pizza Dough", "250", getUnit(unitMap, "g")),
                         createIng("Crushed San Marzano Tomatoes", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Mozzarella di Bufala", "125", getUnit(unitMap, "g")),
-                        createIng("Fresh Basil Leaves", "6", getUnit(unitMap, "piece")),
+                        createIng("Mozzarella", "125", getUnit(unitMap, "g")),
+                        createIng("Fresh Basil", "6", getUnit(unitMap, "piece")),
                         createIng("Extra Virgin Olive Oil", "1", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
-                        createStep(1, "Stretch pizza dough by hand into a thin 12-inch disc with a raised outer crust rim.", false, null, null, 0),
+                        createStep(1, "Stretch the pizza dough by hand into a thin 12-inch disc with a raised outer crust rim.", false, null, null, 0),
                         createStep(2, "Spread crushed San Marzano tomatoes lightly, add torn fresh mozzarella pieces.", false, null, null, 1, 2),
-                        createStep(3, "Bake on a preheated pizza stone at 250°C (or wood-fired oven) until crust is blistered, top with fresh basil.", true, 480, null, 3, 4)
+                        createStep(3, "Bake on a preheated pizza stone at 250°C (or wood-fired oven) until the crust is blistered, then finish with fresh basil and a drizzle of extra virgin olive oil.", true, 480, null, 3, 4)
                 )
         ));
 
@@ -839,16 +876,19 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Extra Firm Tofu (Pressed)", "350", getUnit(unitMap, "g")),
-                        createIng("Cooked Quinoa", "1.5", getUnit(unitMap, "cup")),
-                        createIng("Edamame & Shredded Carrots", "1", getUnit(unitMap, "cup")),
-                        createIng("Creamy Peanut Butter", "3", getUnit(unitMap, "tbsp")),
-                        createIng("Soy Sauce, Maple & Ginger", "2", getUnit(unitMap, "tbsp"))
+                        createIng("Tofu", "350", getUnit(unitMap, "g")),
+                        createIng("Quinoa", "1.5", getUnit(unitMap, "cup")),
+                        createIng("Edamame", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Carrots", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Peanut Butter", "3", getUnit(unitMap, "tbsp")),
+                        createIng("Soy Sauce", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Maple Syrup", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Ginger", "1", getUnit(unitMap, "tsp"))
                 ),
                 List.of(
                         createStep(1, "Toss tofu cubes with cornstarch and sesame oil, pan fry until crispy on all edges.", true, 480, null, 0),
-                        createStep(2, "Whisk peanut butter, soy sauce, maple syrup, grated ginger, and warm water into a smooth dressing.", false, null, null, 3, 4),
-                        createStep(3, "Assemble quinoa bowl with edamame, carrots, crispy tofu, and drizzle generously with peanut sauce.", false, null, null, 1, 2)
+                        createStep(2, "Whisk peanut butter, soy sauce, maple syrup, grated ginger, and warm water into a smooth dressing.", false, null, null, 4, 5, 6, 7),
+                        createStep(3, "Assemble quinoa bowl with edamame, carrots, crispy tofu, and drizzle generously with peanut sauce.", false, null, null, 1, 2, 3)
                 )
         ));
 
@@ -861,11 +901,11 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Yukon Gold Potatoes", "1", getUnit(unitMap, "kg")),
+                        createIng("Potatoes", "1", getUnit(unitMap, "kg")),
                         createIng("Bacon Lardons", "200", getUnit(unitMap, "g")),
-                        createIng("Sliced Onions", "2", getUnit(unitMap, "piece")),
-                        createIng("Dry White Wine", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Reblochon Cheese Wheel", "1", getUnit(unitMap, "piece"))
+                        createIng("Onions", "2", getUnit(unitMap, "piece")),
+                        createIng("White Wine", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Reblochon", "1", getUnit(unitMap, "piece"))
                 ),
                 List.of(
                         createStep(1, "Boil unpeeled potatoes until just tender, slice into thick rounds.", true, 900, null, 0),
@@ -883,15 +923,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Cream Cheese (Room Temp)", "900", getUnit(unitMap, "g")),
-                        createIng("Granulated Sugar", "200", getUnit(unitMap, "g")),
-                        createIng("Sour Cream & Heavy Cream", "1", getUnit(unitMap, "cup")),
+                        createIng("Cream Cheese", "900", getUnit(unitMap, "g")),
+                        createIng("Sugar", "200", getUnit(unitMap, "g")),
+                        createIng("Sour Cream", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Heavy Cream", "0.5", getUnit(unitMap, "cup")),
                         createIng("Eggs", "4", getUnit(unitMap, "piece")),
-                        createIng("Graham Cracker Crumbs & Butter", "1.5", getUnit(unitMap, "cup"))
+                        createIng("Graham Cracker Crumbs", "1.25", getUnit(unitMap, "cup")),
+                        createIng("Butter", "4", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
-                        createStep(1, "Press buttery Graham cracker crumbs firmly into springform pan base and pre-bake crust.", true, 600, null, 4),
-                        createStep(2, "Beat cream cheese and sugar until completely smooth, mix in sour cream, heavy cream, and eggs one by one.", false, null, null, 0, 1, 2, 3),
+                        createStep(1, "Press the buttery Graham cracker crumbs and butter firmly into the springform pan base and pre-bake the crust.", true, 600, null, 5, 6),
+                        createStep(2, "Beat cream cheese and sugar until completely smooth, mix in sour cream, heavy cream, and eggs one by one.", false, null, null, 0, 1, 2, 3, 4),
                         createStep(3, "Bake cheesecake in a water bath at 160°C, cool slowly inside turned-off oven to prevent cracking.", true, 3600, null)
                 )
         ));
@@ -907,14 +949,15 @@ public class DataSeeder implements CommandLineRunner {
                 List.of(
                         createIng("Corn Tortillas", "4", getUnit(unitMap, "piece")),
                         createIng("Eggs", "4", getUnit(unitMap, "piece")),
-                        createIng("Ranchero Tomato Salsa", "1", getUnit(unitMap, "cup")),
-                        createIng("Warm Refried Black Beans", "1", getUnit(unitMap, "cup")),
-                        createIng("Sliced Avocado & Cotija Cheese", "1", getUnit(unitMap, "piece"))
+                        createIng("Ranchero Salsa", "1", getUnit(unitMap, "cup")),
+                        createIng("Refried Black Beans", "1", getUnit(unitMap, "cup")),
+                        createIng("Avocado", "1", getUnit(unitMap, "piece")),
+                        createIng("Cotija Cheese", "30", getUnit(unitMap, "g"))
                 ),
                 List.of(
-                        createStep(1, "Warm corn tortillas in oil until pliable, spread warm refried black beans over top.", false, null, null, 0, 3),
-                        createStep(2, "Fry eggs sunny-side up in oil until edges are crispy and yolk is runny.", true, 180, null, 1),
-                        createStep(3, "Place eggs over bean tortillas, spoon warm roasted ranchero salsa over top, garnish with avocado.", false, null, null, 2, 4)
+                        createStep(1, "Warm the corn tortillas in oil until pliable, spread the warm refried black beans over the top.", false, null, null, 0, 3),
+                        createStep(2, "Fry the eggs sunny-side up in oil until the edges are crispy and the yolk is runny.", true, 180, null, 1),
+                        createStep(3, "Place the eggs over the bean tortillas, spoon the warm roasted ranchero salsa over the top, and garnish with avocado and cotija cheese.", false, null, null, 2, 4, 5)
                 )
         ));
 
@@ -928,14 +971,15 @@ public class DataSeeder implements CommandLineRunner {
                 List.of("https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
                         createIng("Roasted San Marzano Tomatoes", "800", getUnit(unitMap, "g")),
-                        createIng("Fresh Basil & Heavy Cream", "0.5", getUnit(unitMap, "cup")),
-                        createIng("Thick Sourdough Slices", "4", getUnit(unitMap, "slice")),
-                        createIng("Sharp Cheddar Cheese Slices", "4", getUnit(unitMap, "slice")),
+                        createIng("Fresh Basil", "0.25", getUnit(unitMap, "cup")),
+                        createIng("Heavy Cream", "0.25", getUnit(unitMap, "cup")),
+                        createIng("Sourdough Slices", "4", getUnit(unitMap, "slice")),
+                        createIng("Sharp Cheddar", "4", getUnit(unitMap, "slice")),
                         createIng("Butter", "3", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
-                        createStep(1, "Simmer roasted tomatoes with garlic and herbs, blend smooth with heavy cream and fresh basil.", true, 600, null, 0, 1),
-                        createStep(2, "Butter sourdough slices generously on the outside, sandwich sharp cheddar inside.", false, null, null, 2, 3, 4),
+                        createStep(1, "Simmer the roasted San Marzano tomatoes with garlic and herbs, then blend smooth with heavy cream and fresh basil.", true, 600, null, 0, 1, 2),
+                        createStep(2, "Butter sourdough slices generously on the outside, sandwich sharp cheddar inside.", false, null, null, 3, 4, 5),
                         createStep(3, "Grill sandwich in skillet on medium-low heat until crust is deep golden and cheese is melted.", true, 360, null)
                 )
         ));
@@ -949,16 +993,17 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Sushi-Grade Ahi Tuna", "300", getUnit(unitMap, "g")),
-                        createIng("Sesame Seeds (Black & White)", "2", getUnit(unitMap, "tbsp")),
-                        createIng("Seasoned Sushi Rice", "2", getUnit(unitMap, "cup")),
-                        createIng("Diced Mango & Avocado", "1", getUnit(unitMap, "cup")),
-                        createIng("Sriracha Mayo Drizzle", "2", getUnit(unitMap, "tbsp"))
+                        createIng("Ahi Tuna", "300", getUnit(unitMap, "g")),
+                        createIng("Sesame Seeds", "2", getUnit(unitMap, "tbsp")),
+                        createIng("Sushi Rice", "2", getUnit(unitMap, "cup")),
+                        createIng("Mango", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Avocado", "0.5", getUnit(unitMap, "cup")),
+                        createIng("Sriracha Mayo", "2", getUnit(unitMap, "tbsp"))
                 ),
                 List.of(
                         createStep(1, "Coat Ahi tuna steak in sesame seeds and sear quickly in hot skillet for 45 seconds per side.", true, 90, null, 0, 1),
                         createStep(2, "Slice seared tuna into thin ribbons against the grain.", false, null, null),
-                        createStep(3, "Arrange sushi rice bowl with seared tuna, diced mango, avocado, and drizzle with spicy sriracha mayo.", false, null, null, 2, 3, 4)
+                        createStep(3, "Arrange sushi rice bowl with seared tuna, diced mango, avocado, and drizzle with spicy sriracha mayo.", false, null, null, 2, 3, 4, 5)
                 )
         ));
 
@@ -971,16 +1016,18 @@ public class DataSeeder implements CommandLineRunner {
                 "https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=1200&q=80",
                 List.of("https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=1200&q=80"),
                 List.of(
-                        createIng("Cubed Brioche Loaf", "500", getUnit(unitMap, "g")),
+                        createIng("Brioche", "500", getUnit(unitMap, "g")),
                         createIng("Eggs", "6", getUnit(unitMap, "piece")),
-                        createIng("Whole Milk & Heavy Cream", "1.5", getUnit(unitMap, "cup")),
-                        createIng("Cinnamon & Brown Sugar", "3", getUnit(unitMap, "tbsp")),
+                        createIng("Milk", "0.75", getUnit(unitMap, "cup")),
+                        createIng("Heavy Cream", "0.75", getUnit(unitMap, "cup")),
+                        createIng("Cinnamon", "1", getUnit(unitMap, "tbsp")),
+                        createIng("Brown Sugar", "2", getUnit(unitMap, "tbsp")),
                         createIng("Cream Cheese Glaze", "0.5", getUnit(unitMap, "cup"))
                 ),
                 List.of(
                         createStep(1, "Arrange cubed brioche bread in a buttered 9x13 inch baking dish.", false, null, null, 0),
-                        createStep(2, "Whisk eggs, milk, cream, brown sugar, and ground cinnamon; pour evenly over brioche cubes.", false, null, null, 1, 2, 3),
-                        createStep(3, "Bake at 180°C until puffed and golden brown, then drizzle generously with warm cream cheese glaze.", true, 2100, null, 4)
+                        createStep(2, "Whisk the eggs, milk, heavy cream, brown sugar, and ground cinnamon; pour evenly over the brioche cubes.", false, null, null, 1, 2, 3, 4, 5),
+                        createStep(3, "Bake at 180°C until puffed and golden brown, then drizzle generously with warm cream cheese glaze.", true, 2100, null, 6)
                 )
         ));
 
@@ -1134,15 +1181,35 @@ public class DataSeeder implements CommandLineRunner {
         log.info(">>> Seeding user reviews and ratings...");
         List<Review> reviews = new ArrayList<>();
 
-        String[] compliments = {
+        String[] fiveStarComments = {
                 "Absolutely incredible recipe! The flavors were so rich and perfectly balanced.",
-                "Easy to follow steps! My family wiped out the entire plate in minutes.",
                 "Tried this for dinner tonight and it turned out restaurant quality!",
+                "The sauce turned out so glossy and rich. Saved to my favorites!",
+                "Made this three times already this month, my family can't get enough.",
+                "Followed it exactly and it came out perfect on the first try.",
+                "This is now in permanent weekly rotation at our house.",
+                "Better than the version I had at the restaurant that inspired it."
+        };
+        String[] fiveStarTitles = {"Outstanding dish!", "New family favorite", "Cooking this again for sure", "Nailed it first try"};
+
+        String[] fourStarComments = {
+                "Easy to follow steps! My family wiped out the entire plate in minutes.",
                 "Great instructions and perfect timer recommendations. Will definitely make again.",
                 "Substituted one spice and it was still phenomenal. 10/10 recommend!",
                 "Super fresh and satisfying! Perfect for weeknight meal prep.",
-                "The sauce turned out so glossy and rich. Saved to my favorites!"
+                "Really solid recipe, just needed a bit more salt for my taste.",
+                "Turned out great, though it took a little longer than the listed time.",
+                "Delicious! I'll cut back on the spice next time for the kids."
         };
+        String[] fourStarTitles = {"Really great recipe", "Would make again", "Tasty and easy", "Solid recipe"};
+
+        String[] threeStarComments = {
+                "Good base recipe, but I had to tweak the seasoning quite a bit.",
+                "Came out a little dry for me - might reduce the cook time slightly next time.",
+                "Tasty, though not quite as impressive as the photos suggested.",
+                "Solid weeknight option, nothing fancy but reliable."
+        };
+        String[] threeStarTitles = {"Decent, with tweaks", "Good but needs adjusting", "Worth trying"};
 
         for (int i = 0; i < recipes.size(); i++) {
             Recipe recipe = recipes.get(i);
@@ -1150,14 +1217,33 @@ public class DataSeeder implements CommandLineRunner {
 
             for (int r = 0; r < reviewCount; r++) {
                 User reviewer = users.get((i + r + 1) % users.size());
-                int ratingVal = 4 + ((i + r) % 2);
+                // Roughly half 5-star, 40% 4-star, 10% 3-star - varied but still skewed positive,
+                // like a real recipe app where poorly-received recipes rarely stay published.
+                int cycle = (i + r) % 10;
+                int ratingVal = cycle < 5 ? 5 : (cycle < 9 ? 4 : 3);
+                String title;
+                String comment;
+                switch (ratingVal) {
+                    case 5 -> {
+                        title = fiveStarTitles[(i + r) % fiveStarTitles.length];
+                        comment = fiveStarComments[(i + r) % fiveStarComments.length];
+                    }
+                    case 4 -> {
+                        title = fourStarTitles[(i + r) % fourStarTitles.length];
+                        comment = fourStarComments[(i + r) % fourStarComments.length];
+                    }
+                    default -> {
+                        title = threeStarTitles[(i + r) % threeStarTitles.length];
+                        comment = threeStarComments[(i + r) % threeStarComments.length];
+                    }
+                }
 
                 reviews.add(Review.builder()
                         .recipe(recipe)
                         .user(reviewer)
                         .rating(BigDecimal.valueOf(ratingVal))
-                        .title(ratingVal == 5 ? "Outstanding dish!" : "Really great recipe")
-                        .comment(compliments[(i + r) % compliments.length])
+                        .title(title)
+                        .comment(comment)
                         .build());
             }
         }
@@ -1221,13 +1307,27 @@ public class DataSeeder implements CommandLineRunner {
     private void seedPersonalNotes(List<Recipe> recipes, List<User> users) {
         log.info(">>> Seeding personal notes...");
         List<PersonalInstructionNote> notes = new ArrayList<>();
+
+        String[] noteTemplates = {
+                "Add an extra pinch of sea salt right before serving.",
+                "Double the recipe next time - it goes fast!",
+                "Swapped in what I had on hand and it still worked great.",
+                "Let it rest a few extra minutes before serving - makes a real difference.",
+                "My go-to for busy weeknights, prepped ahead on Sunday.",
+                "Kids loved this one, used a bit less spice for them.",
+                "Worth the extra step - don't skip it.",
+                "Great for meal prep, keeps well for a few days in the fridge.",
+                "Cut back slightly on the sugar and it was still perfect.",
+                "Freezes surprisingly well for a quick reheat later."
+        };
+
         for (int i = 0; i < recipes.size(); i++) {
             Recipe recipe = recipes.get(i);
             User user = users.get(i % users.size());
             notes.add(PersonalInstructionNote.builder()
                     .user(user)
                     .recipe(recipe)
-                    .note("Personal tip: Add an extra pinch of sea salt right before serving " + recipe.getTitle() + ".")
+                    .note(noteTemplates[i % noteTemplates.length])
                     .build());
         }
         personalInstructionNoteRepository.saveAll(notes);
