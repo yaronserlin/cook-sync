@@ -1,0 +1,20 @@
+# Build context is the repo root — keep it small and free of secrets/build output.
+
+.git
+.idea
+.vscode
+.semanticgraphs
+*.iml
+.DS_Store
+
+**/target
+**/build
+**/.gradle
+
+# Not needed to build the server image
+cook-sync-client
+doc
+graphify-out
+
+# Never bake local secrets into the image
+.env

@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cooksync_db}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-p${DB_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  server:
+    build:
+      context: .
+      dockerfile: cook-sync-server/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Always "root" here: MySQL's official image only provisions a root user from
+      # MYSQL_ROOT_PASSWORD out of the box, matching this project's local-dev default
+      # (see cook-sync-server/src/main/resources/application.properties).
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-cooksync_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    ports:
+      - "${PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
