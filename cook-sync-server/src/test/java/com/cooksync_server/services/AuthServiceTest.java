@@ -18,11 +18,14 @@ import com.cooksync_server.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -274,5 +277,16 @@ class AuthServiceTest {
         when(passwordEncoder.matches("WrongPassword", "hashed-password")).thenReturn(false);
 
         assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void purgeExpiredPendingRegistrations_ShouldDeleteRegistrationsPastOtpExpiryGracePeriod() {
+        ArgumentCaptor<Instant> cutoffCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        authService.purgeExpiredPendingRegistrations();
+
+        verify(pendingRegistrationRepository, times(1)).deleteByOtpExpiresAtBefore(cutoffCaptor.capture());
+        Instant expectedCutoff = Instant.now().minus(1, ChronoUnit.DAYS);
+        assertTrue(Duration.between(cutoffCaptor.getValue(), expectedCutoff).abs().getSeconds() < 5);
     }
 }

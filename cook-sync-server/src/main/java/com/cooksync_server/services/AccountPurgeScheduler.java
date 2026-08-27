@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Scheduled trigger that runs the daily account-deletion purge job, permanently erasing every
- * account whose 30-day deletion grace period has lapsed. See {@link AccountDeletionServiceImp}
- * for the erasure logic itself.
+ * Scheduled trigger that runs the daily account-deletion purge job, permanently
+ * erasing every account whose 30-day deletion grace period has lapsed. See
+ * {@link AccountDeletionServiceImp} for the erasure logic itself.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -23,7 +23,8 @@ public class AccountPurgeScheduler {
     private final AccountDeletionService accountDeletionService;
 
     /**
-     * Runs once daily and delegates to {@link AccountDeletionServiceImp#purgeExpiredAccounts()}.
+     * Runs once daily and delegates to
+     * {@link AccountDeletionServiceImp#purgeExpiredAccounts()}.
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void purgeExpiredAccounts() {

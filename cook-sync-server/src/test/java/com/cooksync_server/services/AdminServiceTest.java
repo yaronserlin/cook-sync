@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +24,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.cooksync_server.entities.Tag;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.ReviewReportRepository;
 import com.cooksync_server.repositories.ReviewRepository;
@@ -33,6 +36,7 @@ import com.cooksync_server.repositories.UserRepository;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
+import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -59,6 +63,8 @@ class AdminServiceTest {
     private JdbcTemplate jdbcTemplate;
     @Mock
     private AccountDeletionService accountDeletionService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AdminServiceImp adminService;
@@ -109,19 +115,43 @@ class AdminServiceTest {
     void suspendUser_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> adminService.suspendUser("missing"));
+        assertThrows(ResourceNotFoundException.class, () -> adminService.suspendUser("missing", "admin@cooksync.com"));
     }
 
     @Test
-    void suspendUser_ShouldSuspendAccountAndHideReviews() {
+    void suspendUser_ShouldSuspendAccountHideReviewsAndRevokeSession() {
         when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
 
-        adminService.suspendUser("user-1");
+        adminService.suspendUser("user-1", "admin@cooksync.com");
 
         assertFalse(sampleUser.isEnabled());
         assertEquals(User.AccountStatus.SUSPENDED, sampleUser.getStatus());
         verify(userRepository).save(sampleUser);
         verify(reviewRepository).setHiddenByUserId(true, "user-1");
+        verify(refreshTokenService).deleteByUserId("user-1");
+    }
+
+    @Test
+    void suspendUser_ShouldThrowUnauthorizedActionException_WhenTargetIsActingAdmin() {
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+
+        assertThrows(UnauthorizedActionException.class,
+                () -> adminService.suspendUser("user-1", sampleUser.getEmail()));
+
+        verify(userRepository, never()).save(any());
+        verify(refreshTokenService, never()).deleteByUserId(anyString());
+    }
+
+    @Test
+    void suspendUser_ShouldThrowUnauthorizedActionException_WhenTargetIsAnotherAdmin() {
+        sampleUser.setAdmin(true);
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+
+        assertThrows(UnauthorizedActionException.class,
+                () -> adminService.suspendUser("user-1", "other-admin@cooksync.com"));
+
+        verify(userRepository, never()).save(any());
+        verify(refreshTokenService, never()).deleteByUserId(anyString());
     }
 
     @Test
@@ -163,5 +193,38 @@ class AdminServiceTest {
                 "tag-1", "tag-2");
         verify(jdbcTemplate).update("UPDATE recipe_tags SET tag_id = ? WHERE tag_id = ?", "tag-2", "tag-1");
         verify(jdbcTemplate).update("DELETE FROM tags WHERE id = ?", "tag-1");
+    }
+
+    @Test
+    void getDuplicateTagGroups_ShouldFindDuplicates_AcrossEntireDataset() {
+        Tag vegan = Tag.builder().id("tag-1").name("Vegan").build();
+        Tag vegetarian = Tag.builder().id("tag-2").name("Vegetarian").build();
+        Tag veganDuplicate = Tag.builder().id("tag-3").name("vegan").build();
+        when(tagRepository.findAll()).thenReturn(List.of(vegan, vegetarian, veganDuplicate));
+        when(recipeRepository.countByTagId(anyString())).thenReturn(0L);
+
+        PagedResponse<DuplicateTagGroupResponse> response = adminService.getDuplicateTagGroups(0, 1);
+
+        assertEquals(1, response.content().size());
+        DuplicateTagGroupResponse group = response.content().get(0);
+        assertEquals("vegan", group.normalizedName());
+        assertEquals(2, group.variants().size());
+    }
+
+    @Test
+    void getDuplicateTagGroups_ShouldGroupAllPunctuationVariants_OfSameTag() {
+        Tag hyphenated = Tag.builder().id("tag-1").name("high-protein").build();
+        Tag underscored = Tag.builder().id("tag-2").name("high_protein").build();
+        Tag slashed = Tag.builder().id("tag-3").name("high/protein").build();
+        Tag spaced = Tag.builder().id("tag-4").name("high protein").build();
+        when(tagRepository.findAll()).thenReturn(List.of(hyphenated, underscored, slashed, spaced));
+        when(recipeRepository.countByTagId(anyString())).thenReturn(0L);
+
+        PagedResponse<DuplicateTagGroupResponse> response = adminService.getDuplicateTagGroups(0, 10);
+
+        assertEquals(1, response.content().size());
+        DuplicateTagGroupResponse group = response.content().get(0);
+        assertEquals("high protein", group.normalizedName());
+        assertEquals(4, group.variants().size());
     }
 }

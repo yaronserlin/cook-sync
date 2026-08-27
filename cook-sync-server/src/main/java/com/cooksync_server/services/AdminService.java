@@ -54,12 +54,18 @@ public interface AdminService {
     void dismissReport(String reviewId);
 
     /**
-     * Suspends a user account, preventing login and hiding their authored recipes and reviews.
+     * Suspends a user account, preventing login and hiding their authored recipes and reviews,
+     * and revokes their active session so the suspension takes effect immediately rather than
+     * after their refresh token would otherwise have expired. Refuses to suspend the acting
+     * admin's own account or any other admin account.
      *
      * @param userId target user ID
+     * @param actingAdminEmail email of the admin performing the suspension, used for the
+     *                          self-suspension guard
      * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given ID exists
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the target is the acting admin's own account or another admin account
      */
-    void suspendUser(String userId);
+    void suspendUser(String userId, String actingAdminEmail);
 
     /**
      * Reactivates a previously suspended or deactivated user account.

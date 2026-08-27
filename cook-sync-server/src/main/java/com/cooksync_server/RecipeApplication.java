@@ -25,9 +25,6 @@ public class RecipeApplication {
      */
     public static void main(String[] args) {
         SpringApplication.run(RecipeApplication.class, args);
-        //TODO: 30-days deleted users check
-        //TODO: change "diactiveUser" to "suspendUser" in admin service and user profile service
-        //TODO: fix duplicate tag merge issue (some duplicate names not recugnauze)
     }
 
 }

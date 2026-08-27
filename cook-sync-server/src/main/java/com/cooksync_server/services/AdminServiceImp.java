@@ -14,6 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cooksync_server.constants.EntityNames;
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.entities.Review;
 import com.cooksync_server.entities.ReviewReport;
 import com.cooksync_server.entities.Tag;
@@ -56,6 +58,7 @@ public class AdminServiceImp implements AdminService {
     private final UserRepository userRepository;
     private final JdbcTemplate jdbcTemplate;
     private final AccountDeletionService accountDeletionService;
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * Calculates system-wide aggregate stats for admin dashboard monitoring.
@@ -94,7 +97,7 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public PagedResponse<UserResponse> getAllUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction) {
-        String sortField = SORTABLE_USER_FIELDS.contains(sortBy) ? sortBy : "createdAt";
+        String sortField = SORTABLE_USER_FIELDS.contains(sortBy) ? sortBy : PaginationDefaults.DEFAULT_SORT_FIELD;
         Sort sort = "asc".equalsIgnoreCase(direction) ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
         String normalizedQ = (q == null || q.isBlank()) ? null : q.trim().toLowerCase();
 
@@ -128,7 +131,7 @@ public class AdminServiceImp implements AdminService {
     @Override
     public void dismissReport(String reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.REVIEW, reviewId));
         review.setReported(false);
         review.setReportReason(null);
         review.setReportedAt(null);
@@ -152,20 +155,37 @@ public class AdminServiceImp implements AdminService {
      * that timestamp is now meaningless (the account is admin-suspended, not
      * self-deletion-pending) and left set would misleadingly suggest an active
      * countdown that in fact no longer applies to this account.
+     * <p>
+     * Also revokes the target's active refresh token so the suspension takes effect
+     * immediately: without a valid refresh token they cannot renew their access token, so their
+     * session ends within one access-token lifetime instead of surviving up to its normal 7-day
+     * expiry. Refuses to suspend the acting admin's own account (self-lockout guard) or any
+     * other admin account, mirroring {@link #deleteUserPermanently(String, String)}.
      *
      * @param userId target user ID
+     * @param actingAdminEmail email of the admin performing the suspension
      * @throws ResourceNotFoundException if no user with the given ID exists
+     * @throws UnauthorizedActionException if the target is the acting admin's own account or another admin account
      */
     @Transactional
     @Override
-    public void suspendUser(String userId) {
+    public void suspendUser(String userId, String actingAdminEmail) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
+
+        if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(actingAdminEmail)) {
+            throw new UnauthorizedActionException("You cannot suspend your own account from the admin console.");
+        }
+        if (user.isAdmin()) {
+            throw new UnauthorizedActionException("Admin accounts cannot be suspended from the admin console.");
+        }
+
         user.setEnabled(false);
         user.setStatus(User.AccountStatus.SUSPENDED);
         user.setDeletionRequestedAt(null);
         userRepository.save(user);
         reviewRepository.setHiddenByUserId(true, userId);
+        refreshTokenService.deleteByUserId(userId);
     }
 
     /**
@@ -185,7 +205,7 @@ public class AdminServiceImp implements AdminService {
     @Override
     public void enableUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
         accountDeletionService.restoreFromPendingDeletion(user);
     }
 
@@ -206,7 +226,7 @@ public class AdminServiceImp implements AdminService {
     @Override
     public void deleteUserPermanently(String userId, String actingAdminEmail) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
 
         if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(actingAdminEmail)) {
             throw new UnauthorizedActionException("You cannot delete your own account from the admin console.");
@@ -226,14 +246,13 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public PagedResponse<DuplicateTagGroupResponse> getDuplicateTagGroups(int page, int size) {
-        Page<Tag> tagPage = tagRepository.findAll(PageRequest.of(page, size));
         Map<String, List<Tag>> byNormalizedName = new LinkedHashMap<>();
-        for (Tag tag : tagPage.getContent()) {
+        for (Tag tag : tagRepository.findAll()) {
             String normalized = normalize(tag.getName());
             byNormalizedName.computeIfAbsent(normalized, k -> new ArrayList<>()).add(tag);
         }
 
-        List<DuplicateTagGroupResponse> groups = new ArrayList<>();
+        List<DuplicateTagGroupResponse> allGroups = new ArrayList<>();
         for (Map.Entry<String, List<Tag>> entry : byNormalizedName.entrySet()) {
             if (entry.getValue().size() < 2) {
                 continue;
@@ -241,10 +260,17 @@ public class AdminServiceImp implements AdminService {
             List<TagVariantResponse> variants = entry.getValue().stream()
                     .map(tag -> new TagVariantResponse(tag.getId(), tag.getName(), recipeRepository.countByTagId(tag.getId())))
                     .collect(Collectors.toList());
-            groups.add(new DuplicateTagGroupResponse(entry.getKey(), variants));
+            allGroups.add(new DuplicateTagGroupResponse(entry.getKey(), variants));
         }
-        return new PagedResponse<>(groups, tagPage.getNumber(), tagPage.getSize(),
-                tagPage.getTotalElements(), tagPage.getTotalPages(), tagPage.isLast());
+
+        int totalElements = allGroups.size();
+        int totalPages = (int) Math.ceil(totalElements / (double) size);
+        int fromIndex = Math.min(page * size, totalElements);
+        int toIndex = Math.min(fromIndex + size, totalElements);
+        List<DuplicateTagGroupResponse> pageContent = allGroups.subList(fromIndex, toIndex);
+
+        return new PagedResponse<>(pageContent, page, size, totalElements, totalPages,
+                page >= totalPages - 1);
     }
 
     /**
@@ -262,10 +288,10 @@ public class AdminServiceImp implements AdminService {
             throw new IllegalArgumentException("Source and target tags must be different.");
         }
         if (!tagRepository.existsById(request.sourceTagId())) {
-            throw new ResourceNotFoundException("Tag", request.sourceTagId());
+            throw new ResourceNotFoundException(EntityNames.TAG, request.sourceTagId());
         }
         if (!tagRepository.existsById(request.targetTagId())) {
-            throw new ResourceNotFoundException("Tag", request.targetTagId());
+            throw new ResourceNotFoundException(EntityNames.TAG, request.targetTagId());
         }
 
         jdbcTemplate.update(
@@ -284,6 +310,6 @@ public class AdminServiceImp implements AdminService {
         if (name == null) {
             return "";
         }
-        return name.toLowerCase().trim().replaceAll("[-_\\s]+", " ");
+        return name.toLowerCase().trim().replaceAll("[^a-z0-9]+", " ").trim();
     }
 }
