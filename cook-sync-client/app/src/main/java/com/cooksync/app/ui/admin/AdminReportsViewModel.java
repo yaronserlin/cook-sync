@@ -10,6 +10,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.constants.PaginationConstants;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
 
@@ -47,7 +48,7 @@ public class AdminReportsViewModel extends BaseViewModel {
     public static final String REASON_ALL = "ALL";
 
     /** Page size requested from {@code GET /api/admin/reviews/reported}. */
-    private static final int REPORTS_PAGE_SIZE = 20;
+    private static final int REPORTS_PAGE_SIZE = PaginationConstants.ADMIN_PAGE_SIZE;
 
     private final AdminRepository adminRepository;
     private final RecipeRepository recipeRepository;

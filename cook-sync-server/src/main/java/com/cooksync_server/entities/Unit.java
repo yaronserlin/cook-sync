@@ -1,5 +1,6 @@
 package com.cooksync_server.entities;
 
+import com.cooksync_server.constants.SchemaConstants;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -39,7 +40,7 @@ public class Unit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(length = 36)
+    @Column(length = SchemaConstants.UUID_COLUMN_LENGTH)
     private String id;
 
     @Column(nullable = false, length = 50)

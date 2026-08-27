@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.FavoriteService;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -42,8 +43,8 @@ public class FavoriteController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getUserFavorites(
             Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         String userEmail = authentication.getName();
         PagedResponse<RecipePreviewResponse> favorites = favoriteService.getUserFavorites(userEmail, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, favorites, null, "Favorites retrieved successfully"));

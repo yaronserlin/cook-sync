@@ -14,6 +14,7 @@ import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.base.AbstractFilterableListViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.RecipeFilterUtils;
+import com.cooksync.app.util.constants.PaginationConstants;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -36,9 +37,6 @@ import java.util.List;
  * @since 04/08/2026
  */
 public class HomeViewModel extends AbstractFilterableListViewModel {
-
-    /** Recipes requested per page from both the general browse feed and the tag-filtered feed. */
-    private static final int PAGE_SIZE = 10;
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
     private final RecipeRepository recipeRepository;
@@ -198,9 +196,9 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
         });
 
         if (selectedTags.size() == 1) {
-            recipeRepository.getRecipesByTag(selectedTags.iterator().next(), currentPage, PAGE_SIZE, result);
+            recipeRepository.getRecipesByTag(selectedTags.iterator().next(), currentPage, PaginationConstants.PAGE_SIZE, result);
         } else {
-            recipeRepository.getPublicFeed(currentPage, PAGE_SIZE, result);
+            recipeRepository.getPublicFeed(currentPage, PaginationConstants.PAGE_SIZE, result);
         }
     }
 

@@ -18,6 +18,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.admin.ReportedReviewResponse;
 import com.google.android.material.button.MaterialButton;
 
@@ -73,9 +74,9 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
                 layoutManager, viewModel::loadNextReportsPage));
 
         chipAll.setOnClickListener(v -> selectReason(AdminReportsViewModel.REASON_ALL));
-        chipSpam.setOnClickListener(v -> selectReason("SPAM"));
-        chipAbuse.setOnClickListener(v -> selectReason("ABUSE"));
-        chipOffTopic.setOnClickListener(v -> selectReason("OFF_TOPIC"));
+        chipSpam.setOnClickListener(v -> selectReason(DomainValues.REPORT_REASON_SPAM));
+        chipAbuse.setOnClickListener(v -> selectReason(DomainValues.REPORT_REASON_ABUSE));
+        chipOffTopic.setOnClickListener(v -> selectReason(DomainValues.REPORT_REASON_OFF_TOPIC));
 
         observeViewModel();
     }
@@ -109,17 +110,17 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
         Map<String, Long> counts = viewModel.getReasonCounts();
         long total = counts.values().stream().mapToLong(Long::longValue).sum();
         chipAll.setText(getString(R.string.admin_reason_all) + " · " + total);
-        chipSpam.setText(getString(R.string.admin_reason_spam) + " · " + counts.getOrDefault("SPAM", 0L));
-        chipAbuse.setText(getString(R.string.admin_reason_abuse) + " · " + counts.getOrDefault("ABUSE", 0L));
-        chipOffTopic.setText(getString(R.string.admin_reason_off_topic) + " · " + counts.getOrDefault("OFF_TOPIC", 0L));
+        chipSpam.setText(getString(R.string.admin_reason_spam) + " · " + counts.getOrDefault(DomainValues.REPORT_REASON_SPAM, 0L));
+        chipAbuse.setText(getString(R.string.admin_reason_abuse) + " · " + counts.getOrDefault(DomainValues.REPORT_REASON_ABUSE, 0L));
+        chipOffTopic.setText(getString(R.string.admin_reason_off_topic) + " · " + counts.getOrDefault(DomainValues.REPORT_REASON_OFF_TOPIC, 0L));
     }
 
     private void styleChips() {
         String selected = viewModel.getReasonFilter();
         com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAll, AdminReportsViewModel.REASON_ALL.equals(selected));
-        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSpam, "SPAM".equals(selected));
-        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAbuse, "ABUSE".equals(selected));
-        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipOffTopic, "OFF_TOPIC".equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSpam, DomainValues.REPORT_REASON_SPAM.equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAbuse, DomainValues.REPORT_REASON_ABUSE.equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipOffTopic, DomainValues.REPORT_REASON_OFF_TOPIC.equals(selected));
     }
 
     @Override

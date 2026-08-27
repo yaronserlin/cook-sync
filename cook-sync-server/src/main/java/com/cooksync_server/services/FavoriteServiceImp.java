@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.FavoriteRecipe;
 import com.cooksync_server.entities.PersonalInstructionNote;
 import com.cooksync_server.entities.Recipe;
@@ -49,9 +50,9 @@ public class FavoriteServiceImp implements FavoriteService{
     @Transactional
     public void addFavorite(String recipeId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.RECIPE, recipeId));
 
         if (!favoriteRepository.existsByUserIdAndRecipeId(user.getId(), recipe.getId())) {
             FavoriteRecipe favorite = FavoriteRecipe.builder()
@@ -72,9 +73,9 @@ public class FavoriteServiceImp implements FavoriteService{
     @Transactional
     public void removeFavorite(String recipeId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.RECIPE, recipeId));
 
         favoriteRepository.deleteByUserIdAndRecipeId(user.getId(), recipe.getId());
         personalInstructionNoteRepository.deleteByUserIdAndRecipeId(user.getId(), recipe.getId());
@@ -92,7 +93,7 @@ public class FavoriteServiceImp implements FavoriteService{
     @Transactional(readOnly = true)
     public PagedResponse<RecipePreviewResponse> getUserFavorites(String userEmail, int page, int size) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         Page<FavoriteRecipe> favoritesPage = favoriteRepository.findByUserId(user.getId(), PageRequest.of(page, size));
 
@@ -120,7 +121,7 @@ public class FavoriteServiceImp implements FavoriteService{
     @Transactional(readOnly = true)
     public PagedResponse<RecipePreviewResponse> getPublicFavoritesByUser(String userId, int page, int size) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
 
         if (!user.isShowFavoritesPublicly()) {
             return new PagedResponse<>(List.of(), page, size, 0, 0, true);

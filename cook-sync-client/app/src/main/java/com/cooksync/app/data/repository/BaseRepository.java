@@ -3,6 +3,7 @@ package com.cooksync.app.data.repository;
 import com.cooksync.app.CookSyncApplication;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 
@@ -39,7 +40,7 @@ public abstract class BaseRepository {
     protected static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     /** Matches {@code OrganicToast}'s auto-dismiss duration. Shared across ViewModels for undo timing. */
-    public static final long UNDO_WINDOW_MS = 3200;
+    public static final long UNDO_WINDOW_MS = UiTimingConstants.UNDO_TOAST_DURATION_MS;
 
     /**
      * Page size used by {@link #fetchAllPages}. Every server-paginated endpoint the app

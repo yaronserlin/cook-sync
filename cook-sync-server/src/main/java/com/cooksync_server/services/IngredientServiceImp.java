@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.response.ingredient.IngredientResponse;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.Unit;
@@ -48,12 +49,12 @@ public class IngredientServiceImp implements IngredientService {
     @Transactional
     public IngredientResponse addIngredientToRecipe(String recipeId, IngredientRequestDTO request, String userEmail) {
         Recipe recipe = OwnershipValidator.requireOwnedResource(
-                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                () -> recipeRepository.findById(recipeId), EntityNames.RECIPE, recipeId,
                 r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this recipe's ingredients.");
 
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit", request.unitId()));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.UNIT, request.unitId()));
 
         Ingredient ingredient = IngredientMapper.fromRequest(recipe, request, unit);
 
@@ -73,12 +74,12 @@ public class IngredientServiceImp implements IngredientService {
     @Transactional
     public IngredientResponse updateIngredient(String ingredientId, IngredientRequestDTO request, String userEmail) {
         Ingredient ingredient = OwnershipValidator.requireOwnedResource(
-                () -> ingredientRepository.findById(ingredientId), "Ingredient", ingredientId,
+                () -> ingredientRepository.findById(ingredientId), EntityNames.INGREDIENT, ingredientId,
                 i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this ingredient.");
 
         Unit unit = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit", request.unitId()));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.UNIT, request.unitId()));
 
         ingredient.setName(request.name());
         ingredient.setQuantity(BigDecimal.valueOf(request.quantity()));
@@ -98,7 +99,7 @@ public class IngredientServiceImp implements IngredientService {
     @Transactional
     public void deleteIngredient(String ingredientId, String userEmail) {
         Ingredient ingredient = OwnershipValidator.requireOwnedResource(
-                () -> ingredientRepository.findById(ingredientId), "Ingredient", ingredientId,
+                () -> ingredientRepository.findById(ingredientId), EntityNames.INGREDIENT, ingredientId,
                 i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to delete this ingredient.");
 

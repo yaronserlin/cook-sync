@@ -25,6 +25,7 @@ import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.TextWatchers;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.tags.TagResponse;
 import com.google.android.material.card.MaterialCardView;
@@ -253,9 +254,9 @@ public class WizardBasicsFragment extends Fragment {
                     renderDuration(etCookTime, minutes);
                 }));
 
-        chipEasy.setOnClickListener(v -> selectDifficulty("EASY"));
-        chipMedium.setOnClickListener(v -> selectDifficulty("MEDIUM"));
-        chipHard.setOnClickListener(v -> selectDifficulty("HARD"));
+        chipEasy.setOnClickListener(v -> selectDifficulty(DomainValues.DIFFICULTY_EASY));
+        chipMedium.setOnClickListener(v -> selectDifficulty(DomainValues.DIFFICULTY_MEDIUM));
+        chipHard.setOnClickListener(v -> selectDifficulty(DomainValues.DIFFICULTY_HARD));
 
         View.OnClickListener pickCoverListener = v -> imagePicker.pick(uri -> {
             // Not uploaded yet — only the local URI is stored until Publish, matching the
@@ -315,9 +316,9 @@ public class WizardBasicsFragment extends Fragment {
 
     private void styleDifficultyChips() {
         String selected = viewModel.getDraft().difficulty;
-        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipEasy, "EASY".equals(selected));
-        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipMedium, "MEDIUM".equals(selected));
-        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipHard, "HARD".equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipEasy, DomainValues.DIFFICULTY_EASY.equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipMedium, DomainValues.DIFFICULTY_MEDIUM.equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipHard, DomainValues.DIFFICULTY_HARD.equals(selected));
     }
 
     private void renderSelectedTags() {

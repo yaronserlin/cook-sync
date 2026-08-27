@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.response.ApiResponse;
@@ -52,8 +53,8 @@ public class RecipeController {
      */
     @GetMapping("/paged")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getAllRecipesPaged(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String difficulty,
             @RequestParam(required = false) Double minRating) {
@@ -96,8 +97,8 @@ public class RecipeController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String difficulty,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.searchRecipes(q, author, ingredient, sortBy, difficulty, minRating, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, recipes, null, "Search completed"));
     }
@@ -120,8 +121,8 @@ public class RecipeController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String difficulty,
             @RequestParam(required = false) Double minRating,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.findRecipesByTag(tagName, sortBy, difficulty, minRating, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, recipes, null, "Recipes retrieved by tag"));
     }
@@ -137,8 +138,8 @@ public class RecipeController {
     @GetMapping("/mine")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getMyRecipes(
             Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.getMyRecipes(authentication.getName(), page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, recipes, null, "Your recipes retrieved successfully"));
     }

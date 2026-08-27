@@ -1,5 +1,6 @@
 package com.cooksync_server.entities;
 
+import com.cooksync_server.constants.SchemaConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,7 +38,7 @@ public class DescriptionBlock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(length = 36)
+    @Column(length = SchemaConstants.UUID_COLUMN_LENGTH)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)

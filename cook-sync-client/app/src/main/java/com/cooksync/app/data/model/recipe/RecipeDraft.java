@@ -1,5 +1,6 @@
 package com.cooksync.app.data.model.recipe;
 
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.tags.TagResponse;
 
@@ -57,7 +58,7 @@ public class RecipeDraft {
     public List<DraftIngredient> ingredients = new ArrayList<>();
     public List<DraftInstruction> instructions = new ArrayList<>();
     public String primaryImageUrl;
-    public String visibility = "PRIVATE";
+    public String visibility = DomainValues.VISIBILITY_PRIVATE;
 
     /** Which wizard step (0-3) the user last reached, so resuming a saved draft reopens there. */
     public int lastReachedStep = 0;
@@ -77,7 +78,7 @@ public class RecipeDraft {
         draft.editingRecipeId = recipe.id();
         draft.title = recipe.title() != null ? recipe.title() : "";
         draft.difficulty = recipe.difficulty();
-        draft.visibility = recipe.visibility() != null ? recipe.visibility() : "PRIVATE";
+        draft.visibility = recipe.visibility() != null ? recipe.visibility() : DomainValues.VISIBILITY_PRIVATE;
         draft.prepTimeMinutes = recipe.prepTimeMinutes();
         draft.cookTimeMinutes = recipe.cookTimeMinutes();
         draft.servings = recipe.servings();

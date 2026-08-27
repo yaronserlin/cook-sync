@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.response.instruction.InstructionResponse;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Instruction;
 import com.cooksync_server.entities.Recipe;
@@ -52,7 +53,7 @@ public class InstructionServiceImp implements InstructionService {
     @Transactional
     public InstructionResponse addInstructionToRecipe(String recipeId, InstructionRequestDTO request, String userEmail) {
         Recipe recipe = OwnershipValidator.requireOwnedResource(
-                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                () -> recipeRepository.findById(recipeId), EntityNames.RECIPE, recipeId,
                 r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this recipe.");
 
@@ -82,7 +83,7 @@ public class InstructionServiceImp implements InstructionService {
     @Transactional
     public InstructionResponse updateInstruction(String instructionId, InstructionRequestDTO request, String userEmail) {
         Instruction instruction = OwnershipValidator.requireOwnedResource(
-                () -> instructionRepository.findById(instructionId), "Instruction", instructionId,
+                () -> instructionRepository.findById(instructionId), EntityNames.INSTRUCTION, instructionId,
                 i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to modify this instruction.");
 
@@ -107,7 +108,7 @@ public class InstructionServiceImp implements InstructionService {
     @Transactional
     public void deleteInstruction(String instructionId, String userEmail) {
         Instruction instruction = OwnershipValidator.requireOwnedResource(
-                () -> instructionRepository.findById(instructionId), "Instruction", instructionId,
+                () -> instructionRepository.findById(instructionId), EntityNames.INSTRUCTION, instructionId,
                 i -> i.getRecipe().getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to delete this instruction.");
 

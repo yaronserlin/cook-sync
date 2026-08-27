@@ -11,6 +11,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
 import com.cooksync.app.util.ResendCooldownTimer;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 
@@ -18,16 +19,13 @@ import com.dtos.request.auth.ResetPasswordRequestDTO;
  * ViewModel for {@link ForgotPasswordActivity}. Drives both stages of the forgot-password
  * flow: requesting a reset code by email, then consuming that code to set a new password. A
  * client-side {@link ResendCooldownTimer}, shared with {@link VerifyOtpViewModel}, disables the
- * resend action for {@value #RESEND_COOLDOWN_SECONDS} seconds after a code is issued or resent.
+ * resend action for {@value UiTimingConstants#RESEND_COOLDOWN_SECONDS} seconds after a code is issued or resent.
  *
  * @author Yaron Serlin
  * @version 1.0
  * @since 05/08/2026
  */
 public class ForgotPasswordViewModel extends BaseViewModel {
-
-    /** Seconds the resend button stays disabled after a code is issued or resent. */
-    private static final int RESEND_COOLDOWN_SECONDS = 30;
 
     private final AuthRepository authRepository;
 
@@ -42,7 +40,7 @@ public class ForgotPasswordViewModel extends BaseViewModel {
     private final MutableLiveData<String> repeatPasswordError = new MutableLiveData<>();
     private final MutableLiveData<Integer> resendCooldownSeconds = new MutableLiveData<>(0);
 
-    private final ResendCooldownTimer cooldownTimer = new ResendCooldownTimer(RESEND_COOLDOWN_SECONDS, resendCooldownSeconds);
+    private final ResendCooldownTimer cooldownTimer = new ResendCooldownTimer(UiTimingConstants.RESEND_COOLDOWN_SECONDS, resendCooldownSeconds);
 
     /**
      * Constructs the ViewModel with the given {@link AuthRepository}, injected by

@@ -9,6 +9,7 @@ import android.widget.RadioButton;
 import androidx.annotation.NonNull;
 
 import com.cooksync.app.R;
+import com.cooksync.app.util.constants.DomainValues;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /**
@@ -54,11 +55,11 @@ public final class ReportReviewDialog {
                 .setPositiveButton(R.string.action_save, (dialog, which) -> {
                     String reason;
                     if (reasonSpam.isChecked()) {
-                        reason = "SPAM";
+                        reason = DomainValues.REPORT_REASON_SPAM;
                     } else if (reasonAbuse.isChecked()) {
-                        reason = "ABUSE";
+                        reason = DomainValues.REPORT_REASON_ABUSE;
                     } else {
-                        reason = "OFF_TOPIC";
+                        reason = DomainValues.REPORT_REASON_OFF_TOPIC;
                     }
                     String commentText = comment.getText() == null ? "" : comment.getText().toString().trim();
                     callback.onSubmit(reason, commentText.isEmpty() ? null : commentText);

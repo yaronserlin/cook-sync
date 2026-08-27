@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cooksync_server.constants.EntityNames;
+import com.cooksync_server.constants.VerificationWindows;
 import com.cooksync_server.entities.PendingRegistration;
 import com.cooksync_server.entities.RefreshToken;
 import com.cooksync_server.entities.User;
@@ -46,24 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class AuthServiceImp implements AuthService {
-
-    /**
-     * Grace period after a deletion request during which logging back in
-     * restores the account.
-     */
-    private static final long DELETION_GRACE_PERIOD_DAYS = 30;
-
-    /**
-     * How many minutes a registration OTP code remains valid after being issued
-     * or resent.
-     */
-    private static final int OTP_VALIDITY_MINUTES = 10;
-
-    /**
-     * {@link #OTP_VALIDITY_MINUTES} expressed in milliseconds, for
-     * {@link Instant} arithmetic.
-     */
-    private static final long OTP_VALIDITY_MS = OTP_VALIDITY_MINUTES * 60 * 1000L;
 
     /**
      * Grace period past OTP expiry before an abandoned pending registration is
@@ -141,7 +125,7 @@ public class AuthServiceImp implements AuthService {
                 .termsAccepted(request.termsAccepted())
                 .marketingOptIn(request.marketingOptIn())
                 .otpCodeHash(passwordEncoder.encode(otpCode))
-                .otpExpiresAt(Instant.now().plusMillis(OTP_VALIDITY_MS))
+                .otpExpiresAt(Instant.now().plusMillis(VerificationWindows.CODE_VALIDITY_MS))
                 .build();
 
         try {
@@ -150,10 +134,10 @@ public class AuthServiceImp implements AuthService {
             throw new UserAlreadyExistsException("Email is already registered");
         }
 
-        emailService.sendOtpEmail(request.email(), otpCode, OTP_VALIDITY_MINUTES);
+        emailService.sendOtpEmail(request.email(), otpCode, VerificationWindows.CODE_VALIDITY_MINUTES);
 
         log.info("Registration OTP issued for email: {}", request.email());
-        return new PendingRegistrationResponse(request.email(), OTP_VALIDITY_MS / 1000);
+        return new PendingRegistrationResponse(request.email(), VerificationWindows.CODE_VALIDITY_MS / 1000);
     }
 
     /**
@@ -237,14 +221,14 @@ public class AuthServiceImp implements AuthService {
 
         String otpCode = OtpCodeGenerator.generate();
         pending.setOtpCodeHash(passwordEncoder.encode(otpCode));
-        pending.setOtpExpiresAt(Instant.now().plusMillis(OTP_VALIDITY_MS));
+        pending.setOtpExpiresAt(Instant.now().plusMillis(VerificationWindows.CODE_VALIDITY_MS));
         pending.setAttemptCount(0);
         pendingRegistrationRepository.save(pending);
 
-        emailService.sendOtpEmail(request.email(), otpCode, OTP_VALIDITY_MINUTES);
+        emailService.sendOtpEmail(request.email(), otpCode, VerificationWindows.CODE_VALIDITY_MINUTES);
 
         log.info("Registration OTP resent for email: {}", request.email());
-        return new PendingRegistrationResponse(request.email(), OTP_VALIDITY_MS / 1000);
+        return new PendingRegistrationResponse(request.email(), VerificationWindows.CODE_VALIDITY_MS / 1000);
     }
 
     /**
@@ -335,7 +319,7 @@ public class AuthServiceImp implements AuthService {
     @Transactional(readOnly = true)
     public AuthResponse validateToken(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         return new AuthResponse(null, null, user.getId(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getAvatarUrl());
     }
@@ -349,7 +333,7 @@ public class AuthServiceImp implements AuthService {
     @Transactional
     public void logout(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         refreshTokenService.deleteByUserId(user.getId());
     }
 
@@ -369,6 +353,6 @@ public class AuthServiceImp implements AuthService {
     private boolean isWithinDeletionGracePeriod(User user) {
         return user.getStatus() == User.AccountStatus.DEACTIVATED
                 && user.getDeletionRequestedAt() != null
-                && user.getDeletionRequestedAt().isAfter(LocalDateTime.now().minusDays(DELETION_GRACE_PERIOD_DAYS));
+                && user.getDeletionRequestedAt().isAfter(LocalDateTime.now().minusDays(VerificationWindows.ACCOUNT_DELETION_GRACE_PERIOD_DAYS));
     }
 }

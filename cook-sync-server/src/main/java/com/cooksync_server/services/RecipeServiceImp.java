@@ -30,6 +30,7 @@ import com.cooksync_server.entities.RecipeImage;
 import com.cooksync_server.entities.Tag;
 import com.cooksync_server.entities.Unit;
 import com.cooksync_server.entities.User;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.repositories.IngredientRepository;
 import com.cooksync_server.repositories.InstructionRepository;
@@ -109,7 +110,7 @@ public class RecipeServiceImp implements RecipeService{
         log.debug("Fetching detailed recipe by ID: {}", id);
         Recipe recipe = recipeRepository.findByIdWithDetails(id)
                 .orElseGet(() -> recipeRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Recipe", id)));
+                        .orElseThrow(() -> new ResourceNotFoundException(EntityNames.RECIPE, id)));
         recipe = recipeRepository.findDescriptionBlocksByRecipeId(id).orElse(recipe);
         return RecipeMapper.toResponse(recipe);
     }
@@ -179,7 +180,7 @@ public class RecipeServiceImp implements RecipeService{
     public PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, int page, int size) {
         log.debug("Fetching recipes for user email: {}, Page: {}, Size: {}", userEmail, page, size);
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         Page<Recipe> result = recipeRepository.findByCreatedById(user.getId(), PageRequest.of(page, size));
         return PagedResponseMapper.toPagedResponse(result, RecipeMapper::toPreview);
     }
@@ -200,7 +201,7 @@ public class RecipeServiceImp implements RecipeService{
     public PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, int page, int size) {
         log.debug("Fetching public recipes for user ID: {}, Page: {}, Size: {}", userId, page, size);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
 
         if (!user.isShowRecipesPublicly()) {
             return new PagedResponse<>(List.of(), page, size, 0, 0, true);
@@ -222,7 +223,7 @@ public class RecipeServiceImp implements RecipeService{
     @Transactional
     public RecipeResponse createRecipe(RecipeCreateRequestDTO request, String userEmail) {
         User creator = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         Recipe recipe = Recipe.builder()
                 .createdBy(creator)
@@ -254,7 +255,7 @@ public class RecipeServiceImp implements RecipeService{
     @Transactional
     public RecipeResponse updateRecipe(String recipeId, RecipeCreateRequestDTO request, String userEmail) {
         Recipe recipe = OwnershipValidator.requireOwnedResource(
-                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                () -> recipeRepository.findById(recipeId), EntityNames.RECIPE, recipeId,
                 r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to edit this recipe.");
 
@@ -294,7 +295,7 @@ public class RecipeServiceImp implements RecipeService{
     @Transactional
     public RecipeResponse updateVisibility(String recipeId, RecipeVisibilityUpdateRequestDTO request, String userEmail) {
         Recipe recipe = OwnershipValidator.requireOwnedResource(
-                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                () -> recipeRepository.findById(recipeId), EntityNames.RECIPE, recipeId,
                 r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to edit this recipe.");
 
@@ -314,7 +315,7 @@ public class RecipeServiceImp implements RecipeService{
     @Transactional
     public void deleteRecipe(String recipeId, String userEmail) {
         Recipe recipe = OwnershipValidator.requireOwnedResource(
-                () -> recipeRepository.findById(recipeId), "Recipe", recipeId,
+                () -> recipeRepository.findById(recipeId), EntityNames.RECIPE, recipeId,
                 r -> r.getCreatedBy().getId(), userRepository, userEmail,
                 "You are not allowed to delete this recipe.");
 
@@ -377,7 +378,7 @@ public class RecipeServiceImp implements RecipeService{
         if (tags.size() != new HashSet<>(tagIds).size()) {
             Set<String> foundIds = tags.stream().map(Tag::getId).collect(Collectors.toSet());
             String missingId = tagIds.stream().filter(tagId -> !foundIds.contains(tagId)).findFirst().orElse(null);
-            throw new ResourceNotFoundException("Tag", missingId);
+            throw new ResourceNotFoundException(EntityNames.TAG, missingId);
         }
         return new java.util.LinkedHashSet<>(tags);
     }
@@ -396,7 +397,7 @@ public class RecipeServiceImp implements RecipeService{
         for (IngredientRequestDTO ingDto : dtoList) {
             Unit unit = unitsById.get(ingDto.unitId());
             if (unit == null) {
-                throw new ResourceNotFoundException("Unit", ingDto.unitId());
+                throw new ResourceNotFoundException(EntityNames.UNIT, ingDto.unitId());
             }
             Ingredient ingredient = IngredientMapper.fromRequest(recipe, ingDto, unit);
             ingredients.add(ingredient);

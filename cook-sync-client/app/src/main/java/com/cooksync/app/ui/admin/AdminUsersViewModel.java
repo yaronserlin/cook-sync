@@ -10,6 +10,7 @@ import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.UserNameFormatter;
+import com.cooksync.app.util.constants.PaginationConstants;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.user.UserResponse;
 
@@ -46,7 +47,7 @@ public class AdminUsersViewModel extends BaseViewModel {
     public static final String STATUS_DEACTIVATED = "DEACTIVATED";
 
     /** Page size requested from {@code GET /api/admin/users}. */
-    private static final int USERS_PAGE_SIZE = 20;
+    private static final int USERS_PAGE_SIZE = PaginationConstants.ADMIN_PAGE_SIZE;
 
     private final AdminRepository adminRepository;
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.RefreshToken;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
@@ -58,7 +59,7 @@ public class RefreshTokenServiceImp implements RefreshTokenService{
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(userRepository.findById(userId)
-                        .orElseThrow(() -> new ResourceNotFoundException("User", userId)))
+                        .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId)))
                 .token(UUID.randomUUID().toString())
                 .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
                 .build();

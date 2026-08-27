@@ -38,6 +38,8 @@ import com.dtos.response.unit.UnitResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
 import com.dtos.response.user.UserResponse;
 
+import com.cooksync.app.util.constants.ApiEndpoints;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -72,7 +74,7 @@ public interface ApiService {
      * @param request registration payload
      * @return call yielding an acknowledgement of the pending registration
      */
-    @POST("api/auth/register")
+    @POST(ApiEndpoints.REGISTER)
     Call<ApiResponse<PendingRegistrationResponse>> register(@Body RegisterRequestDTO request);
 
     /**
@@ -81,7 +83,7 @@ public interface ApiService {
      * @param request OTP verification payload
      * @return call yielding the newly created session
      */
-    @POST("api/auth/verify-registration-otp")
+    @POST(ApiEndpoints.VERIFY_REGISTRATION_OTP)
     Call<ApiResponse<AuthResponse>> verifyRegistrationOtp(@Body VerifyRegistrationOtpRequestDTO request);
 
     /**
@@ -90,7 +92,7 @@ public interface ApiService {
      * @param request resend request payload
      * @return call yielding an acknowledgement of the newly issued OTP
      */
-    @POST("api/auth/resend-registration-otp")
+    @POST(ApiEndpoints.RESEND_REGISTRATION_OTP)
     Call<ApiResponse<PendingRegistrationResponse>> resendRegistrationOtp(@Body ResendRegistrationOtpRequestDTO request);
 
     /**
@@ -99,7 +101,7 @@ public interface ApiService {
      * @param request login credentials payload
      * @return call yielding the authenticated session
      */
-    @POST("api/auth/login")
+    @POST(ApiEndpoints.LOGIN)
     Call<ApiResponse<AuthResponse>> login(@Body LoginRequestDTO request);
 
     /**
@@ -109,7 +111,7 @@ public interface ApiService {
      * @param request refresh token payload
      * @return call yielding the renewed session
      */
-    @POST("api/auth/refresh-token")
+    @POST(ApiEndpoints.REFRESH_TOKEN)
     Call<ApiResponse<AuthResponse>> refreshToken(@Body TokenRefreshRequestDTO request);
 
     /**

@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.cooksync_server.constants.ApiRoutes;
+
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -43,9 +45,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh-token",
-                        "/api/auth/forgot-password", "/api/auth/reset-password",
-                        "/api/auth/verify-registration-otp", "/api/auth/resend-registration-otp").permitAll()
+                .requestMatchers(ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_REGISTER, ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_LOGIN,
+                        ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_REFRESH_TOKEN,
+                        ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_FORGOT_PASSWORD, ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_RESET_PASSWORD,
+                        ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_VERIFY_REGISTRATION_OTP, ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_RESEND_REGISTRATION_OTP).permitAll()
                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))

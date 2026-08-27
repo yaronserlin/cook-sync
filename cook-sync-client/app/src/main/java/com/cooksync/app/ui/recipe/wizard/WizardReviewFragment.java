@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.util.DimensionUtils;
 import com.cooksync.app.util.GlideUtils;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.tags.TagResponse;
 import com.google.android.material.card.MaterialCardView;
 
@@ -74,8 +75,8 @@ public class WizardReviewFragment extends Fragment {
         chipPublic = view.findViewById(R.id.chip_visibility_public);
         chipPrivate = view.findViewById(R.id.chip_visibility_private);
 
-        chipPublic.setOnClickListener(v -> selectVisibility("PUBLIC"));
-        chipPrivate.setOnClickListener(v -> selectVisibility("PRIVATE"));
+        chipPublic.setOnClickListener(v -> selectVisibility(DomainValues.VISIBILITY_PUBLIC));
+        chipPrivate.setOnClickListener(v -> selectVisibility(DomainValues.VISIBILITY_PRIVATE));
 
         renderAll();
     }
@@ -211,8 +212,8 @@ public class WizardReviewFragment extends Fragment {
 
     private void styleVisibilityChips() {
         String visibility = viewModel.getVisibility();
-        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPublic, "PUBLIC".equals(visibility));
-        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPrivate, "PRIVATE".equals(visibility));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPublic, DomainValues.VISIBILITY_PUBLIC.equals(visibility));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPrivate, DomainValues.VISIBILITY_PRIVATE.equals(visibility));
     }
 
     private String humanDifficulty(String difficulty) {

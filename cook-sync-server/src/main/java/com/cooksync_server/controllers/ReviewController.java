@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.services.ReviewService;
 import com.dtos.request.review.ReportReviewRequestDTO;
@@ -49,8 +50,8 @@ public class ReviewController {
     @GetMapping("/recipes/{recipeId}/reviews")
     public ResponseEntity<ApiResponse<PagedResponse<ReviewResponse>>> getReviewsForRecipe(
             @PathVariable String recipeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<ReviewResponse> reviews = reviewService.getReviewsForRecipe(recipeId, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, reviews, null, "Reviews retrieved successfully"));
     }

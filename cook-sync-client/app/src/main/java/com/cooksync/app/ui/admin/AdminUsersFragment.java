@@ -26,6 +26,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.UserNameFormatter;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.response.user.UserResponse;
 import com.google.android.material.button.MaterialButton;
 
@@ -42,9 +43,6 @@ import java.util.List;
  * @since 07/08/2026
  */
 public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnUserActionListener {
-
-    /** Matches {@code SearchActivity}'s live search-as-you-type debounce window. */
-    private static final long SEARCH_DEBOUNCE_MS = 350L;
 
     private AdminUsersViewModel viewModel;
     private AdminUserAdapter adapter;
@@ -116,7 +114,7 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                 }
                 String query = s.toString();
                 pendingSearch = () -> viewModel.refreshUsers(query, selectedEnabledFilter);
-                searchHandler.postDelayed(pendingSearch, SEARCH_DEBOUNCE_MS);
+                searchHandler.postDelayed(pendingSearch, UiTimingConstants.SEARCH_DEBOUNCE_MS);
             }
 
             @Override

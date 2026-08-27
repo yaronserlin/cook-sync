@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
@@ -59,7 +60,7 @@ final class OwnershipValidator {
         T resource = resourceLookup.get()
                 .orElseThrow(() -> new ResourceNotFoundException(resourceName, resourceId));
         User currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         requireOwnerOrAdmin(ownerIdExtractor.apply(resource), currentUser, errorMessage);
         return resource;
     }

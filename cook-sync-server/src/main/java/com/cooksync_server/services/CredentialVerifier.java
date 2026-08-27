@@ -3,6 +3,7 @@ package com.cooksync_server.services;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
@@ -38,7 +39,7 @@ public class CredentialVerifier {
      */
     public User verifyCurrentPassword(String userEmail, String currentPassword) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
             throw new InvalidCredentialsException("Current password is incorrect");

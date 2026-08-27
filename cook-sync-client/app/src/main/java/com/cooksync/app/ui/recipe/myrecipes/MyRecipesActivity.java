@@ -22,6 +22,7 @@ import com.cooksync.app.ui.recipe.common.RecipeRowCardAdapter;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
 import com.cooksync.app.util.DimensionUtils;
+import com.cooksync.app.util.constants.DomainValues;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -170,9 +171,9 @@ public class MyRecipesActivity extends RecipeListActivity {
                             updateFilterButton();
                         }));
 
-        chipAll = addChip(getString(R.string.filter_all), true, () -> selectVisibility("ALL"));
-        chipPublic = addChip(getString(R.string.filter_public), false, () -> selectVisibility("PUBLIC"));
-        chipPrivate = addChip(getString(R.string.filter_private), false, () -> selectVisibility("PRIVATE"));
+        chipAll = addChip(getString(R.string.filter_all), true, () -> selectVisibility(DomainValues.VISIBILITY_ALL));
+        chipPublic = addChip(getString(R.string.filter_public), false, () -> selectVisibility(DomainValues.VISIBILITY_PUBLIC));
+        chipPrivate = addChip(getString(R.string.filter_private), false, () -> selectVisibility(DomainValues.VISIBILITY_PRIVATE));
 
         setOnClearAllClickListener(() -> {
             viewModel.applyFilters("Newest", null, new ArrayList<>(), null, null);
@@ -318,9 +319,9 @@ public class MyRecipesActivity extends RecipeListActivity {
 
     private void selectVisibility(String visibility) {
         viewModel.setVisibilityFilter(visibility);
-        styleChip(chipAll, "ALL".equals(visibility));
-        styleChip(chipPublic, "PUBLIC".equals(visibility));
-        styleChip(chipPrivate, "PRIVATE".equals(visibility));
+        styleChip(chipAll, DomainValues.VISIBILITY_ALL.equals(visibility));
+        styleChip(chipPublic, DomainValues.VISIBILITY_PUBLIC.equals(visibility));
+        styleChip(chipPrivate, DomainValues.VISIBILITY_PRIVATE.equals(visibility));
     }
 
     @Override
@@ -334,7 +335,7 @@ public class MyRecipesActivity extends RecipeListActivity {
     }
 
     private void showOptionsMenu(RecipePreviewResponse recipe, View anchor) {
-        boolean isPublic = "PUBLIC".equalsIgnoreCase(recipe.visibility());
+        boolean isPublic = DomainValues.VISIBILITY_PUBLIC.equalsIgnoreCase(recipe.visibility());
 
         PopupMenu popup = new PopupMenu(this, anchor);
         popup.getMenuInflater().inflate(R.menu.menu_my_recipe_options, popup.getMenu());

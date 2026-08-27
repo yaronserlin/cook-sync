@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.FavoriteService;
 import com.cooksync_server.services.RecipeService;
 import com.cooksync_server.services.UserProfileService;
@@ -66,8 +67,8 @@ public class UserController {
     @GetMapping("/{id}/recipes")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getUserPublicRecipes(
             @PathVariable String id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         log.debug("Fetching public recipes for user ID: {}", id);
         PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser(id, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User's public recipes retrieved successfully"));
@@ -85,8 +86,8 @@ public class UserController {
     @GetMapping("/{id}/favorites")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getUserPublicFavorites(
             @PathVariable String id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         log.debug("Fetching public favorites for user ID: {}", id);
         PagedResponse<RecipePreviewResponse> response = favoriteService.getPublicFavoritesByUser(id, page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User's public favorites retrieved successfully"));

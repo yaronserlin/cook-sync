@@ -9,6 +9,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.base.AbstractFilterableListViewModel;
 import com.cooksync.app.util.RecipeFilterUtils;
+import com.cooksync.app.util.constants.PaginationConstants;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -34,9 +35,6 @@ import java.util.stream.Collectors;
  * @since 05/08/2026
  */
 public class SearchViewModel extends AbstractFilterableListViewModel {
-
-    /** Number of results requested per page. */
-    private static final int PAGE_SIZE = 10;
 
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
@@ -150,9 +148,9 @@ public class SearchViewModel extends AbstractFilterableListViewModel {
         });
 
         if (browseTagName != null) {
-            recipeRepository.getRecipesByTag(browseTagName, currentPage, PAGE_SIZE, result);
+            recipeRepository.getRecipesByTag(browseTagName, currentPage, PaginationConstants.PAGE_SIZE, result);
         } else {
-            recipeRepository.searchRecipes(currentQuery, currentPage, PAGE_SIZE, result);
+            recipeRepository.searchRecipes(currentQuery, currentPage, PaginationConstants.PAGE_SIZE, result);
         }
     }
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.ApiRoutes;
 import com.cooksync_server.services.AuthService;
 import com.cooksync_server.services.PasswordService;
 import com.cooksync_server.services.UserProfileService;
@@ -50,7 +51,7 @@ import lombok.RequiredArgsConstructor;
  * @since 02/08/2026
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(ApiRoutes.AUTH_BASE)
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -67,7 +68,7 @@ public class AuthController {
      * @param request registration details payload
      * @return response entity carrying the pending-registration payload
      */
-    @PostMapping("/register")
+    @PostMapping(ApiRoutes.AUTH_REGISTER)
     public ResponseEntity<ApiResponse<PendingRegistrationResponse>> register(@Valid @RequestBody RegisterRequestDTO request) {
         PendingRegistrationResponse response = authService.register(request);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Verification code sent to your email"));
@@ -81,7 +82,7 @@ public class AuthController {
      * @param request OTP verification payload
      * @return response entity carrying the newly issued authentication payload
      */
-    @PostMapping("/verify-registration-otp")
+    @PostMapping(ApiRoutes.AUTH_VERIFY_REGISTRATION_OTP)
     public ResponseEntity<ApiResponse<AuthResponse>> verifyRegistrationOtp(@Valid @RequestBody VerifyRegistrationOtpRequestDTO request) {
         AuthResponse response = authService.verifyRegistrationOtp(request);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User registered successfully"));
@@ -94,7 +95,7 @@ public class AuthController {
      * @param request resend-code request payload
      * @return response entity carrying the refreshed pending-registration payload
      */
-    @PostMapping("/resend-registration-otp")
+    @PostMapping(ApiRoutes.AUTH_RESEND_REGISTRATION_OTP)
     public ResponseEntity<ApiResponse<PendingRegistrationResponse>> resendRegistrationOtp(@Valid @RequestBody ResendRegistrationOtpRequestDTO request) {
         PendingRegistrationResponse response = authService.resendRegistrationOtp(request);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Verification code resent"));
@@ -106,7 +107,7 @@ public class AuthController {
      * @param request login credentials payload
      * @return response entity carrying the issued authentication payload
      */
-    @PostMapping("/login")
+    @PostMapping(ApiRoutes.AUTH_LOGIN)
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequestDTO request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User logged in successfully"));
@@ -118,7 +119,7 @@ public class AuthController {
      * @param request refresh-token payload
      * @return response entity carrying the renewed authentication payload
      */
-    @PostMapping("/refresh-token")
+    @PostMapping(ApiRoutes.AUTH_REFRESH_TOKEN)
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody TokenRefreshRequestDTO request) {
         AuthResponse response = authService.refreshToken(request);
         return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Token refreshed successfully"));
@@ -299,7 +300,7 @@ public class AuthController {
      * @param request forgot-password request payload
      * @return response entity acknowledging the request
      */
-    @PostMapping("/forgot-password")
+    @PostMapping(ApiRoutes.AUTH_FORGOT_PASSWORD)
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
         passwordService.forgotPassword(request);
         return ResponseEntity.ok(new ApiResponse<>(true, null, null,
@@ -313,7 +314,7 @@ public class AuthController {
      * @param request reset-password request payload
      * @return response entity acknowledging the password reset
      */
-    @PostMapping("/reset-password")
+    @PostMapping(ApiRoutes.AUTH_RESET_PASSWORD)
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
         passwordService.resetPassword(request);
         return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Password reset successfully"));

@@ -9,21 +9,21 @@ import jakarta.validation.constraints.Size;
  * and carried to the server's {@code PUT /api/auth/profile} endpoint, where it is validated and
  * applied via the profile-update flow of the user profile service.
  *
- * @param firstName the user's updated first name; required and limited to 255 characters
- * @param lastName the user's updated last name; required and limited to 255 characters
+ * @param firstName the user's updated first name; required and limited to 50 characters
+ * @param lastName the user's updated last name; required and limited to 50 characters
  * @param city the user's updated city shown on their public profile; optional, limited to 255 characters
  * @param bio the user's updated short biography; optional, limited to 1000 characters
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 02/08/2026
  */
 public record ProfileUpdateRequestDTO(
         @NotBlank(message = "First name is required")
-        @Size(max = 255, message = "First name cannot exceed 255 characters")
+        @Size(max = 50, message = "First name cannot exceed 50 characters")
         String firstName,
 
         @NotBlank(message = "Last name is required")
-        @Size(max = 255, message = "Last name cannot exceed 255 characters")
+        @Size(max = 50, message = "Last name cannot exceed 50 characters")
         String lastName,
 
         @Size(max = 255, message = "City cannot exceed 255 characters")

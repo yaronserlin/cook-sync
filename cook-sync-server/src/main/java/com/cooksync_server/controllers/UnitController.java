@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -48,8 +49,8 @@ public class UnitController {
      */
     @GetMapping("")
     public ResponseEntity<ApiResponse<PagedResponse<UnitResponse>>> getAllUnits(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         log.debug("Fetching all units from the system");
         PagedResponse<UnitResponse> units = unitService.getAllUnits(page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, units, null, "All units retrieved successfully"));

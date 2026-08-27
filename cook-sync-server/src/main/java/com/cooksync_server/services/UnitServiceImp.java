@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.Unit;
 import com.cooksync_server.exceptions.ResourceAlreadyExistsException;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
@@ -76,7 +77,7 @@ public class UnitServiceImp implements UnitService{
     @Transactional
     public void deleteUnit(String id) {
         Unit unit = unitRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Unit", id));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.UNIT, id));
         unitRepository.delete(unit);
     }
 }

@@ -9,6 +9,7 @@ import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
 import com.cooksync.app.util.ResendCooldownTimer;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
@@ -18,7 +19,7 @@ import com.dtos.response.auth.PendingRegistrationResponse;
  * ViewModel for {@link VerifyOtpActivity}. Validates the submitted OTP code through
  * {@link InputValidator} before delegating to {@link AuthRepository}, and drives a
  * client-side {@link ResendCooldownTimer}, shared with {@link ForgotPasswordViewModel}, so the
- * resend button is disabled for {@value #RESEND_COOLDOWN_SECONDS} seconds after the screen
+ * resend button is disabled for {@value UiTimingConstants#RESEND_COOLDOWN_SECONDS} seconds after the screen
  * opens or a code is resent.
  *
  * @author Yaron Serlin
@@ -26,9 +27,6 @@ import com.dtos.response.auth.PendingRegistrationResponse;
  * @since 13/08/2026
  */
 public class VerifyOtpViewModel extends BaseViewModel {
-
-    /** Seconds the resend button stays disabled after the OTP screen opens or a resend fires. */
-    private static final int RESEND_COOLDOWN_SECONDS = 30;
 
     private final AuthRepository authRepository;
 
@@ -39,7 +37,7 @@ public class VerifyOtpViewModel extends BaseViewModel {
     private final MutableLiveData<String> otpCodeError = new MutableLiveData<>();
     private final MutableLiveData<Integer> resendCooldownSeconds = new MutableLiveData<>(0);
 
-    private final ResendCooldownTimer cooldownTimer = new ResendCooldownTimer(RESEND_COOLDOWN_SECONDS, resendCooldownSeconds);
+    private final ResendCooldownTimer cooldownTimer = new ResendCooldownTimer(UiTimingConstants.RESEND_COOLDOWN_SECONDS, resendCooldownSeconds);
 
     /**
      * Constructs the ViewModel with the given {@link AuthRepository}, injected by

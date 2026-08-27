@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.FavoriteRecipe;
 import com.cooksync_server.repositories.FavoriteRecipeRepository;
 import com.cooksync_server.entities.PersonalInstructionNote;
@@ -59,13 +60,13 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     @Transactional
     public void saveNote(NoteRequestDTO request, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         Recipe recipe = recipeRepository.findById(request.recipeId().toString())
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", request.recipeId().toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.RECIPE, request.recipeId().toString()));
 
         String instructionId = request.instructionId() != null ? request.instructionId().toString() : null;
         if (instructionId != null && !instructionRepository.existsByIdAndRecipeId(instructionId, recipe.getId())) {
-            throw new ResourceNotFoundException("Instruction", instructionId);
+            throw new ResourceNotFoundException(EntityNames.INSTRUCTION, instructionId);
         }
 
         Optional<PersonalInstructionNote> existingNote = instructionId == null
@@ -102,7 +103,7 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     @Transactional(readOnly = true)
     public NoteResponse getNote(String recipeId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         return noteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull(user.getId(), recipeId)
                 .map(PersonalNoteServiceImp::toResponse)
@@ -122,7 +123,7 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     @Transactional(readOnly = true)
     public PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         Page<PersonalInstructionNote> notesPage = noteRepository.findAllByUserIdAndRecipeId(
                 user.getId(), recipeId, PageRequest.of(page, size));
@@ -149,7 +150,7 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
     @Transactional
     public void deleteNote(String noteId, String userEmail) {
         PersonalInstructionNote note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Note", noteId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.NOTE, noteId));
 
         if (!note.getUser().getEmail().equals(userEmail)) {
             throw new UnauthorizedActionException("You are not allowed to delete this note.");

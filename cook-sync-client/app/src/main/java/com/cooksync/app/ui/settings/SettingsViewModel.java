@@ -16,6 +16,7 @@ import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
 import com.cooksync.app.util.ResendCooldownTimer;
 import com.cooksync.app.util.SessionManager;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.DeleteAccountRequestDTO;
@@ -53,9 +54,6 @@ public class SettingsViewModel extends BaseViewModel {
     private final MediaRepository mediaRepository;
     private final RecipeRepository recipeRepository;
 
-    /** Seconds the email-change OTP dialog's resend button stays disabled after a code is (re)sent. */
-    private static final int EMAIL_OTP_RESEND_COOLDOWN_SECONDS = 30;
-
     private final MutableLiveData<ApiResult<Void>> avatarResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> requestEmailChangeResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<AuthResponse>> emailOtpResult = new MutableLiveData<>();
@@ -69,7 +67,7 @@ public class SettingsViewModel extends BaseViewModel {
     private final MutableLiveData<Event<ApiResult<Void>>> saveChangesResult = new MutableLiveData<>();
     private final MutableLiveData<Integer> emailOtpResendCooldownSeconds = new MutableLiveData<>(0);
     private final ResendCooldownTimer emailOtpCooldownTimer =
-            new ResendCooldownTimer(EMAIL_OTP_RESEND_COOLDOWN_SECONDS, emailOtpResendCooldownSeconds);
+            new ResendCooldownTimer(UiTimingConstants.RESEND_COOLDOWN_SECONDS, emailOtpResendCooldownSeconds);
     private String pendingFolder;
     private String pendingPublicId;
     /** New email awaiting OTP confirmation, and the password it was requested with; needed to resend. */

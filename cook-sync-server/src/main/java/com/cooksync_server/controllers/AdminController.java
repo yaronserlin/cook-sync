@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.AdminService;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.ApiResponse;
@@ -65,12 +66,12 @@ public class AdminController {
      */
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "30") int size,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) Boolean enabled,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_SORT_FIELD) String sortBy,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_SORT_DIRECTION) String direction) {
         return ResponseEntity.ok(new ApiResponse<>(true, adminService.getAllUsers(page, size, q, enabled, sortBy, direction), null, "Users retrieved successfully"));
     }
 
@@ -81,8 +82,8 @@ public class AdminController {
      */
     @GetMapping("/reviews/reported")
     public ResponseEntity<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         return ResponseEntity.ok(new ApiResponse<>(true, adminService.getReportedReviews(page, size), null, "Reported reviews retrieved successfully"));
     }
 
@@ -99,14 +100,16 @@ public class AdminController {
     }
 
     /**
-     * Suspends user account with specified ID.
+     * Suspends user account with specified ID. Refuses to suspend the acting admin's own
+     * account or any other admin account.
      *
      * @param id target user ID
+     * @param authentication the acting admin's authentication, used for the self-suspension guard
      * @return response entity acknowledging account suspension
      */
     @PatchMapping("/users/{id}/suspend")
-    public ResponseEntity<ApiResponse<Void>> suspendUser(@PathVariable String id) {
-        adminService.suspendUser(id);
+    public ResponseEntity<ApiResponse<Void>> suspendUser(@PathVariable String id, Authentication authentication) {
+        adminService.suspendUser(id, authentication.getName());
         return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User suspended"));
     }
 
@@ -144,8 +147,8 @@ public class AdminController {
      */
     @GetMapping("/tags/duplicates")
     public ResponseEntity<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         return ResponseEntity.ok(new ApiResponse<>(true, adminService.getDuplicateTagGroups(page, size), null, "Duplicate tag groups retrieved successfully"));
     }
 

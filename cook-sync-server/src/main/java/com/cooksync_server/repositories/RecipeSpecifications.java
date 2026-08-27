@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.Tag;
@@ -171,12 +172,12 @@ public final class RecipeSpecifications {
      */
     public static Sort resolveSortOrder(String sortBy) {
         if (sortBy == null || sortBy.isBlank() || "newest".equalsIgnoreCase(sortBy)) {
-            return Sort.by("createdAt").descending();
+            return Sort.by(PaginationDefaults.DEFAULT_SORT_FIELD).descending();
         }
         return switch (sortBy.toLowerCase()) {
             case "rating" -> Sort.by("averageRating").descending();
             case "fastest" -> Sort.by("cookTimeMinutes").ascending();
-            default -> Sort.by("createdAt").descending();
+            default -> Sort.by(PaginationDefaults.DEFAULT_SORT_FIELD).descending();
         };
     }
 

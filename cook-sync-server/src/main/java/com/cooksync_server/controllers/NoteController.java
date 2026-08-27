@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -96,8 +97,8 @@ public class NoteController {
     @GetMapping("/recipe/{recipeId}/all")
     public ResponseEntity<ApiResponse<PagedResponse<NoteResponse>>> getNotesForRecipe(
             @PathVariable String recipeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
             Authentication authentication) {
         PagedResponse<NoteResponse> notes = noteService.getNotesForRecipe(recipeId, authentication.getName(), page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, notes, null, "OK"));

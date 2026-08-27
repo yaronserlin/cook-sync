@@ -1,6 +1,8 @@
 package com.cooksync.app.data.datasource.remote;
 
 import com.cooksync.app.data.datasource.local.TokenStore;
+import com.cooksync.app.util.constants.ApiEndpoints;
+import com.cooksync.app.util.constants.NetworkConstants;
 
 import java.io.IOException;
 
@@ -24,11 +26,11 @@ public class AuthInterceptor implements Interceptor {
 
     /** URL path suffixes of the endpoints reachable without an access token attached. */
     private static final String[] PUBLIC_PATH_SUFFIXES = {
-            "api/auth/login",
-            "api/auth/register",
-            "api/auth/refresh-token",
-            "api/auth/verify-registration-otp",
-            "api/auth/resend-registration-otp"
+            ApiEndpoints.LOGIN,
+            ApiEndpoints.REGISTER,
+            ApiEndpoints.REFRESH_TOKEN,
+            ApiEndpoints.VERIFY_REGISTRATION_OTP,
+            ApiEndpoints.RESEND_REGISTRATION_OTP
     };
 
     /**
@@ -53,7 +55,7 @@ public class AuthInterceptor implements Interceptor {
         }
 
         Request authenticated = original.newBuilder()
-                .header("Authorization", "Bearer " + accessToken)
+                .header(NetworkConstants.AUTHORIZATION_HEADER, NetworkConstants.BEARER_PREFIX + accessToken)
                 .build();
         return chain.proceed(authenticated);
     }

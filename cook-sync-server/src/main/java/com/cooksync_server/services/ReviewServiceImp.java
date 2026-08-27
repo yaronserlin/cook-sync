@@ -13,6 +13,7 @@ import com.dtos.request.review.ReportReviewRequestDTO;
 import com.dtos.request.review.ReviewRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.review.ReviewResponse;
+import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.Review;
 import com.cooksync_server.entities.ReviewReport;
@@ -54,7 +55,7 @@ public class ReviewServiceImp implements ReviewService{
     @Transactional(readOnly = true)
     public PagedResponse<ReviewResponse> getReviewsForRecipe(String recipeId, int page, int size) {
         if (!recipeRepository.existsById(recipeId)) {
-            throw new ResourceNotFoundException("Recipe", recipeId);
+            throw new ResourceNotFoundException(EntityNames.RECIPE, recipeId);
         }
 
         Page<Review> reviewPage = reviewRepository.findByRecipeIdAndHiddenFalseOrderByCreatedAtDesc(
@@ -74,9 +75,9 @@ public class ReviewServiceImp implements ReviewService{
     @Transactional
     public void addReview(String recipeId, ReviewRequestDTO request, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recipe", recipeId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.RECIPE, recipeId));
 
         Review review = Review.builder()
                 .user(user)
@@ -107,7 +108,7 @@ public class ReviewServiceImp implements ReviewService{
     @Transactional
     public void deleteReview(String reviewId, String userEmail) {
         Review review = OwnershipValidator.requireOwnedResource(
-                () -> reviewRepository.findById(reviewId), "Review", reviewId,
+                () -> reviewRepository.findById(reviewId), EntityNames.REVIEW, reviewId,
                 r -> r.getUser().getId(), userRepository, userEmail,
                 "You are not allowed to delete this review.");
 
@@ -137,9 +138,9 @@ public class ReviewServiceImp implements ReviewService{
     @Transactional
     public void reportReview(String reviewId, ReportReviewRequestDTO request, String userEmail) {
         User reporter = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.REVIEW, reviewId));
 
         Review.ReportReason reason = Review.ReportReason.valueOf(request.reason().toUpperCase());
 

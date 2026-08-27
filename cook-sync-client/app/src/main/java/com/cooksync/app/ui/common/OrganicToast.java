@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.cooksync.app.R;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Objects;
@@ -41,7 +42,7 @@ import java.util.Objects;
 public final class OrganicToast {
 
     /** How long the toast stays on screen before auto-dismissing, in milliseconds. */
-    private static final long DURATION_MS = 3200;
+    private static final long DURATION_MS = UiTimingConstants.UNDO_TOAST_DURATION_MS;
 
     /** Visual types for the toast, defining the base and progress-fill colors. */
     public enum Type {

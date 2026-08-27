@@ -1,5 +1,6 @@
 package com.cooksync_server.entities;
 
+import com.cooksync_server.constants.SchemaConstants;
 import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
@@ -37,7 +38,7 @@ public class Ingredient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(length = 36)
+    @Column(length = SchemaConstants.UUID_COLUMN_LENGTH)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)

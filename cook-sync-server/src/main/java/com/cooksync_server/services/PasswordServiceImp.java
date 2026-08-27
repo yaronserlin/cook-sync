@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
+import com.cooksync_server.constants.VerificationWindows;
 import com.cooksync_server.entities.PasswordResetToken;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
@@ -37,12 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class PasswordServiceImp implements PasswordService {
-
-    /** Number of minutes a forgot-password reset code remains valid after being issued. */
-    private static final int RESET_TOKEN_VALIDITY_MINUTES = 10;
-
-    /** {@link #RESET_TOKEN_VALIDITY_MINUTES} expressed in milliseconds, for {@link Instant} arithmetic. */
-    private static final long RESET_TOKEN_VALIDITY_MS = RESET_TOKEN_VALIDITY_MINUTES * 60 * 1000L;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -94,11 +89,11 @@ public class PasswordServiceImp implements PasswordService {
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .user(user)
                 .codeHash(passwordEncoder.encode(resetCode))
-                .expiryDate(Instant.now().plusMillis(RESET_TOKEN_VALIDITY_MS))
+                .expiryDate(Instant.now().plusMillis(VerificationWindows.CODE_VALIDITY_MS))
                 .build();
         passwordResetTokenRepository.save(resetToken);
 
-        emailService.sendPasswordResetEmail(user.getEmail(), resetCode, RESET_TOKEN_VALIDITY_MINUTES);
+        emailService.sendPasswordResetEmail(user.getEmail(), resetCode, VerificationWindows.CODE_VALIDITY_MINUTES);
         log.info("Password reset code issued for user ID: {}", user.getId());
     }
 

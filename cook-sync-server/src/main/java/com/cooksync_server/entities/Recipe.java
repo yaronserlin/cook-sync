@@ -1,5 +1,6 @@
 package com.cooksync_server.entities;
 
+import com.cooksync_server.constants.SchemaConstants;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class Recipe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(length = 36)
+    @Column(length = SchemaConstants.UUID_COLUMN_LENGTH)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)

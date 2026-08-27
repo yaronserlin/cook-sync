@@ -13,6 +13,7 @@ import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.AbstractFilterableListViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.RecipeFilterUtils;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
@@ -48,7 +49,7 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     /** One of "ALL", "PUBLIC", "PRIVATE". */
-    private String visibilityFilter = "ALL";
+    private String visibilityFilter = DomainValues.VISIBILITY_ALL;
 
     /**
      * Kept as a field so it can be detached in {@link #onCleared()} — {@link RecipePublishManager}
@@ -108,7 +109,7 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
      * should reflect the real total, not just whatever the current filter happens to show.
      */
     public long getPublishedCount() {
-        return allRecipes.stream().filter(r -> "PUBLIC".equalsIgnoreCase(r.visibility())).count();
+        return allRecipes.stream().filter(r -> DomainValues.VISIBILITY_PUBLIC.equalsIgnoreCase(r.visibility())).count();
     }
 
     /**
@@ -208,7 +209,8 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
      */
     public void toggleVisibility(RecipePreviewResponse recipe) {
         String recipeId = recipe.id();
-        String newVisibility = "PUBLIC".equalsIgnoreCase(recipe.visibility()) ? "PRIVATE" : "PUBLIC";
+        String newVisibility = DomainValues.VISIBILITY_PUBLIC.equalsIgnoreCase(recipe.visibility())
+                ? DomainValues.VISIBILITY_PRIVATE : DomainValues.VISIBILITY_PUBLIC;
         replaceRecipe(recipeId, withVisibility(recipe, newVisibility));
         publishFiltered();
 
@@ -276,7 +278,7 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
     private void publishFiltered() {
         List<RecipePreviewResponse> displayed = RecipeFilterUtils.filterByQuery(allRecipes, currentQuery);
 
-        if (!"ALL".equals(visibilityFilter)) {
+        if (!DomainValues.VISIBILITY_ALL.equals(visibilityFilter)) {
             displayed.removeIf(r -> r.visibility() == null || !r.visibility().equalsIgnoreCase(visibilityFilter));
         }
 

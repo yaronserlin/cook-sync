@@ -14,6 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import com.cooksync_server.constants.SecurityConstants;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -72,7 +74,7 @@ public class JwtUtil {
         claims.put("userId", userId);
         claims.put("isAdmin", isAdmin);
 
-        List<String> roles = isAdmin ? List.of("ROLE_ADMIN") : List.of("ROLE_USER");
+        List<String> roles = isAdmin ? List.of(SecurityConstants.ROLE_ADMIN) : List.of(SecurityConstants.ROLE_USER);
         claims.put("roles", roles);
 
         return Jwts.builder()

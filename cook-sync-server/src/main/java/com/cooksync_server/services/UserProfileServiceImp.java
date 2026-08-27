@@ -7,6 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cooksync_server.constants.EntityNames;
+import com.cooksync_server.constants.VerificationWindows;
 import com.cooksync_server.entities.EmailChangeToken;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
@@ -43,12 +45,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserProfileServiceImp implements UserProfileService {
 
-    /** Number of minutes an email-change verification code remains valid after being issued. */
-    private static final int EMAIL_CHANGE_TOKEN_VALIDITY_MINUTES = 10;
-
-    /** {@link #EMAIL_CHANGE_TOKEN_VALIDITY_MINUTES} expressed in milliseconds, for {@link Instant} arithmetic. */
-    private static final long EMAIL_CHANGE_TOKEN_VALIDITY_MS = EMAIL_CHANGE_TOKEN_VALIDITY_MINUTES * 60 * 1000L;
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
@@ -71,7 +67,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public UserResponse getCurrentUserProfile(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         return UserMapper.toResponse(user);
     }
 
@@ -87,7 +83,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public PublicUserProfileResponse getUserProfileById(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
         return UserMapper.toPublicProfileResponse(user);
     }
 
@@ -103,7 +99,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public void updateAvatar(String userEmail, String avatarUrl) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         String oldAvatarUrl = user.getAvatarUrl();
         if (oldAvatarUrl != null && !oldAvatarUrl.isBlank() && !oldAvatarUrl.equals(avatarUrl)) {
@@ -125,7 +121,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public void updateProfile(String userEmail, ProfileUpdateRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setCity(request.city());
@@ -144,7 +140,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public void updatePrivacySettings(String userEmail, PrivacySettingsUpdateRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         user.setShowRecipesPublicly(request.showRecipesPublicly());
         user.setShowFavoritesPublicly(request.showFavoritesPublicly());
         userRepository.save(user);
@@ -182,11 +178,11 @@ public class UserProfileServiceImp implements UserProfileService {
                 .user(user)
                 .newEmail(newEmail)
                 .codeHash(passwordEncoder.encode(code))
-                .expiryDate(Instant.now().plusMillis(EMAIL_CHANGE_TOKEN_VALIDITY_MS))
+                .expiryDate(Instant.now().plusMillis(VerificationWindows.CODE_VALIDITY_MS))
                 .build();
         emailChangeTokenRepository.save(changeToken);
 
-        emailService.sendOtpEmail(newEmail, code, EMAIL_CHANGE_TOKEN_VALIDITY_MINUTES);
+        emailService.sendOtpEmail(newEmail, code, VerificationWindows.CODE_VALIDITY_MINUTES);
     }
 
     /**
@@ -211,7 +207,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public AuthResponse confirmEmailChange(String userEmail, VerifyEmailChangeOtpRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         EmailChangeToken changeToken = emailChangeTokenRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new InvalidOtpException("Invalid or expired verification code"));
@@ -256,7 +252,7 @@ public class UserProfileServiceImp implements UserProfileService {
     @Override
     public void deactivateAccount(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userEmail));
+                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
         user.setEnabled(false);
         user.setStatus(User.AccountStatus.DEACTIVATED);
         userRepository.save(user);

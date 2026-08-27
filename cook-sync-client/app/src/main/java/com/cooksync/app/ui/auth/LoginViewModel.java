@@ -10,6 +10,7 @@ import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 
@@ -19,7 +20,7 @@ import com.dtos.response.auth.AuthResponse;
  * {@link InputSanitizer} security checks), and delegates authenticated network calls to
  * {@link AuthRepository}.
  *
- * <p>A submission rate-limit of {@value #SUBMIT_COOLDOWN_MS} ms prevents rapid-fire
+ * <p>A submission rate-limit of {@value UiTimingConstants#SUBMIT_COOLDOWN_MS} ms prevents rapid-fire
  * button presses from flooding the server with duplicate login requests.</p>
  *
  * @author Yaron Serlin
@@ -27,9 +28,6 @@ import com.dtos.response.auth.AuthResponse;
  * @since 04/08/2026
  */
 public class LoginViewModel extends BaseViewModel {
-
-    /** Minimum milliseconds between successive login attempts. */
-    private static final long SUBMIT_COOLDOWN_MS = 1500;
 
     private final AuthRepository authRepository;
 
@@ -60,7 +58,7 @@ public class LoginViewModel extends BaseViewModel {
      */
     public void login(String rawEmail, String rawPassword) {
         long now = System.currentTimeMillis();
-        if (now - lastSubmitTimestamp < SUBMIT_COOLDOWN_MS) {
+        if (now - lastSubmitTimestamp < UiTimingConstants.SUBMIT_COOLDOWN_MS) {
             return;
         }
         lastSubmitTimestamp = now;

@@ -10,6 +10,7 @@ import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.response.auth.PendingRegistrationResponse;
 
@@ -19,7 +20,7 @@ import com.dtos.response.auth.PendingRegistrationResponse;
  * field) before delegating to {@link AuthRepository}. Exposes per-field error {@link LiveData}
  * streams so the Activity highlights exactly the invalid input.
  *
- * <p>A submission rate-limit of {@value #SUBMIT_COOLDOWN_MS} ms prevents rapid-fire
+ * <p>A submission rate-limit of {@value UiTimingConstants#SUBMIT_COOLDOWN_MS} ms prevents rapid-fire
  * button presses from triggering duplicate account creation.</p>
  *
  * @author Yaron Serlin
@@ -27,9 +28,6 @@ import com.dtos.response.auth.PendingRegistrationResponse;
  * @since 04/08/2026
  */
 public class RegisterViewModel extends BaseViewModel {
-
-    /** Minimum milliseconds between successive registration attempts. */
-    private static final long SUBMIT_COOLDOWN_MS = 2000;
 
     private final AuthRepository authRepository;
 
@@ -59,7 +57,7 @@ public class RegisterViewModel extends BaseViewModel {
      * posted to their respective {@link LiveData} streams simultaneously so the user
      * sees every problem at once rather than one at a time.
      *
-     * <p>Rate-limited to one attempt per {@value #SUBMIT_COOLDOWN_MS} ms.</p>
+     * <p>Rate-limited to one attempt per {@value UiTimingConstants#SUBMIT_COOLDOWN_MS} ms.</p>
      *
      * @param rawFirstName      raw text from the first-name {@code EditText}
      * @param rawLastName       raw text from the last-name {@code EditText}
@@ -73,7 +71,7 @@ public class RegisterViewModel extends BaseViewModel {
                          String rawEmail, String rawPassword, String rawRepeatPassword,
                          boolean termsAccepted, boolean marketingOptIn) {
         long now = System.currentTimeMillis();
-        if (now - lastSubmitTimestamp < SUBMIT_COOLDOWN_MS) {
+        if (now - lastSubmitTimestamp < UiTimingConstants.SUBMIT_COOLDOWN_MS) {
             return;
         }
         lastSubmitTimestamp = now;

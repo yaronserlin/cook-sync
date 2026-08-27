@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cooksync_server.constants.VerificationWindows;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.repositories.EmailChangeTokenRepository;
@@ -42,9 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class AccountDeletionServiceImp implements AccountDeletionService {
-
-    /** Number of days between a deletion request and permanent purge. */
-    private static final long GRACE_PERIOD_DAYS = 30;
 
     /** Placeholder ID substituted for an empty recipe-ID list so IN-clause queries stay well-formed. */
     private static final List<String> NO_RECIPES = List.of("");
@@ -112,7 +110,7 @@ public class AccountDeletionServiceImp implements AccountDeletionService {
     @Override
     @Transactional
     public void purgeExpiredAccounts() {
-        LocalDateTime cutoff = LocalDateTime.now().minusDays(GRACE_PERIOD_DAYS);
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(VerificationWindows.ACCOUNT_DELETION_GRACE_PERIOD_DAYS);
         List<User> expiredAccounts = userRepository.findByStatusAndDeletionRequestedAtBefore(
                 User.AccountStatus.DEACTIVATED, cutoff);
 

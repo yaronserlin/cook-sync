@@ -2,6 +2,7 @@ package com.cooksync.app.data.datasource.remote;
 
 import com.cooksync.app.data.datasource.local.TokenStore;
 import com.cooksync.app.util.SessionManager;
+import com.cooksync.app.util.constants.NetworkConstants;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
@@ -64,11 +65,11 @@ public class TokenAuthenticator implements Authenticator {
             return null;
         }
 
-        String tokenUsedByFailedRequest = response.request().header("Authorization");
+        String tokenUsedByFailedRequest = response.request().header(NetworkConstants.AUTHORIZATION_HEADER);
 
         synchronized (this) {
             String currentToken = TokenStore.getAccessToken();
-            String currentBearer = currentToken == null ? null : "Bearer " + currentToken;
+            String currentBearer = currentToken == null ? null : NetworkConstants.BEARER_PREFIX + currentToken;
 
             // Another thread already refreshed while we were waiting for the lock.
             if (currentBearer != null && !currentBearer.equals(tokenUsedByFailedRequest)) {
@@ -113,7 +114,7 @@ public class TokenAuthenticator implements Authenticator {
      */
     private Request rebuildWithToken(Request original, String accessToken) {
         return original.newBuilder()
-                .header("Authorization", "Bearer " + accessToken)
+                .header(NetworkConstants.AUTHORIZATION_HEADER, NetworkConstants.BEARER_PREFIX + accessToken)
                 .build();
     }
 

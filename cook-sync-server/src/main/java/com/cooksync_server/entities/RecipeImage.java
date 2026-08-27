@@ -1,5 +1,6 @@
 package com.cooksync_server.entities;
 
+import com.cooksync_server.constants.SchemaConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,14 +35,14 @@ public class RecipeImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(length = 36)
+    @Column(length = SchemaConstants.UUID_COLUMN_LENGTH)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id", nullable = false)
     private Recipe recipe;
 
-    @Column(name = "image_url", nullable = false, length = 1000)
+    @Column(name = "image_url", nullable = false, length = 2000)
     private String imageUrl;
 
     @Builder.Default

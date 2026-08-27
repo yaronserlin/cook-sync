@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.dtos.response.PagedResponse;
 
+import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.TagService;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.ApiResponse;
@@ -46,8 +47,8 @@ public class TagsController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<TagResponse>>> getAllTags(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<TagResponse> tags = tagService.getAllTags(page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, tags, null, "All tags retrieved successfully"));
     }
@@ -61,7 +62,7 @@ public class TagsController {
      */
     @GetMapping("/popular")
     public ResponseEntity<ApiResponse<List<TagResponse>>> getPopularTags(
-            @RequestParam(defaultValue = "5") int limit) {
+            @RequestParam(defaultValue = PaginationDefaults.POPULAR_TAGS_LIMIT) int limit) {
         List<TagResponse> tags = tagService.getPopularTags(limit);
         return ResponseEntity.ok(new ApiResponse<>(true, tags, null, "Popular tags retrieved successfully"));
     }

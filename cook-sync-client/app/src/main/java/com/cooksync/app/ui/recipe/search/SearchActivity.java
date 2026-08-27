@@ -24,6 +24,7 @@ import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
+import com.cooksync.app.util.constants.UiTimingConstants;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
@@ -47,9 +48,6 @@ import java.util.stream.Collectors;
  * @since 05/08/2026
  */
 public class SearchActivity extends BaseActivity {
-
-    /** How long to wait after the last keystroke before running a live search. */
-    private static final long SEARCH_DEBOUNCE_MS = 350L;
 
     /** Intent extra key carrying the seeded sort choice (see {@link #newIntentWithFilters}). */
     private static final String EXTRA_SORT = "extra_sort";
@@ -168,7 +166,7 @@ public class SearchActivity extends BaseActivity {
                     // Live search-as-you-type, debounced so every keystroke doesn't fire a
                     // network call — only the pause after the user stops typing does.
                     pendingSearch = () -> runSearch(newText);
-                    searchHandler.postDelayed(pendingSearch, SEARCH_DEBOUNCE_MS);
+                    searchHandler.postDelayed(pendingSearch, UiTimingConstants.SEARCH_DEBOUNCE_MS);
                 }
                 return false;
             }

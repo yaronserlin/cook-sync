@@ -9,6 +9,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.constants.PaginationConstants;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 
@@ -33,7 +34,7 @@ import java.util.Objects;
 public class AdminTagsViewModel extends BaseViewModel {
 
     /** Page size requested from {@code GET /api/admin/tags/duplicates}. */
-    private static final int TAG_GROUPS_PAGE_SIZE = 20;
+    private static final int TAG_GROUPS_PAGE_SIZE = PaginationConstants.ADMIN_PAGE_SIZE;
 
     private final AdminRepository adminRepository;
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();

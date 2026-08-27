@@ -15,6 +15,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.RecipeFilterUtils;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 import java.util.List;
@@ -97,7 +98,7 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
         holder.rating.setText(RecipeFilterUtils.formatRating(recipe.averageRating()));
 
         if (showVisibilityBadge) {
-            boolean isPublic = "PUBLIC".equalsIgnoreCase(recipe.visibility());
+            boolean isPublic = DomainValues.VISIBILITY_PUBLIC.equalsIgnoreCase(recipe.visibility());
             holder.visibilityBadge.setVisibility(View.VISIBLE);
             holder.visibilityBadge.setText(isPublic ? R.string.filter_public : R.string.filter_private);
             holder.visibilityBadge.setBackgroundResource(isPublic ? R.drawable.bg_tag_public : R.drawable.bg_tag_neutral);
