@@ -58,9 +58,7 @@ public class RecipeController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String difficulty,
             @RequestParam(required = false) Double minRating) {
-        return ResponseEntity.ok(new ApiResponse<>(true,
-                recipeService.getAllRecipesPaged(page, size, sortBy, difficulty, minRating),
-                null, "Recipes retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(recipeService.getAllRecipesPaged(page, size, sortBy, difficulty, minRating), "Recipes retrieved successfully"));
     }
 
     /**
@@ -72,7 +70,7 @@ public class RecipeController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RecipeResponse>> getRecipeById(@PathVariable String id) {
         RecipeResponse recipe = recipeService.getRecipeById(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, recipe, null, "Recipe retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(recipe, "Recipe retrieved successfully"));
     }
 
     /**
@@ -100,7 +98,7 @@ public class RecipeController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.searchRecipes(q, author, ingredient, sortBy, difficulty, minRating, page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, recipes, null, "Search completed"));
+        return ResponseEntity.ok(ApiResponse.success(recipes, "Search completed"));
     }
 
     /**
@@ -124,7 +122,7 @@ public class RecipeController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.findRecipesByTag(tagName, sortBy, difficulty, minRating, page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, recipes, null, "Recipes retrieved by tag"));
+        return ResponseEntity.ok(ApiResponse.success(recipes, "Recipes retrieved by tag"));
     }
 
     /**
@@ -141,7 +139,7 @@ public class RecipeController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.getMyRecipes(authentication.getName(), page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, recipes, null, "Your recipes retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(recipes, "Your recipes retrieved successfully"));
     }
 
     /**
@@ -158,7 +156,7 @@ public class RecipeController {
         String userEmail = authentication.getName();
         RecipeResponse createdRecipe = recipeService.createRecipe(request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, createdRecipe, null, "Recipe created successfully"));
+                .body(ApiResponse.success(createdRecipe, "Recipe created successfully"));
     }
 
     /**
@@ -176,7 +174,7 @@ public class RecipeController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         RecipeResponse updatedRecipe = recipeService.updateRecipe(id, request, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, updatedRecipe, null, "Recipe updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(updatedRecipe, "Recipe updated successfully"));
     }
 
     /**
@@ -194,7 +192,7 @@ public class RecipeController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         RecipeResponse updatedRecipe = recipeService.updateVisibility(id, request, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, updatedRecipe, null, "Visibility updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(updatedRecipe, "Visibility updated successfully"));
     }
 
     /**
@@ -210,6 +208,6 @@ public class RecipeController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         recipeService.deleteRecipe(id, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Recipe deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Recipe deleted successfully"));
     }
 }

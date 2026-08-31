@@ -71,7 +71,7 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_REGISTER)
     public ResponseEntity<ApiResponse<PendingRegistrationResponse>> register(@Valid @RequestBody RegisterRequestDTO request) {
         PendingRegistrationResponse response = authService.register(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Verification code sent to your email"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Verification code sent to your email"));
     }
 
     /**
@@ -85,7 +85,7 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_VERIFY_REGISTRATION_OTP)
     public ResponseEntity<ApiResponse<AuthResponse>> verifyRegistrationOtp(@Valid @RequestBody VerifyRegistrationOtpRequestDTO request) {
         AuthResponse response = authService.verifyRegistrationOtp(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User registered successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "User registered successfully"));
     }
 
     /**
@@ -98,7 +98,7 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_RESEND_REGISTRATION_OTP)
     public ResponseEntity<ApiResponse<PendingRegistrationResponse>> resendRegistrationOtp(@Valid @RequestBody ResendRegistrationOtpRequestDTO request) {
         PendingRegistrationResponse response = authService.resendRegistrationOtp(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Verification code resent"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Verification code resent"));
     }
 
     /**
@@ -110,7 +110,7 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_LOGIN)
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequestDTO request) {
         AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User logged in successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "User logged in successfully"));
     }
 
     /**
@@ -122,7 +122,7 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_REFRESH_TOKEN)
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@Valid @RequestBody TokenRefreshRequestDTO request) {
         AuthResponse response = authService.refreshToken(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Token refreshed successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Token refreshed successfully"));
     }
 
     /**
@@ -136,7 +136,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> validateToken(Authentication authentication) {
         String userEmail = authentication.getName();
         AuthResponse response = authService.validateToken(userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Token is valid"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Token is valid"));
     }
 
     /**
@@ -150,7 +150,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(Authentication authentication) {
         UserResponse response = userProfileService.getCurrentUserProfile(authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Current user profile retrieved"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Current user profile retrieved"));
     }
 
     /**
@@ -163,7 +163,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(Authentication authentication) {
         String userEmail = authentication.getName();
         authService.logout(userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User logged out successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "User logged out successfully"));
     }
 
     /**
@@ -179,7 +179,7 @@ public class AuthController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         userProfileService.updateAvatar(userEmail, request.avatarUrl());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Avatar updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Avatar updated successfully"));
     }
 
     /**
@@ -194,7 +194,7 @@ public class AuthController {
             @Valid @RequestBody ProfileUpdateRequestDTO request,
             Authentication authentication) {
         userProfileService.updateProfile(authentication.getName(), request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Profile updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Profile updated successfully"));
     }
 
     /**
@@ -209,7 +209,7 @@ public class AuthController {
             @Valid @RequestBody ChangePasswordRequestDTO request,
             Authentication authentication) {
         passwordService.changePassword(authentication.getName(), request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Password updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Password updated successfully"));
     }
 
     /**
@@ -228,7 +228,7 @@ public class AuthController {
             @Valid @RequestBody EmailUpdateRequestDTO request,
             Authentication authentication) {
         userProfileService.requestEmailChange(authentication.getName(), request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Verification code sent to your new email address"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Verification code sent to your new email address"));
     }
 
     /**
@@ -244,7 +244,7 @@ public class AuthController {
             @Valid @RequestBody VerifyEmailChangeOtpRequestDTO request,
             Authentication authentication) {
         AuthResponse response = userProfileService.confirmEmailChange(authentication.getName(), request);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Email updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Email updated successfully"));
     }
 
     /**
@@ -256,7 +256,7 @@ public class AuthController {
     @PatchMapping("/deactivate")
     public ResponseEntity<ApiResponse<Void>> deactivateAccount(Authentication authentication) {
         userProfileService.deactivateAccount(authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Account deactivated"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Account deactivated"));
     }
 
     /**
@@ -271,7 +271,7 @@ public class AuthController {
             @Valid @RequestBody PrivacySettingsUpdateRequestDTO request,
             Authentication authentication) {
         userProfileService.updatePrivacySettings(authentication.getName(), request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Privacy settings updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Privacy settings updated successfully"));
     }
 
     /**
@@ -288,8 +288,7 @@ public class AuthController {
             @Valid @RequestBody DeleteAccountRequestDTO request,
             Authentication authentication) {
         userProfileService.requestAccountDeletion(authentication.getName(), request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null,
-                "Account scheduled for deletion. Log back in within 30 days to cancel."));
+        return ResponseEntity.ok(ApiResponse.success(null, "Account scheduled for deletion. Log back in within 30 days to cancel."));
     }
 
     /**
@@ -303,8 +302,7 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_FORGOT_PASSWORD)
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
         passwordService.forgotPassword(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null,
-                "If that email is registered, a password reset link has been sent"));
+        return ResponseEntity.ok(ApiResponse.success(null, "If that email is registered, a password reset link has been sent"));
     }
 
     /**
@@ -317,6 +315,6 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_RESET_PASSWORD)
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
         passwordService.resetPassword(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Password reset successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
     }
 }

@@ -1,5 +1,10 @@
 package com.cooksync_server.mappers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.RecipeImage;
 import com.dtos.response.ingredient.IngredientResponse;
@@ -9,11 +14,6 @@ import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.review.ReviewResponse;
 import com.dtos.response.tags.TagResponse;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Mapper utility class transforming Recipe entities into RecipeResponse and RecipePreviewResponse DTOs.
@@ -171,21 +171,45 @@ public final class RecipeMapper {
         return ReviewMapper.averageRating(visibleReviews.stream().map(ReviewResponse::rating).toList());
     }
 
+    /**
+     * Maps a recipe's tag entities to their response DTOs.
+     *
+     * @param recipe target Recipe entity
+     * @return the recipe's tags as response DTOs, or an empty list if it has none
+     */
     private static List<TagResponse> mapTags(Recipe recipe) {
         return recipe.getTags() == null ? List.of()
                 : recipe.getTags().stream().map(TagMapper::toResponse).collect(Collectors.toList());
     }
 
+    /**
+     * Maps a recipe's ingredient entities to their response DTOs.
+     *
+     * @param recipe target Recipe entity
+     * @return the recipe's ingredients as response DTOs, or an empty set if it has none
+     */
     private static Set<IngredientResponse> mapIngredients(Recipe recipe) {
         return recipe.getIngredients() == null ? Set.of()
                 : recipe.getIngredients().stream().map(IngredientMapper::toResponse).collect(Collectors.toSet());
     }
 
+    /**
+     * Maps a recipe's instruction step entities to their response DTOs.
+     *
+     * @param recipe target Recipe entity
+     * @return the recipe's instruction steps as response DTOs, or an empty list if it has none
+     */
     private static List<InstructionResponse> mapInstructions(Recipe recipe) {
         return recipe.getInstructions() == null ? List.of()
                 : recipe.getInstructions().stream().map(InstructionMapper::toResponse).collect(Collectors.toList());
     }
 
+    /**
+     * Finds the URL of a recipe's cover image, i.e. the one image entity flagged as primary.
+     *
+     * @param recipe target Recipe entity
+     * @return the primary image's URL, or {@code null} if the recipe has no images or none is flagged primary
+     */
     private static String resolvePrimaryImageUrl(Recipe recipe) {
         if (recipe.getImages() == null) {
             return null;

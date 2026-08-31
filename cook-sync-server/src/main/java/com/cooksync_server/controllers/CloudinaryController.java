@@ -38,7 +38,7 @@ public class CloudinaryController {
             @RequestParam(required = false) String folder,
             @RequestParam(required = false) String publicId) {
         CloudinarySignatureResponse response = cloudinaryService.generateUploadSignature(folder, publicId);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Cloudinary signature generated"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Cloudinary signature generated"));
     }
 
     /**
@@ -51,6 +51,6 @@ public class CloudinaryController {
     @GetMapping("/base-folder")
     public ResponseEntity<ApiResponse<String>> getBaseFolder() {
         String baseFolder = cloudinaryService.getBaseFolder();
-        return ResponseEntity.ok(new ApiResponse<>(true, baseFolder, null, "Cloudinary base folder resolved"));
+        return ResponseEntity.ok(ApiResponse.success(baseFolder, "Cloudinary base folder resolved"));
     }
 }

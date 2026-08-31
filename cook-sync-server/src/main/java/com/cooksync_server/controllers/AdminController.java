@@ -49,7 +49,7 @@ public class AdminController {
      */
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<AdminStatsResponse>> getStats() {
-        return ResponseEntity.ok(new ApiResponse<>(true, adminService.getStats(), null, "Stats retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(adminService.getStats(), "Stats retrieved successfully"));
     }
 
     /**
@@ -72,19 +72,21 @@ public class AdminController {
             @RequestParam(required = false) Boolean enabled,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_SORT_FIELD) String sortBy,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_SORT_DIRECTION) String direction) {
-        return ResponseEntity.ok(new ApiResponse<>(true, adminService.getAllUsers(page, size, q, enabled, sortBy, direction), null, "Users retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers(page, size, q, enabled, sortBy, direction), "Users retrieved successfully"));
     }
 
     /**
      * Retrieves list of review entries flagged as reported.
      *
+     * @param page zero-based page index
+     * @param size page size limit
      * @return response entity containing list of ReportedReviewResponse DTOs
      */
     @GetMapping("/reviews/reported")
     public ResponseEntity<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        return ResponseEntity.ok(new ApiResponse<>(true, adminService.getReportedReviews(page, size), null, "Reported reviews retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(adminService.getReportedReviews(page, size), "Reported reviews retrieved successfully"));
     }
 
     /**
@@ -96,7 +98,7 @@ public class AdminController {
     @PostMapping("/reviews/{id}/dismiss")
     public ResponseEntity<ApiResponse<Void>> dismissReport(@PathVariable String id) {
         adminService.dismissReport(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Report dismissed"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Report dismissed"));
     }
 
     /**
@@ -110,7 +112,7 @@ public class AdminController {
     @PatchMapping("/users/{id}/suspend")
     public ResponseEntity<ApiResponse<Void>> suspendUser(@PathVariable String id, Authentication authentication) {
         adminService.suspendUser(id, authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User suspended"));
+        return ResponseEntity.ok(ApiResponse.success(null, "User suspended"));
     }
 
     /**
@@ -122,7 +124,7 @@ public class AdminController {
     @PatchMapping("/users/{id}/enable")
     public ResponseEntity<ApiResponse<Void>> enableUser(@PathVariable String id) {
         adminService.enableUser(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User enabled"));
+        return ResponseEntity.ok(ApiResponse.success(null, "User enabled"));
     }
 
     /**
@@ -137,19 +139,21 @@ public class AdminController {
     @DeleteMapping("/users/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable String id, Authentication authentication) {
         adminService.deleteUserPermanently(id, authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "User permanently deleted"));
+        return ResponseEntity.ok(ApiResponse.success(null, "User permanently deleted"));
     }
 
     /**
      * Detects and groups potential duplicate tags for consolidation audit.
      *
+     * @param page zero-based page index
+     * @param size page size limit
      * @return response entity containing list of DuplicateTagGroupResponse DTOs
      */
     @GetMapping("/tags/duplicates")
     public ResponseEntity<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        return ResponseEntity.ok(new ApiResponse<>(true, adminService.getDuplicateTagGroups(page, size), null, "Duplicate tag groups retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(adminService.getDuplicateTagGroups(page, size), "Duplicate tag groups retrieved successfully"));
     }
 
     /**
@@ -161,6 +165,6 @@ public class AdminController {
     @PostMapping("/tags/merge")
     public ResponseEntity<ApiResponse<Void>> mergeTags(@Valid @RequestBody TagMergeRequestDTO request) {
         adminService.mergeTags(request);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Tags merged successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Tags merged successfully"));
     }
 }

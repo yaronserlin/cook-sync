@@ -53,7 +53,7 @@ public class UnitController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         log.debug("Fetching all units from the system");
         PagedResponse<UnitResponse> units = unitService.getAllUnits(page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, units, null, "All units retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(units, "All units retrieved successfully"));
     }
 
     /**
@@ -68,7 +68,7 @@ public class UnitController {
         log.info("Creating new unit: {}", request);
         UnitResponse createdUnit = unitService.createUnit(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, createdUnit, null, "Unit created successfully"));
+                .body(ApiResponse.success(createdUnit, "Unit created successfully"));
     }
 
     /**
@@ -82,6 +82,6 @@ public class UnitController {
     public ResponseEntity<ApiResponse<Void>> deleteUnit(@PathVariable String id) {
         log.info("Deleting unit with ID: {}", id);
         unitService.deleteUnit(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Unit deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Unit deleted successfully"));
     }
 }

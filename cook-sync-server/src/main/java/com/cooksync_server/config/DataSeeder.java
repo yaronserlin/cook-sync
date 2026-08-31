@@ -1,5 +1,24 @@
 package com.cooksync_server.config;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.cloudinary.Cloudinary;
 import com.cooksync_server.entities.DescriptionBlock;
 import com.cooksync_server.entities.FavoriteRecipe;
@@ -21,26 +40,9 @@ import com.cooksync_server.repositories.TagRepository;
 import com.cooksync_server.repositories.UnitRepository;
 import com.cooksync_server.repositories.UserRepository;
 import com.cooksync_server.services.CloudinaryService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Data Seeder component for initializing the database under the 'seed' active profile.
@@ -164,11 +166,20 @@ public class DataSeeder implements CommandLineRunner {
         return imageUrl;
     }
 
+    /**
+     * Wipes every table this seeder repopulates, via {@link SeedDatabaseReset}, so each seeding
+     * run starts from a clean, deterministic schema state.
+     */
     private void clearDatabase() {
         log.info(">>> Clearing existing database tables...");
         SeedDatabaseReset.truncateAllTables(jdbcTemplate);
     }
 
+    /**
+     * Seeds the fixed catalog of measurement units used by the sample recipes below.
+     *
+     * @return the persisted unit entities
+     */
     private List<Unit> seedUnits() {
         log.info(">>> Seeding measurement units...");
         return unitRepository.saveAll(List.of(
@@ -191,6 +202,13 @@ public class DataSeeder implements CommandLineRunner {
         ));
     }
 
+    /**
+     * Seeds the fixed catalog of recipe tags, including a handful of deliberate near-duplicate
+     * (space- vs. hyphen-separated) variants so the admin duplicate-tag detection and merge
+     * tools have real groups to exercise.
+     *
+     * @return the persisted tag entities
+     */
     private List<Tag> seedTags() {
         log.info(">>> Seeding recipe tags...");
         return tagRepository.saveAll(List.of(
@@ -226,6 +244,12 @@ public class DataSeeder implements CommandLineRunner {
         ));
     }
 
+    /**
+     * Seeds the fixed catalog of sample user accounts (including one admin), uploading a stock
+     * avatar image to Cloudinary for each one via {@link #uploadToCloudinary(String, String, String)}.
+     *
+     * @return the persisted user entities
+     */
     private List<User> seedUsers() {
         log.info(">>> Seeding users and uploading avatar media to Cloudinary...");
 
@@ -311,14 +335,37 @@ public class DataSeeder implements CommandLineRunner {
         return userRepository.saveAll(savedUsers);
     }
 
+    /**
+     * Indexes seeded tags by name, so recipe-seeding code can look one up by its literal name
+     * instead of tracking each {@link Tag} entity's generated ID by hand.
+     *
+     * @param tags the seeded tag entities to index
+     * @return the tags keyed by {@link Tag#getName()}
+     */
     private Map<String, Tag> getTagMap(List<Tag> tags) {
         return tags.stream().collect(Collectors.toMap(Tag::getName, t -> t, (a, b) -> a));
     }
 
+    /**
+     * Indexes seeded units by their lowercased code, so recipe-seeding code can look one up by
+     * its literal code instead of tracking each {@link Unit} entity's generated ID by hand.
+     *
+     * @param units the seeded unit entities to index
+     * @return the units keyed by their lowercased {@link Unit#getCode()}
+     */
     private Map<String, Unit> getUnitMap(List<Unit> units) {
         return units.stream().collect(Collectors.toMap(u -> u.getCode().toLowerCase(), u -> u, (a, b) -> a));
     }
 
+    /**
+     * Looks up a seeded unit by its code, falling back to {@code "piece"} (and, if that is also
+     * unavailable, to an arbitrary seeded unit) so a typo or omission in the hardcoded sample
+     * recipe data below never crashes the seeding run.
+     *
+     * @param unitMap the seeded units, as built by {@link #getUnitMap(List)}
+     * @param code the unit code to look up, or {@code null} to use the {@code "piece"} fallback directly
+     * @return the matching unit, the {@code "piece"} fallback, or an arbitrary seeded unit if neither is found
+     */
     private Unit getUnit(Map<String, Unit> unitMap, String code) {
         if (code == null) {
             return unitMap.get("piece");
@@ -334,6 +381,16 @@ public class DataSeeder implements CommandLineRunner {
         return unit;
     }
 
+    /**
+     * Seeds a fixed catalog of 30 fully-populated sample recipes — each with ingredients,
+     * instruction steps (some with timers), tags, and Cloudinary-hosted cover/gallery images —
+     * spread across the seeded sample users as authors.
+     *
+     * @param users the seeded user entities to assign as recipe authors
+     * @param units the seeded unit entities, indexed via {@link #getUnitMap(List)} for ingredient lookups
+     * @param tags the seeded tag entities, indexed via {@link #getTagMap(List)} for recipe tagging
+     * @return the persisted recipe entities
+     */
     private List<Recipe> seedRecipes(List<User> users, List<Unit> units, List<Tag> tags) {
         log.info(">>> Seeding 30 authentic recipes with ingredients, timers, and Cloudinary media...");
 
@@ -1035,7 +1092,13 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * DTO helper for creating ingredient items without persisting manually.
+     * Builds an (unsaved) ingredient entity for a seeded recipe; persisted later via
+     * {@code Recipe}'s cascading save in {@link #seedRecipes(List, List, List)}.
+     *
+     * @param name the ingredient display name
+     * @param qtyStr the ingredient quantity, as a decimal string parsed into a {@link BigDecimal}
+     * @param unit the resolved measurement unit, typically via {@link #getUnit(Map, String)}; a {@code null} is logged but tolerated
+     * @return the built (not yet persisted) ingredient entity
      */
     private Ingredient createIng(String name, String qtyStr, Unit unit) {
         if (unit == null) {
@@ -1049,16 +1112,56 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * DTO helper for building instruction steps.
+     * Builds an in-memory instruction-step descriptor for a seeded recipe, later converted into a
+     * persisted {@code Instruction} entity by {@link #createRecipe} once the parent recipe and
+     * its ingredient list both exist.
+     *
+     * @param stepNum the 1-based sequential position of the step
+     * @param desc the step's instruction text
+     * @param hasTimer whether the step requires a countdown timer
+     * @param timeSec the timer duration in seconds, or {@code null} if {@code hasTimer} is {@code false}
+     * @param imgUrl an illustrative image URL to upload for this step, or {@code null} for none
+     * @param linkedIngIndices 0-based indices into the recipe's ingredient list identifying which
+     *                         ingredients this step uses, or none if the step uses no ingredients
+     * @return the built step descriptor
      */
     private InstructionStepData createStep(int stepNum, String desc, boolean hasTimer, Integer timeSec, String imgUrl, Integer... linkedIngIndices) {
         return new InstructionStepData(stepNum, desc, hasTimer, timeSec, imgUrl, linkedIngIndices == null ? List.of() : Arrays.asList(linkedIngIndices));
     }
 
+    /**
+     * In-memory descriptor for one seeded recipe's instruction step, built by
+     * {@link #createStep} and consumed by {@link #createRecipe} to construct the persisted
+     * {@code Instruction} entity once the parent recipe's ingredient indices can be resolved.
+     *
+     * @param stepNumber the 1-based sequential position of the step
+     * @param description the step's instruction text
+     * @param hasTimer whether the step requires a countdown timer
+     * @param timeSeconds the timer duration in seconds, or {@code null} if {@code hasTimer} is {@code false}
+     * @param imageUrl an illustrative image URL to upload for this step, or {@code null} for none
+     * @param linkedIngredientIndices 0-based indices into the recipe's ingredient list identifying this step's ingredients
+     */
     private record InstructionStepData(int stepNumber, String description, boolean hasTimer, Integer timeSeconds, String imageUrl, List<Integer> linkedIngredientIndices) {}
 
     /**
-     * Helper for building and wiring Recipe entity instances.
+     * Builds, wires, and persists a complete Recipe entity: uploads its cover/description images
+     * to Cloudinary, attaches its ingredients and instruction steps (resolving each step's
+     * ingredient links by index into {@code ingredients}), builds its description blocks, and
+     * assembles its recipe-image gallery from {@code primaryCoverUrl} and {@code extraGalleryUrls}.
+     *
+     * @param title the recipe's display title
+     * @param description the recipe's flat description text, also used as the first description block
+     * @param difficulty the recipe's skill difficulty level
+     * @param prepTime preparation duration in minutes
+     * @param cookTime active cooking duration in minutes
+     * @param servings recommended serving yield count
+     * @param creator the seeded user to set as the recipe's author
+     * @param tags the seeded tag entities to associate with the recipe
+     * @param primaryCoverUrl the source URL uploaded as the recipe's cover image and description image
+     * @param extraGalleryUrls additional source URLs uploaded as non-primary gallery images
+     * @param ingredients the recipe's ingredient entities, as built by {@link #createIng}
+     * @param stepDataList the recipe's instruction steps, as built by {@link #createStep}
+     * @return the persisted recipe entity
      */
     private Recipe createRecipe(String title, String description, Recipe.Difficulty difficulty,
                                 int prepTime, int cookTime, int servings, User creator, List<Tag> tags,
@@ -1177,6 +1280,16 @@ public class DataSeeder implements CommandLineRunner {
         return recipe;
     }
 
+    /** 
+     * Seeds a varied, mostly-positive spread of reviews across every recipe (skewed 50% 5-star,
+     * 40% 4-star, 10% 3-star, as a real recipe app's published catalog would trend), plus two
+     * deliberately reported reviews to exercise the admin moderation queue. Recomputes each
+     * recipe's denormalized rating stats via {@link #recalculateRecipeStats(List, List)} once
+     * all reviews are saved.
+     *
+     * @param recipes the seeded recipes to attach reviews to
+     * @param users the seeded users to attribute reviews to
+     */
     private void seedReviews(List<Recipe> recipes, List<User> users) {
         log.info(">>> Seeding user reviews and ratings...");
         List<Review> reviews = new ArrayList<>();
@@ -1278,6 +1391,14 @@ public class DataSeeder implements CommandLineRunner {
         recipeRepository.saveAll(recipes);
     }
 
+    /**
+     * Recomputes each seeded recipe's denormalized {@code reviewCount} and {@code averageRating}
+     * from its just-seeded reviews, mirroring the aggregation the live review-creation/deletion
+     * flow performs, so the seeded data is internally consistent from the start.
+     *
+     * @param recipes the seeded recipes to update
+     * @param reviews the seeded reviews to aggregate per recipe
+     */
     private void recalculateRecipeStats(List<Recipe> recipes, List<Review> reviews) {
         Map<String, List<Review>> reviewsByRecipeId = reviews.stream()
                 .collect(Collectors.groupingBy(review -> review.getRecipe().getId()));
@@ -1290,6 +1411,12 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
+    /**
+     * Seeds one favorite bookmark per recipe, cycling through the seeded users as bookmarkers.
+     *
+     * @param recipes the seeded recipes to bookmark
+     * @param users the seeded users to assign as bookmarkers, cycled by index
+     */
     private void seedFavorites(List<Recipe> recipes, List<User> users) {
         log.info(">>> Seeding user favorites...");
         List<FavoriteRecipe> favorites = new ArrayList<>();
@@ -1304,6 +1431,13 @@ public class DataSeeder implements CommandLineRunner {
         favoriteRecipeRepository.saveAll(favorites);
     }
 
+    /**
+     * Seeds one recipe-wide personal note per recipe, cycling through a fixed pool of sample
+     * note texts and through the seeded users as note authors.
+     *
+     * @param recipes the seeded recipes to attach a note to
+     * @param users the seeded users to assign as note authors, cycled by index
+     */
     private void seedPersonalNotes(List<Recipe> recipes, List<User> users) {
         log.info(">>> Seeding personal notes...");
         List<PersonalInstructionNote> notes = new ArrayList<>();

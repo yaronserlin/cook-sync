@@ -1,9 +1,14 @@
 package com.cooksync_server.config;
 
-import com.cooksync_server.entities.*;
-import com.cooksync_server.repositories.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,9 +16,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.cooksync_server.entities.DescriptionBlock;
+import com.cooksync_server.entities.Ingredient;
+import com.cooksync_server.entities.Instruction;
+import com.cooksync_server.entities.Recipe;
+import com.cooksync_server.entities.RecipeImage;
+import com.cooksync_server.entities.Tag;
+import com.cooksync_server.entities.Unit;
+import com.cooksync_server.entities.User;
+import com.cooksync_server.repositories.RecipeRepository;
+import com.cooksync_server.repositories.TagRepository;
+import com.cooksync_server.repositories.UnitRepository;
+import com.cooksync_server.repositories.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Minimal, self-contained seeder for local development: seeds only the
@@ -80,11 +97,20 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
         log.info(">>> Seeding completed successfully. Total recipes seeded: {}", recipes.size());
     }
 
+    /**
+     * Wipes every table this seeder repopulates, via {@link SeedDatabaseReset}, so each seeding
+     * run starts from a clean, deterministic schema state.
+     */
     private void clearDatabase() {
         log.info(">>> Clearing existing database tables...");
         SeedDatabaseReset.truncateAllTables(jdbcTemplate);
     }
 
+    /**
+     * Seeds only the measurement units actually referenced by the skill-generated recipes below.
+     *
+     * @return the persisted unit entities
+     */
     private List<Unit> seedUnits() {
         log.info(">>> Seeding measurement units used by the skill-generated recipes...");
         return unitRepository.saveAll(List.of(
@@ -99,6 +125,11 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
         ));
     }
 
+    /**
+     * Seeds only the tags actually referenced by the skill-generated recipes below.
+     *
+     * @return the persisted tag entities
+     */
     private List<Tag> seedTags() {
         log.info(">>> Seeding tags used by the skill-generated recipes...");
         return tagRepository.saveAll(List.of(
@@ -118,15 +149,13 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
         ));
     }
 
+    /**
+     * Seeds the single non-admin user account that authors every skill-generated recipe.
+     *
+     * @return the persisted creator user entity
+     */
     private User seedCreator() {
         log.info(">>> Seeding creator account...");
-        User admin = User.builder()
-                .firstName("admin").lastName("user").email("admin@cooksync.com")
-                .passwordHash(passwordEncoder.encode("Password123!"))
-                .isAdmin(true)
-                .city("Israel")
-                .bio("Admin of this app.")
-                .build();
         User creator = User.builder()
                 .firstName("Noa").lastName("Peretz").email("noa.peretz@cooksync.com")
                 .passwordHash(passwordEncoder.encode("Password123!"))
@@ -137,14 +166,38 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
         return userRepository.save(creator);
     }
 
+    /**
+     * Indexes seeded tags by name, so recipe-seeding code can look one up by its literal name
+     * instead of tracking each {@link Tag} entity's generated ID by hand.
+     *
+     * @param tags the seeded tag entities to index
+     * @return the tags keyed by {@link Tag#getName()}
+     */
     private Map<String, Tag> getTagMap(List<Tag> tags) {
         return tags.stream().collect(Collectors.toMap(Tag::getName, t -> t, (a, b) -> a));
     }
 
+    /**
+     * Indexes seeded units by their lowercased code, so recipe-seeding code can look one up by
+     * its literal code instead of tracking each {@link Unit} entity's generated ID by hand.
+     *
+     * @param units the seeded unit entities to index
+     * @return the units keyed by their lowercased {@link Unit#getCode()}
+     */
     private Map<String, Unit> getUnitMap(List<Unit> units) {
         return units.stream().collect(Collectors.toMap(u -> u.getCode().toLowerCase(), u -> u, (a, b) -> a));
     }
 
+    /**
+     * Looks up a seeded unit by its code. Unlike {@link DataSeeder#getUnit}, there is no
+     * {@code "piece"} fallback here: a missing code is logged and {@code null} is returned as-is,
+     * since every code referenced by the skill-generated recipes below is expected to exist in
+     * {@link #seedUnits()}.
+     *
+     * @param unitMap the seeded units, as built by {@link #getUnitMap(List)}
+     * @param code the unit code to look up
+     * @return the matching unit, or {@code null} if no unit has that code
+     */
     private Unit getUnit(Map<String, Unit> unitMap, String code) {
         Unit unit = unitMap.get(code.toLowerCase());
         if (unit == null) {
@@ -154,7 +207,13 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
     }
 
     /**
-     * DTO helper for creating ingredient items without persisting manually.
+     * Builds an (unsaved) ingredient entity for a seeded recipe; persisted later via
+     * {@code Recipe}'s cascading save in {@link #run(String...)}.
+     *
+     * @param name the ingredient display name
+     * @param qtyStr the ingredient quantity, as a decimal string parsed into a {@link BigDecimal}
+     * @param unit the resolved measurement unit, typically via {@link #getUnit(Map, String)}
+     * @return the built (not yet persisted) ingredient entity
      */
     private Ingredient createIng(String name, String qtyStr, Unit unit) {
         return Ingredient.builder()
@@ -165,28 +224,73 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
     }
 
     /**
-     * DTO helper for building instruction steps.
+     * Builds an in-memory instruction-step descriptor for a seeded recipe, later converted into a
+     * persisted {@code Instruction} entity by {@link #createRecipe} once the parent recipe and
+     * its ingredient list both exist.
+     *
+     * @param stepNum the 1-based sequential position of the step
+     * @param desc the step's instruction text
+     * @param hasTimer whether the step requires a countdown timer
+     * @param timeSec the timer duration in seconds, or {@code null} if {@code hasTimer} is {@code false}
+     * @param imgUrl an illustrative image URL for this step, used as-is, or {@code null} for none
+     * @param linkedIngIndices 0-based indices into the recipe's ingredient list identifying which
+     *                         ingredients this step uses, or none if the step uses no ingredients
+     * @return the built step descriptor
      */
     private InstructionStepData createStep(int stepNum, String desc, boolean hasTimer, Integer timeSec, String imgUrl, Integer... linkedIngIndices) {
         return new InstructionStepData(stepNum, desc, hasTimer, timeSec, imgUrl, linkedIngIndices == null ? List.of() : Arrays.asList(linkedIngIndices));
     }
 
+    /**
+     * In-memory descriptor for one seeded recipe's instruction step, built by
+     * {@link #createStep} and consumed by {@link #createRecipe} to construct the persisted
+     * {@code Instruction} entity once the parent recipe's ingredient indices can be resolved.
+     *
+     * @param stepNumber the 1-based sequential position of the step
+     * @param description the step's instruction text
+     * @param hasTimer whether the step requires a countdown timer
+     * @param timeSeconds the timer duration in seconds, or {@code null} if {@code hasTimer} is {@code false}
+     * @param imageUrl an illustrative image URL for this step, used as-is, or {@code null} for none
+     * @param linkedIngredientIndices 0-based indices into the recipe's ingredient list identifying this step's ingredients
+     */
     private record InstructionStepData(int stepNumber, String description, boolean hasTimer, Integer timeSeconds, String imageUrl, List<Integer> linkedIngredientIndices) {
 
     }
 
     /**
-     * DTO helper for explicit, per-recipe description blocks (not a fixed
-     * 3-block template).
+     * In-memory descriptor for one explicit, per-recipe description block (not a fixed 3-block
+     * template as in {@link DataSeeder}), consumed by {@link #createRecipe} to build the
+     * persisted {@code DescriptionBlock} entities in author-given order.
+     *
+     * @param type the block's content-type discriminator (TEXT or IMAGE)
+     * @param text the block's prose content, populated when {@code type} is TEXT
+     * @param imageUrl the block's image resource URL, populated when {@code type} is IMAGE
+     * @param caption an optional image caption, only meaningful when {@code type} is IMAGE
      */
     private record DescriptionBlockData(DescriptionBlock.BlockType type, String text, String imageUrl, String caption) {
 
     }
 
     /**
-     * Helper for building and wiring Recipe entity instances. The recipe's own
-     * {@code description} field is derived the same way RecipeServiceImp does for
-     * live API submissions: the first TEXT description block's text, or "".
+     * Builds, wires, and persists a complete Recipe entity from skill-generated data. Unlike
+     * {@link DataSeeder#createRecipe}, no Cloudinary upload happens here: {@code primaryImageUrl}
+     * and every description/instruction image URL are already permanent Cloudinary
+     * {@code secure_url}s produced by the recipe-to-json skill, so they are used as-is. The
+     * recipe's own {@code description} field is derived the same way {@code RecipeServiceImp}
+     * does for live API submissions: the first TEXT description block's text, or {@code ""}.
+     *
+     * @param title the recipe's display title
+     * @param difficulty the recipe's skill difficulty level
+     * @param prepTime preparation duration in minutes
+     * @param cookTime active cooking duration in minutes
+     * @param servings recommended serving yield count
+     * @param creator the seeded user to set as the recipe's author
+     * @param tags the seeded tag entities to associate with the recipe
+     * @param primaryImageUrl the Cloudinary URL used as-is for the recipe's cover image
+     * @param ingredients the recipe's ingredient entities, as built by {@link #createIng}
+     * @param stepDataList the recipe's instruction steps, as built by {@link #createStep}
+     * @param descriptionBlockData the recipe's description blocks, in author-given order
+     * @return the persisted recipe entity
      */
     private Recipe createRecipe(String title, Recipe.Difficulty difficulty, int prepTime, int cookTime,
             int servings, User creator, List<Tag> tags, String primaryImageUrl,
@@ -271,6 +375,15 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
         return recipe;
     }
 
+    /**
+     * Builds and persists the skill-generated "Itzik's Chraimeh" recipe, a spicy North
+     * African-style fish-in-tomato-pepper sauce dish.
+     *
+     * @param creator the seeded user to set as the recipe's author
+     * @param tagMap the seeded tags, indexed via {@link #getTagMap(List)}
+     * @param unitMap the seeded units, indexed via {@link #getUnitMap(List)}
+     * @return the persisted recipe entity
+     */
     private Recipe seedItziksChraimeh(User creator, Map<String, Tag> tagMap, Map<String, Unit> unitMap) {
         List<Ingredient> ingredients = List.of(
                 createIng("Bell peppers", "4", getUnit(unitMap, "piece")),
@@ -301,6 +414,15 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 null, ingredients, steps, blocks);
     }
 
+    /**
+     * Builds and persists the skill-generated "Shabbat Challah" recipe, a braided egg-washed
+     * yeasted bread.
+     *
+     * @param creator the seeded user to set as the recipe's author
+     * @param tagMap the seeded tags, indexed via {@link #getTagMap(List)}
+     * @param unitMap the seeded units, indexed via {@link #getUnitMap(List)}
+     * @return the persisted recipe entity
+     */
     private Recipe seedShabbatChallah(User creator, Map<String, Tag> tagMap, Map<String, Unit> unitMap) {
         List<Ingredient> ingredients = List.of(
                 createIng("Egg (for egg wash)", "1", getUnit(unitMap, "piece")),
@@ -349,6 +471,15 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 coverImg, ingredients, steps, blocks);
     }
 
+    /**
+     * Builds and persists the skill-generated "Pickled Eggplant Salad" recipe, a
+     * vinegar-and-olive-oil dressed eggplant salad.
+     *
+     * @param creator the seeded user to set as the recipe's author
+     * @param tagMap the seeded tags, indexed via {@link #getTagMap(List)}
+     * @param unitMap the seeded units, indexed via {@link #getUnitMap(List)}
+     * @return the persisted recipe entity
+     */
     private Recipe seedPickledEggplantSalad(User creator, Map<String, Tag> tagMap, Map<String, Unit> unitMap) {
         List<Ingredient> ingredients = List.of(
                 createIng("Parsley, finely chopped", "0.5", getUnit(unitMap, "cup")),
@@ -385,6 +516,15 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 coverImg, ingredients, steps, blocks);
     }
 
+    /**
+     * Builds and persists the skill-generated "Gluten-Free Oat and Seed Crackers" recipe, a
+     * baked mixed-seed cracker made with lentil/chickpea flour and gluten-free oats.
+     *
+     * @param creator the seeded user to set as the recipe's author
+     * @param tagMap the seeded tags, indexed via {@link #getTagMap(List)}
+     * @param unitMap the seeded units, indexed via {@link #getUnitMap(List)}
+     * @return the persisted recipe entity
+     */
     private Recipe seedGlutenFreeOatAndSeedCrackers(User creator, Map<String, Tag> tagMap, Map<String, Unit> unitMap) {
         List<Ingredient> ingredients = List.of(
                 createIng("Red lentil flour (or chickpea flour)", "1", getUnit(unitMap, "cup")),
@@ -420,6 +560,15 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 "https://res.cloudinary.com/dg6fhhm3e/image/upload/v1786453315/cooksync/991bc485-a94d-4848-9c15-78c71ef7e641/Gluten_Free_Oat_and_Seed_Crackers/main_991bc485-a94d-4848-9c15-78c71ef7e641_1786453289042.jpg", ingredients, steps, blocks);
     }
 
+    /**
+     * Builds and persists the skill-generated "No-Knead Vegan Kranz" recipe, a braided
+     * chocolate-peanut-butter-and-jam twist cake made with a no-knead vegan dough.
+     *
+     * @param creator the seeded user to set as the recipe's author
+     * @param tagMap the seeded tags, indexed via {@link #getTagMap(List)}
+     * @param unitMap the seeded units, indexed via {@link #getUnitMap(List)}
+     * @return the persisted recipe entity
+     */
     private Recipe seedNoKneadVeganKranzChocolatePeanutButterJamTwistCake(User creator, Map<String, Tag> tagMap, Map<String, Unit> unitMap) {
         List<Ingredient> ingredients = List.of(
                 createIng("White flour", "500", getUnit(unitMap, "g")),
@@ -463,6 +612,15 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 "https://res.cloudinary.com/dg6fhhm3e/image/upload/v1786454526/cooksync/991bc485-a94d-4848-9c15-78c71ef7e641/No_Knead_Vegan_Kranz___Chocolate___Peanut_Butter_Jam_Twist_Cake/main_991bc485-a94d-4848-9c15-78c71ef7e641_1786454524808.jpg", ingredients, steps, blocks);
     }
 
+    /**
+     * Builds and persists the skill-generated "Not-Pita" recipe, a fermented flatbread batter
+     * made from blended rice, quinoa, lentils, and mung beans.
+     *
+     * @param creator the seeded user to set as the recipe's author
+     * @param tagMap the seeded tags, indexed via {@link #getTagMap(List)}
+     * @param unitMap the seeded units, indexed via {@link #getUnitMap(List)}
+     * @return the persisted recipe entity
+     */
     private Recipe seedNotPitaFermentedRiceQuinoaLentilMungBeanFlatbread(User creator, Map<String, Tag> tagMap, Map<String, Unit> unitMap) {
         List<Ingredient> ingredients = List.of(
                 createIng("Brown rice", "1", getUnit(unitMap, "cup")),

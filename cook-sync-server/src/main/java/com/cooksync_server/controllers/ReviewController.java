@@ -53,7 +53,7 @@ public class ReviewController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<ReviewResponse> reviews = reviewService.getReviewsForRecipe(recipeId, page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, reviews, null, "Reviews retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(reviews, "Reviews retrieved successfully"));
     }
 
     /**
@@ -73,7 +73,7 @@ public class ReviewController {
         String userEmail = authentication.getName();
         reviewService.addReview(recipeId, request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, null, null, "Review added successfully"));
+                .body(ApiResponse.success(null, "Review added successfully"));
     }
 
     /**
@@ -91,7 +91,7 @@ public class ReviewController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         reviewService.deleteReview(reviewId, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Review deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Review deleted successfully"));
     }
 
     /**
@@ -108,6 +108,6 @@ public class ReviewController {
             @Valid @RequestBody ReportReviewRequestDTO request,
             Authentication authentication) {
         reviewService.reportReview(reviewId, request, authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Review reported to moderators"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Review reported to moderators"));
     }
 }

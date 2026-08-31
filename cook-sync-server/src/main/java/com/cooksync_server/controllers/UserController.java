@@ -52,7 +52,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<PublicUserProfileResponse>> getUserProfile(@PathVariable String id) {
         log.debug("Fetching public profile for user ID: {}", id);
         PublicUserProfileResponse response = userProfileService.getUserProfileById(id);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User profile retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "User profile retrieved successfully"));
     }
 
     /**
@@ -71,7 +71,7 @@ public class UserController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         log.debug("Fetching public recipes for user ID: {}", id);
         PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser(id, page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User's public recipes retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "User's public recipes retrieved successfully"));
     }
 
     /**
@@ -90,6 +90,6 @@ public class UserController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         log.debug("Fetching public favorites for user ID: {}", id);
         PagedResponse<RecipePreviewResponse> response = favoriteService.getPublicFavoritesByUser(id, page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "User's public favorites retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "User's public favorites retrieved successfully"));
     }
 }

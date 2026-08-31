@@ -47,7 +47,7 @@ public class FavoriteController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         String userEmail = authentication.getName();
         PagedResponse<RecipePreviewResponse> favorites = favoriteService.getUserFavorites(userEmail, page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, favorites, null, "Favorites retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(favorites, "Favorites retrieved successfully"));
     }
 
     /**
@@ -63,7 +63,7 @@ public class FavoriteController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         favoriteService.addFavorite(recipeId, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Added to favorites successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Added to favorites successfully"));
     }
 
     /**
@@ -79,6 +79,6 @@ public class FavoriteController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         favoriteService.removeFavorite(recipeId, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Removed from favorites successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Removed from favorites successfully"));
     }
 }

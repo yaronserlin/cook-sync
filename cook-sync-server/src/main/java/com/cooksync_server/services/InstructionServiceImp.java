@@ -1,10 +1,14 @@
 package com.cooksync_server.services;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dtos.request.instruction.InstructionRequestDTO;
-import com.dtos.response.instruction.InstructionResponse;
 import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Instruction;
@@ -15,14 +19,10 @@ import com.cooksync_server.repositories.IngredientRepository;
 import com.cooksync_server.repositories.InstructionRepository;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.instruction.InstructionRequestDTO;
+import com.dtos.response.instruction.InstructionResponse;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Service class managing recipe preparation instruction steps and associated ingredient links.
@@ -115,6 +115,13 @@ public class InstructionServiceImp implements InstructionService {
         instructionRepository.delete(instruction);
     }
 
+    /**
+     * Resolves an instruction step's referenced ingredient IDs to their persisted entities.
+     * IDs that do not match a persisted ingredient are silently omitted rather than rejected.
+     *
+     * @param ingredientIds the ingredient IDs to resolve, or {@code null}/empty for a step with no linked ingredients
+     * @return the resolved ingredient entities; empty if {@code ingredientIds} is {@code null}/empty
+     */
     private Set<Ingredient> resolveIngredients(List<UUID> ingredientIds) {
         if (ingredientIds == null || ingredientIds.isEmpty()) {
             return new HashSet<>();

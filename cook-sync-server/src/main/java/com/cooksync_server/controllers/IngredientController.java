@@ -57,7 +57,7 @@ public class IngredientController {
         String userEmail = authentication.getName();
         IngredientResponse response = ingredientService.addIngredientToRecipe(recipeId, request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, response, null, "Ingredient added successfully"));
+                .body(ApiResponse.success(response, "Ingredient added successfully"));
     }
 
     /**
@@ -75,7 +75,7 @@ public class IngredientController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         IngredientResponse response = ingredientService.updateIngredient(ingredientId, request, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Ingredient updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Ingredient updated successfully"));
     }
 
     /**
@@ -91,6 +91,6 @@ public class IngredientController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         ingredientService.deleteIngredient(ingredientId, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Ingredient deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Ingredient deleted successfully"));
     }
 }

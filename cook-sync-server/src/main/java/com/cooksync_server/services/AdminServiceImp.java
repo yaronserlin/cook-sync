@@ -306,6 +306,15 @@ public class AdminServiceImp implements AdminService {
         jdbcTemplate.update("DELETE FROM tags WHERE id = ?", request.sourceTagId());
     }
 
+    /**
+     * Normalizes a tag name for duplicate-detection grouping: lowercases it, collapses any run
+     * of non-alphanumeric characters (hyphens, underscores, extra spaces) into a single space,
+     * and trims the result, so variants like {@code "Gluten-Free"} and {@code "gluten free"}
+     * collapse to the same key in {@link #getDuplicateTagGroups(int, int)}.
+     *
+     * @param name the raw tag name to normalize, or {@code null}
+     * @return the normalized name, or an empty string if {@code name} is {@code null}
+     */
     private String normalize(String name) {
         if (name == null) {
             return "";

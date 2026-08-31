@@ -49,7 +49,7 @@ public class InstructionController {
         String userEmail = authentication.getName();
         InstructionResponse response = instructionService.addInstructionToRecipe(recipeId, request, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, response, null, "Instruction added successfully"));
+                .body(ApiResponse.success(response, "Instruction added successfully"));
     }
 
     /**
@@ -67,7 +67,7 @@ public class InstructionController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         InstructionResponse response = instructionService.updateInstruction(instructionId, request, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, response, null, "Instruction updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Instruction updated successfully"));
     }
 
     /**
@@ -83,6 +83,6 @@ public class InstructionController {
             Authentication authentication) {
         String userEmail = authentication.getName();
         instructionService.deleteInstruction(instructionId, userEmail);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Instruction deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Instruction deleted successfully"));
     }
 }

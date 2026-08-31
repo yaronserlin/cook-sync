@@ -181,10 +181,35 @@ public final class RecipeSpecifications {
         };
     }
 
+    /**
+     * Builds the criteria expression for a recipe's author display name, concatenating the
+     * joined {@code createdBy} user's first and last name with a single space separator. Shared
+     * by {@link #hasAuthor(String)} and {@link #matchesUnifiedQuery(String)} so both match
+     * against the same author-name formatting.
+     *
+     * @param root the {@link Recipe} criteria root
+     * @param cb the criteria builder used to construct the concatenation expression
+     * @return an expression evaluating to the author's "first last" display name
+     */
     private static jakarta.persistence.criteria.Expression<String> authorName(Root<Recipe> root, CriteriaBuilder cb) {
         return cb.concat(cb.concat(root.get("createdBy").get("firstName"), " "), root.get("createdBy").get("lastName"));
     }
 
+    /**
+     * Builds a correlated {@code EXISTS} subquery predicate checking whether any element of a
+     * recipe's collection attribute (e.g. {@code tags}, {@code ingredients}) has a field matching
+     * the given case-insensitive pattern. Shared by {@link #matchesUnifiedQuery(String)} for its
+     * per-token tag and ingredient matches.
+     *
+     * @param root the {@link Recipe} criteria root being filtered
+     * @param query the enclosing criteria query, used to create the correlated subquery
+     * @param cb the criteria builder used to construct the subquery predicate
+     * @param collectionAttribute the name of the recipe's collection association to join (e.g. {@code "tags"})
+     * @param fieldName the name of the field on the joined collection element to match
+     * @param pattern the lowercase SQL {@code LIKE} pattern to match {@code fieldName} against
+     * @param <T> the element type of the joined collection
+     * @return a predicate that is true if at least one matching element exists in the collection
+     */
     private static <T> Predicate existsInCollection(Root<Recipe> root, CriteriaQuery<?> query, CriteriaBuilder cb,
             String collectionAttribute, String fieldName, String pattern) {
         Subquery<Long> subquery = query.subquery(Long.class);

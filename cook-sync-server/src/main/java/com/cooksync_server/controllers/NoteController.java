@@ -52,7 +52,7 @@ public class NoteController {
             @Valid @RequestBody NoteRequestDTO request,
             Authentication authentication) {
         noteService.saveNote(request, authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Note saved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Note saved successfully"));
     }
 
     /**
@@ -67,7 +67,7 @@ public class NoteController {
             @PathVariable String noteId,
             Authentication authentication) {
         noteService.deleteNote(noteId, authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, null, null, "Note deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Note deleted successfully"));
     }
 
     /**
@@ -82,7 +82,7 @@ public class NoteController {
             @PathVariable String recipeId,
             Authentication authentication) {
         NoteResponse note = noteService.getNote(recipeId, authentication.getName());
-        return ResponseEntity.ok(new ApiResponse<>(true, note, null, "OK"));
+        return ResponseEntity.ok(ApiResponse.success(note, "OK"));
     }
 
     /**
@@ -101,6 +101,6 @@ public class NoteController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
             Authentication authentication) {
         PagedResponse<NoteResponse> notes = noteService.getNotesForRecipe(recipeId, authentication.getName(), page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, notes, null, "OK"));
+        return ResponseEntity.ok(ApiResponse.success(notes, "OK"));
     }
 }

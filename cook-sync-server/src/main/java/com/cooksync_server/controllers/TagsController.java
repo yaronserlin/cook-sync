@@ -50,7 +50,7 @@ public class TagsController {
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
         PagedResponse<TagResponse> tags = tagService.getAllTags(page, size);
-        return ResponseEntity.ok(new ApiResponse<>(true, tags, null, "All tags retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(tags, "All tags retrieved successfully"));
     }
 
     /**
@@ -64,7 +64,7 @@ public class TagsController {
     public ResponseEntity<ApiResponse<List<TagResponse>>> getPopularTags(
             @RequestParam(defaultValue = PaginationDefaults.POPULAR_TAGS_LIMIT) int limit) {
         List<TagResponse> tags = tagService.getPopularTags(limit);
-        return ResponseEntity.ok(new ApiResponse<>(true, tags, null, "Popular tags retrieved successfully"));
+        return ResponseEntity.ok(ApiResponse.success(tags, "Popular tags retrieved successfully"));
     }
 
     /**
@@ -77,6 +77,6 @@ public class TagsController {
     public ResponseEntity<ApiResponse<TagResponse>> createCustomTag(@Valid @RequestBody TagRequestDTO request) {
         TagResponse tag = tagService.getOrCreateTag(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, tag, null, "Tag ready"));
+                .body(ApiResponse.success(tag, "Tag ready"));
     }
 }

@@ -15,37 +15,37 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cooksync_server.constants.EntityNames;
+import com.cooksync_server.entities.DescriptionBlock;
+import com.cooksync_server.entities.Ingredient;
+import com.cooksync_server.entities.Instruction;
+import com.cooksync_server.entities.Recipe;
+import com.cooksync_server.entities.RecipeImage;
+import com.cooksync_server.entities.Tag;
+import com.cooksync_server.entities.Unit;
+import com.cooksync_server.entities.User;
+import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.cooksync_server.mappers.IngredientMapper;
+import com.cooksync_server.mappers.RecipeMapper;
+import com.cooksync_server.repositories.FavoriteRecipeRepository;
+import com.cooksync_server.repositories.IngredientRepository;
+import com.cooksync_server.repositories.InstructionRepository;
+import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
+import com.cooksync_server.repositories.RecipeImageRepository;
+import com.cooksync_server.repositories.RecipeRepository;
+import com.cooksync_server.repositories.RecipeSpecifications;
+import com.cooksync_server.repositories.ReviewReportRepository;
+import com.cooksync_server.repositories.TagRepository;
+import com.cooksync_server.repositories.UnitRepository;
+import com.cooksync_server.repositories.UserRepository;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.response.PagedResponse;
-import com.dtos.response.recipe.RecipeResponse;
-import com.dtos.response.recipe.RecipePreviewResponse;
-import com.cooksync_server.entities.Ingredient;
-import com.cooksync_server.entities.Instruction;
-import com.cooksync_server.entities.Recipe;
-import com.cooksync_server.entities.DescriptionBlock;
-import com.cooksync_server.entities.RecipeImage;
-import com.cooksync_server.entities.Tag;
-import com.cooksync_server.entities.Unit;
-import com.cooksync_server.entities.User;
-import com.cooksync_server.constants.EntityNames;
-import com.cooksync_server.exceptions.ResourceNotFoundException;
-import com.cooksync_server.repositories.IngredientRepository;
-import com.cooksync_server.repositories.InstructionRepository;
-import com.cooksync_server.repositories.FavoriteRecipeRepository;
-import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
-import com.cooksync_server.repositories.ReviewReportRepository;
-import com.cooksync_server.repositories.RecipeImageRepository;
-import com.cooksync_server.repositories.RecipeRepository;
-import com.cooksync_server.repositories.RecipeSpecifications;
-import com.cooksync_server.repositories.TagRepository;
-import com.cooksync_server.repositories.UnitRepository;
-import com.cooksync_server.repositories.UserRepository;
-import com.cooksync_server.mappers.IngredientMapper;
-import com.cooksync_server.mappers.RecipeMapper;
 import com.dtos.response.recipe.DescriptionBlockDTO;
+import com.dtos.response.recipe.RecipePreviewResponse;
+import com.dtos.response.recipe.RecipeResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -352,6 +352,10 @@ public class RecipeServiceImp implements RecipeService{
         recipe.setTags(fetchTags(request.tagIds()));
     }
 
+    /** 
+     * @param visibility
+     * @return Visibility
+     */
     private Recipe.Visibility parseVisibility(String visibility) {
         if (visibility == null || visibility.isBlank()) {
             return Recipe.Visibility.PUBLIC;
@@ -359,6 +363,10 @@ public class RecipeServiceImp implements RecipeService{
         return Recipe.Visibility.valueOf(visibility.toUpperCase());
     }
 
+    /** 
+     * @param recipe
+     * @param primaryImageUrl
+     */
     private void saveImages(Recipe recipe, String primaryImageUrl) {
         recipe.getImages().clear();
         if (primaryImageUrl != null && !primaryImageUrl.isBlank()) {
@@ -370,6 +378,13 @@ public class RecipeServiceImp implements RecipeService{
         }
     }
 
+    /**
+     * Resolves a recipe's tag IDs to their persisted {@link Tag} entities.
+     *
+     * @param tagIds the tag IDs to resolve, or {@code null}/empty for a recipe with no tags
+     * @return the resolved tag entities, in an order matching {@code tagIds}; empty if {@code tagIds} is {@code null}/empty
+     * @throws ResourceNotFoundException if any ID in {@code tagIds} does not match a persisted tag
+     */
     private Set<Tag> fetchTags(List<String> tagIds) {
         if (tagIds == null || tagIds.isEmpty()) {
             return new java.util.LinkedHashSet<>();
@@ -383,12 +398,32 @@ public class RecipeServiceImp implements RecipeService{
         return new java.util.LinkedHashSet<>(tags);
     }
 
+    /**
+     * Bulk-resolves the distinct measurement units referenced by a recipe's ingredient list, so
+     * {@link #saveIngredients(List, Recipe, Map)} can look each one up in memory instead of
+     * querying per ingredient row.
+     *
+     * @param dtoList the ingredient creation/update payloads whose {@code unitId} values are resolved
+     * @return the found {@link Unit} entities keyed by their ID; IDs with no matching unit are simply absent
+     */
     private Map<String, Unit> fetchUnitsById(List<IngredientRequestDTO> dtoList) {
         Set<String> unitIds = dtoList.stream().map(IngredientRequestDTO::unitId).collect(Collectors.toSet());
         return unitRepository.findAllById(unitIds).stream()
                 .collect(Collectors.toMap(Unit::getId, unit -> unit));
     }
 
+    /**
+     * Builds the ingredient entities for a recipe from its creation/update payload, resolving
+     * each one's unit and recording it under its client-supplied {@code tmpId} so instruction
+     * steps can later be linked back to the ingredients they reference.
+     *
+     * @param dtoList the ingredient creation/update payloads to build entities from
+     * @param recipe the parent recipe the built ingredients belong to
+     * @param tmpIdToIngredient output map populated with an entry per ingredient that carries a
+     *                          non-null {@code tmpId}, keyed by that {@code tmpId}
+     * @return the built (not yet persisted) ingredient entities
+     * @throws ResourceNotFoundException if any ingredient's {@code unitId} does not match a persisted unit
+     */
     private Set<Ingredient> saveIngredients(List<IngredientRequestDTO> dtoList, Recipe recipe,
             Map<String, Ingredient> tmpIdToIngredient) {
         Map<String, Unit> unitsById = fetchUnitsById(dtoList);
@@ -408,6 +443,17 @@ public class RecipeServiceImp implements RecipeService{
         return ingredients;
     }
 
+    /**
+     * Builds the instruction step entities for a recipe from its creation/update payload,
+     * resolving each step's {@code ingredientIds} (client-supplied ingredient {@code tmpId}
+     * values) back to the actual ingredient entities built by {@link #saveIngredients(List, Recipe, Map)}.
+     *
+     * @param dtoList the instruction creation/update payloads to build entities from
+     * @param recipe the parent recipe the built instructions belong to
+     * @param tmpIdToIngredient the ingredient entities built for this recipe, keyed by their
+     *                          {@code tmpId}, as populated by {@link #saveIngredients(List, Recipe, Map)}
+     * @return the built (not yet persisted) instruction entities
+     */
     private Set<Instruction> saveInstructions(List<InstructionRequestDTO> dtoList, Recipe recipe,
             Map<String, Ingredient> tmpIdToIngredient) {
         Set<Instruction> instructions = new java.util.LinkedHashSet<>();
