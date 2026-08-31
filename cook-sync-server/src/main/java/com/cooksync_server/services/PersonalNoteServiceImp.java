@@ -7,21 +7,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dtos.request.note.NoteRequestDTO;
-import com.dtos.response.PagedResponse;
-import com.dtos.response.note.NoteResponse;
 import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.FavoriteRecipe;
-import com.cooksync_server.repositories.FavoriteRecipeRepository;
 import com.cooksync_server.entities.PersonalInstructionNote;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
+import com.cooksync_server.repositories.FavoriteRecipeRepository;
 import com.cooksync_server.repositories.InstructionRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.note.NoteRequestDTO;
+import com.dtos.response.PagedResponse;
+import com.dtos.response.note.NoteResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -131,6 +131,12 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
         return PagedResponseMapper.toPagedResponse(notesPage, PersonalNoteServiceImp::toResponse);
     }
 
+    /**
+     * Maps a {@link PersonalInstructionNote} entity to its response DTO.
+     *
+     * @param n the note entity to map
+     * @return the mapped note response
+     */
     private static NoteResponse toResponse(PersonalInstructionNote n) {
         return new NoteResponse(
                 n.getId(),

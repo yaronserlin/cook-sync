@@ -67,6 +67,15 @@ public final class GlideUtils {
         return request(requestManager, url).centerCrop();
     }
 
+    /**
+     * Starts an unresolved Glide request with the app's shared placeholder/error drawables
+     * already applied, shared by every public method in this class.
+     *
+     * @param requestManager the caller's {@code Glide.with(...)} result, preserving whatever
+     *                       lifecycle (Activity/Fragment/Context) that call was scoped to
+     * @param url the image URL to load
+     * @return a request builder with the shared placeholder/error drawables applied
+     */
     private static RequestBuilder<Drawable> request(RequestManager requestManager, @Nullable String url) {
         return requestManager.load(url)
                 .placeholder(R.drawable.bg_skeleton_bone)

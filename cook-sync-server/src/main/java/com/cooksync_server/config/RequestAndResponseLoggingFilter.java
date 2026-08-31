@@ -61,6 +61,12 @@ public class RequestAndResponseLoggingFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Logs a request's method, URI, and client IP at INFO, and its (truncated, redacted) body at
+     * DEBUG.
+     *
+     * @param request the wrapped request, whose body has been cached for reading
+     */
     private void logRequest(HttpServletRequest request) {
         String method = request.getMethod();
         String uri = request.getRequestURI();
@@ -75,6 +81,13 @@ public class RequestAndResponseLoggingFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Logs a response's status and duration at INFO, and its (truncated, redacted) body at DEBUG.
+     *
+     * @param response the wrapped response, whose body has been cached for reading
+     * @param duration how long the request took, in milliseconds
+     * @param requestUri the request's URI, including its query string if any
+     */
     private void logResponse(HttpServletResponse response, long duration, String requestUri) {
         String responseData = readBody(((ContentCachingResponseWrapper) response).getContentAsByteArray());
         int status = response.getStatus();
@@ -86,6 +99,12 @@ public class RequestAndResponseLoggingFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Decodes a cached request/response body as UTF-8 text.
+     *
+     * @param content the cached body bytes, or {@code null}/empty if none were read
+     * @return the decoded body, or an empty string if none
+     */
     private String readBody(byte[] content) {
         if (content == null || content.length == 0) {
             return "";
@@ -93,6 +112,13 @@ public class RequestAndResponseLoggingFilter extends OncePerRequestFilter {
         return new String(content, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Prepares a body for a single-line debug log: collapses newlines, redacts sensitive JSON
+     * fields (password/token/secret/apiKey), and truncates to 220 characters.
+     *
+     * @param payload the raw request/response body
+     * @return the collapsed, redacted, truncated payload, or {@code "<empty>"} if blank
+     */
     private String truncatePayload(String payload) {
         if (payload == null || payload.isBlank()) {
             return "<empty>";

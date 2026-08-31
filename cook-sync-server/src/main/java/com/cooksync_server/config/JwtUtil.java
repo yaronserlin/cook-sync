@@ -111,10 +111,22 @@ public class JwtUtil {
         return roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
+    /**
+     * Checks whether a JWT's expiration claim has already passed.
+     *
+     * @param token JWT string
+     * @return {@code true} if the token has expired
+     */
     private boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
+    /**
+     * Parses and returns every claim from a JWT's payload.
+     *
+     * @param token JWT string
+     * @return the token's claims
+     */
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
@@ -123,6 +135,11 @@ public class JwtUtil {
                 .getBody();
     }
 
+    /**
+     * Decodes the configured Base64 secret into the HMAC signing key used to sign and verify JWTs.
+     *
+     * @return the signing key
+     */
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);

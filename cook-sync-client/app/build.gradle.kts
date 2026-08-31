@@ -122,6 +122,4 @@ dependencies {
     implementation(libs.cloudinary.android)
     implementation(libs.fresco)
     implementation(libs.photoview)
-
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }

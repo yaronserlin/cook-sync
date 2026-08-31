@@ -58,6 +58,7 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 # Images
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 cloudinary-android = { group = "com.cloudinary", name = "cloudinary-android", version.ref = "cloudinary" }
+# Pinned above Cloudinary's transitive fresco:3.6.0 (pulled in via cloudinary-android-download).
 fresco = { group = "com.facebook.fresco", name = "fresco", version.ref = "fresco" }
 # Zoomable ImageView (pinch-to-zoom, double-tap-zoom) for the full-screen image viewer.
 photoview = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoview" }

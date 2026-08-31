@@ -67,6 +67,16 @@ public final class LocalImageCache {
         });
     }
 
+    /**
+     * Reads {@code sourceUri} and writes its bytes to a new, uniquely named file under
+     * {@code context}'s cache directory, prefixed with {@code filePrefix}.
+     *
+     * @param context context supplying the cache directory
+     * @param sourceUri the picker-granted URI to read
+     * @param filePrefix prefix for the cached file's name
+     * @return the copied file's {@code file://} URI, or {@code null} if the source could not be
+     *         opened or the copy failed
+     */
     private static Uri copyToCacheFile(Context context, Uri sourceUri, String filePrefix) {
         File outFile = new File(context.getCacheDir(), filePrefix + UUID.randomUUID() + ".jpg");
         try (InputStream in = context.getContentResolver().openInputStream(sourceUri);
