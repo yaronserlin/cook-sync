@@ -59,6 +59,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles ResourceInUseException and responds with HTTP 409 CONFLICT.
+     *
+     * @param ex target exception instance
+     * @return response entity containing formatted error payload
+     */
+    @ExceptionHandler(ResourceInUseException.class)
+    public ResponseEntity<ApiResponse<ApiErrorResponse>> handleResourceInUseException(ResourceInUseException ex) {
+        log.warn("Resource in use: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, "Conflict", "RESOURCE_IN_USE", ex.getMessage());
+    }
+
+    /**
      * Handles UnauthorizedActionException and responds with HTTP 403 FORBIDDEN.
      *
      * @param ex target exception instance

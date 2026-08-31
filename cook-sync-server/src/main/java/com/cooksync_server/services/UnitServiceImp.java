@@ -10,8 +10,10 @@ import com.dtos.response.unit.UnitResponse;
 import com.cooksync_server.constants.EntityNames;
 import com.cooksync_server.entities.Unit;
 import com.cooksync_server.exceptions.ResourceAlreadyExistsException;
+import com.cooksync_server.exceptions.ResourceInUseException;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.mappers.UnitMapper;
+import com.cooksync_server.repositories.IngredientRepository;
 import com.cooksync_server.repositories.UnitRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class UnitServiceImp implements UnitService{
 
     private final UnitRepository unitRepository;
+    private final IngredientRepository ingredientRepository;
 
     /**
      * Retrieves all measurement units configured in the system.
@@ -73,11 +76,19 @@ public class UnitServiceImp implements UnitService{
      *
      * @param id target unit ID
      * @throws ResourceNotFoundException if no unit with the given ID exists
+     * @throws ResourceInUseException if one or more ingredients still reference the unit
      */
     @Transactional
     public void deleteUnit(String id) {
         Unit unit = unitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(EntityNames.UNIT, id));
+
+        long ingredientCount = ingredientRepository.countByUnitId(id);
+        if (ingredientCount > 0) {
+            throw new ResourceInUseException(EntityNames.UNIT, id,
+                    ingredientCount + " ingredient(s) still reference it");
+        }
+
         unitRepository.delete(unit);
     }
 }

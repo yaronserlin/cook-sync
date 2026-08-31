@@ -22,4 +22,12 @@ public interface IngredientRepository extends JpaRepository<Ingredient, String> 
      * @return list of ingredient entities
      */
     List<Ingredient> findByRecipeId(String recipeId);
+
+    /**
+     * Counts how many ingredients reference a given measurement unit.
+     *
+     * @param unitId unique identifier of the target unit
+     * @return number of ingredient entries using the unit
+     */
+    long countByUnitId(String unitId);
 }
