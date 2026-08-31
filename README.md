@@ -2,7 +2,7 @@
 
 A mobile (Android) app for sharing and discovering cooking recipes. Users browse and search recipes, save favorites, write personal notes on preparation steps, follow a guided step-by-step "Cooking Mode" with timers, rate and review recipes, and create/publish their own recipes through a guided 4-step wizard. Admin users get a moderation console for managing users, tags, measurement units, and reported reviews.
 
-For the full documentation — a comprehensive user guide plus a technical implementation description (architecture, database, API) — see [`COOKSYNC_USER_GUIDE.md`](COOKSYNC_USER_GUIDE.md) (Hebrew).
+For the full documentation — a comprehensive user guide plus a technical implementation description (architecture, database, API) — see [`COOKSYNC_USER_GUIDE.md`](doc/COOKSYNC_USER_GUIDE.md) (Hebrew).
 
 ## Repository layout
 
@@ -22,7 +22,7 @@ For the full documentation — a comprehensive user guide plus a technical imple
 
 ## Running locally — quick start
 
-Full, detailed instructions are in the "Installation and Setup" appendix of [`COOKSYNC_USER_GUIDE.md`](COOKSYNC_USER_GUIDE.md). In short:
+Full, detailed instructions are in the "Installation and Setup" appendix of [`COOKSYNC_USER_GUIDE.md`](doc/COOKSYNC_USER_GUIDE.md). In short:
 
 ```bash
 # 1. Create an empty MySQL database
@@ -56,5 +56,5 @@ Add `--seed` to wipe and repopulate the database with the demo dataset (30 recip
 
 ## Further documentation
 
-- [`COOKSYNC_USER_GUIDE.md`](COOKSYNC_USER_GUIDE.md) — full user guide + implementation description (architecture, API, database, diagrams) + detailed installation appendix.
+- [`COOKSYNC_USER_GUIDE.md`](doc/COOKSYNC_USER_GUIDE.md) — full user guide + implementation description (architecture, API, database, diagrams) + detailed installation appendix.
 - [`cooksync-DTOs/README.md`](cooksync-DTOs/README.md) — dedicated documentation for the shared DTOs library.
