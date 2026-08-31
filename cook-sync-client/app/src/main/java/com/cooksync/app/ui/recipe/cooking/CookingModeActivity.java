@@ -108,6 +108,12 @@ public class CookingModeActivity extends BaseActivity {
     private MaterialButton btnPrev;
     private MaterialButton btnPrimaryAction;
 
+    /**
+     * Applies the "keep screen on" preference, resolves the recipe to cook from the launching
+     * intent, wires up views/observers, and loads the recipe and its notes.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +147,10 @@ public class CookingModeActivity extends BaseActivity {
         viewModel.loadNotes(recipeId);
     }
 
+    /**
+     * Resolves this screen's views and wires up its static click listeners (exit, timer
+     * add/edit, prev/next step).
+     */
     private void initViews() {
         tvTitle = findViewById(R.id.tv_cook_title);
         llProgressBars = findViewById(R.id.ll_progress_bars);
@@ -177,6 +187,10 @@ public class CookingModeActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Observes the ViewModel's recipe, notes, step index, and timer state, rendering the current
+     * step and progress bars whenever any of them change.
+     */
     private void setupObservers() {
         viewModel.getRecipeResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<RecipeResponse> success) {
@@ -231,6 +245,10 @@ public class CookingModeActivity extends BaseActivity {
         });
     }
 
+    /**
+     * Updates the timer toggle button's label and icon to reflect whether the current step's
+     * timer is running, paused-but-started, or not yet started.
+     */
     private void updateTimerToggleButton() {
         boolean isRunning = Objects.equals(viewModel.getTimerRunning().getValue(), true);
         boolean isStarted = Objects.equals(viewModel.getTimerStarted().getValue(), true);
@@ -247,6 +265,9 @@ public class CookingModeActivity extends BaseActivity {
         }
     }
 
+    /**
+     * @return the index of the step currently shown, defaulting to 0 if none is set yet
+     */
     private int currentIndex() {
         Integer index = viewModel.getCurrentStepIndex().getValue();
         return index == null ? 0 : index;
@@ -273,6 +294,12 @@ public class CookingModeActivity extends BaseActivity {
         updateProgressBars(currentIndex());
     }
 
+    /**
+     * Tints the progress-bar segments up to and including the current step to reflect how far
+     * through the recipe the cook has gotten.
+     *
+     * @param currentIndex the step index currently shown
+     */
     private void updateProgressBars(int currentIndex) {
         for (int i = 0; i < progressBarSegments.size(); i++) {
             int colorRes = i <= currentIndex ? R.color.color_accent_400 : R.color.color_accent_800;
@@ -280,6 +307,10 @@ public class CookingModeActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Renders the currently indexed step: its label, text, image, "this step uses" ingredients,
+     * any attached note, whether it has a timer, and the prev/primary action buttons' state.
+     */
     private void renderCurrentStep() {
         if (steps.isEmpty()) return;
         int index = Math.min(currentIndex(), steps.size() - 1);
@@ -476,6 +507,12 @@ public class CookingModeActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Renders the timer clock label (hours/minutes/seconds, whichever units are non-zero) and
+     * updates the progress ring to reflect elapsed time.
+     *
+     * @param remainingSeconds seconds left on the current step's timer, or {@code null} if none
+     */
     private void updateTimerClock(Integer remainingSeconds) {
         if (remainingSeconds == null) return;
         int[] parts = viewModel.timerClockParts(remainingSeconds);
@@ -528,6 +565,10 @@ public class CookingModeActivity extends BaseActivity {
                 .show();
     }
 
+    /**
+     * Plays the device's default alarm sound (falling back to the default notification sound if
+     * no alarm tone is set), stopping any previously playing instance first.
+     */
     private void playTimerFinishedSound() {
         stopTimerFinishedSound();
         try {
@@ -540,11 +581,13 @@ public class CookingModeActivity extends BaseActivity {
         }
     }
 
+    /** Stops the currently playing timer-finished sound, if any. */
     private void stopTimerFinishedSound() {
         if (activeRingtone != null && activeRingtone.isPlaying()) activeRingtone.stop();
         activeRingtone = null;
     }
 
+    /** Vibrates the device for 500ms to accompany the timer-finished alert, if it has a vibrator. */
     private void vibrate() {
         Vibrator vibrator = getVibrator();
         if (vibrator == null || !vibrator.hasVibrator()) return;
@@ -552,11 +595,23 @@ public class CookingModeActivity extends BaseActivity {
         else legacyVibrate(vibrator);
     }
 
+    /**
+     * Vibrates for 500ms via the pre-API-26 {@link Vibrator#vibrate(long)} API, for devices
+     * below the {@link VibrationEffect} API level.
+     *
+     * @param vibrator the vibrator to trigger
+     */
     @SuppressWarnings("deprecation")
     private void legacyVibrate(Vibrator vibrator) {
         vibrator.vibrate(500);
     }
 
+    /**
+     * Resolves the device's {@link Vibrator}, via {@link VibratorManager} on API 31+ and directly
+     * below that.
+     *
+     * @return the device's vibrator, or {@code null} if unavailable
+     */
     @SuppressWarnings("deprecation")
     private Vibrator getVibrator() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -566,16 +621,27 @@ public class CookingModeActivity extends BaseActivity {
         return (Vibrator) getSystemService(VIBRATOR_SERVICE);
     }
 
+    /** Shows a confirmation dialog before leaving cooking mode, since exiting mid-recipe is easy to trigger by accident (back button). */
     private void confirmExit() {
         OrganicConfirmDialog.show(this, getString(R.string.dialog_stop_cooking_title),
                 getString(R.string.dialog_stop_cooking_message),
                 getString(R.string.action_stop), getString(R.string.action_keep_cooking), false, this::finish);
     }
 
+    /**
+     * Converts a dp value to pixels using this activity's display density.
+     *
+     * @param dp the dimension in density-independent pixels
+     * @return the equivalent pixel value
+     */
     private int dpToPx(int dp) {
         return DimensionUtils.dpToPx(this, dp);
     }
 
+    /**
+     * Stops any playing timer-finished sound and dismisses the timer-finished dialog if it's
+     * still showing, so neither outlives this screen.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

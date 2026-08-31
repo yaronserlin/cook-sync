@@ -54,6 +54,7 @@ public class MyRecipesActivity extends RecipeListActivity {
     private TextView chipPublic;
     private TextView chipPrivate;
 
+    /** Which bottom-nav item corresponds to this screen. */
     @IdRes
     @Override
     protected int getSelectedNavItemId() {
@@ -137,6 +138,11 @@ public class MyRecipesActivity extends RecipeListActivity {
         }
     }
 
+    /**
+     * Configures the shared list layout's empty-state text, builds the row adapter (overflow-
+     * menu trailing action, visibility badge shown), and wires up search, filters, the
+     * Public/Private/All chips, and "Clear all".
+     */
     private void initViews() {
         ivEmptyIcon.setImageResource(R.drawable.ic_book);
         tvEmptyTitle.setText(R.string.my_recipes_empty_title);
@@ -182,6 +188,11 @@ public class MyRecipesActivity extends RecipeListActivity {
         });
     }
 
+    /**
+     * Observes the recipe library (rendering it, the title/subtitle counts, and the correct
+     * empty/no-results state), the tag catalog, delete/visibility-toggle results, and the
+     * background publish progress card.
+     */
     private void setupObservers() {
         viewModel.getRecipesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
@@ -320,6 +331,12 @@ public class MyRecipesActivity extends RecipeListActivity {
         });
     }
 
+    /**
+     * Switches the active visibility filter chip (All/Public/Private) and re-filters the list
+     * accordingly.
+     *
+     * @param visibility one of {@link DomainValues}' visibility constants
+     */
     private void selectVisibility(String visibility) {
         viewModel.setVisibilityFilter(visibility);
         styleChip(chipAll, DomainValues.VISIBILITY_ALL.equals(visibility));
@@ -327,16 +344,25 @@ public class MyRecipesActivity extends RecipeListActivity {
         styleChip(chipPrivate, DomainValues.VISIBILITY_PRIVATE.equals(visibility));
     }
 
+    /** @return the ViewModel, which itself implements {@link FilterSheetLauncher.FilterState} */
     @Override
     protected FilterSheetLauncher.FilterState getFilterState() {
         return viewModel;
     }
 
+    /** @return the currently active search query */
     @Override
     protected String getCurrentSearchQuery() {
         return viewModel.getCurrentQuery();
     }
 
+    /**
+     * Shows the per-recipe overflow menu (edit, make public/private, delete) anchored to the
+     * tapped trailing icon, and wires each menu action to the ViewModel.
+     *
+     * @param recipe the recipe the menu applies to
+     * @param anchor the trailing icon view to anchor the popup menu to
+     */
     private void showOptionsMenu(RecipePreviewResponse recipe, View anchor) {
         boolean isPublic = DomainValues.VISIBILITY_PUBLIC.equalsIgnoreCase(recipe.visibility());
 
@@ -375,6 +401,11 @@ public class MyRecipesActivity extends RecipeListActivity {
         popup.show();
     }
 
+    /**
+     * Shows a confirmation dialog before permanently deleting a recipe.
+     *
+     * @param recipe the recipe to delete if confirmed
+     */
     private void confirmDelete(RecipePreviewResponse recipe) {
         OrganicConfirmDialog.show(this, getString(R.string.dialog_delete_recipe_title),
                 getString(R.string.dialog_delete_recipe_message, recipe.title()),

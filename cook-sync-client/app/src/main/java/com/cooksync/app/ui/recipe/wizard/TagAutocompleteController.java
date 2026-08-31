@@ -32,9 +32,34 @@ public final class TagAutocompleteController {
 
     /** Notified when the user picks or requests a tag, or removes one already selected. */
     public interface Listener {
+        /**
+         * Invoked when the typed/tapped name matches an existing tag.
+         *
+         * @param tag the matched, already-resolved tag
+         */
         void onTagSelected(TagResponse tag);
+
+        /**
+         * Invoked when the typed/tapped name doesn't match any existing tag, requesting that a
+         * new one be created (or held pending until publish) with that name.
+         *
+         * @param name the new tag's name
+         */
         void onCreateTagRequested(String name);
+
+        /**
+         * Invoked when the close icon on an already-resolved selected tag's chip is tapped.
+         *
+         * @param tag the tag to remove
+         */
         void onTagRemoved(TagResponse tag);
+
+        /**
+         * Invoked when the close icon on a pending (not yet server-created) tag's chip is
+         * tapped.
+         *
+         * @param name the pending tag's name to remove
+         */
         void onPendingTagRemoved(String name);
     }
 
@@ -101,6 +126,12 @@ public final class TagAutocompleteController {
         handleSubmittedName(name);
     }
 
+    /**
+     * Resolves a submitted name against the loaded tag catalog (case-insensitive) and notifies
+     * the listener with a match or a creation request, clearing the input field either way.
+     *
+     * @param name the submitted tag name
+     */
     private void handleSubmittedName(String name) {
         Optional<TagResponse> match = availableTags.stream()
                 .filter(t -> t.name().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT)))

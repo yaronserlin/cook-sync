@@ -9,9 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Plain mutable holder for the recipe currently being authored in {@link AddRecipeWizardActivity}.
+ * Plain mutable holder for the recipe currently being authored in
+ * {@link com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity}.
  * Every wizard step (basics, ingredients, instructions, review) reads and writes a disjoint
- * slice of this object through {@link AddRecipeViewModel}, and the whole object is what
+ * slice of this object through {@link com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel}, and the whole object is what
  * {@link com.cooksync.app.data.datasource.local.RecipeDraftStore} serializes for "Save draft"/resume, and
  * what {@link RecipeDraftMapper} converts into a {@code RecipeCreateRequestDTO} for publishing.
  *

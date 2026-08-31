@@ -19,6 +19,12 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
  */
 public class CookingPreferencesActivity extends BaseActivity {
 
+    /**
+     * Binds the screen-awake and timer-sound switches to their stored {@link CookingPreferencesStore}
+     * values.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

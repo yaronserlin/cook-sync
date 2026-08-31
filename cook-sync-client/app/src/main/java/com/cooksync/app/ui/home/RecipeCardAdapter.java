@@ -76,6 +76,13 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
         notifyDataSetChanged();
     }
 
+    /**
+     * Inflates a new recipe card view holder.
+     *
+     * @param parent the RecyclerView this card is being added to
+     * @param viewType the view type, unused (single card layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -83,6 +90,12 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a recipe preview's thumbnail, title, author, and metadata to its card view holder.
+     *
+     * @param holder the card view holder to bind
+     * @param position the recipe's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         RecipePreviewResponse recipe = getItem(position);

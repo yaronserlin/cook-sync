@@ -44,14 +44,31 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
 
     private OnUserActionListener listener;
 
+    /**
+     * Replaces the displayed user list.
+     *
+     * @param newUsers the complete user list to display
+     */
     public void setUsers(List<UserResponse> newUsers) {
         setItems(newUsers);
     }
 
+    /**
+     * Sets the listener notified of row actions.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnUserActionListener(OnUserActionListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Inflates a new user row view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,6 +76,12 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a user's identity, status tag, and enable/disable toggle to its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the user's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         UserResponse user = getItem(position);

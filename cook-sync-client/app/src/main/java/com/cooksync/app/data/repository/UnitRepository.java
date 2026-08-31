@@ -21,7 +21,7 @@ public interface UnitRepository {
     /**
      * Fetches the complete set of measurement units defined in the system. The server
      * paginates this endpoint, but the client loops through every page internally (see
-     * {@link UnitRepositoryImp}) since callers need the full catalog for a picker dropdown,
+     * {@link com.cooksync.app.data.repository.impl.UnitRepositoryImp}) since callers need the full catalog for a picker dropdown,
      * not a scrollable subset.
      *
      * @param resultTarget LiveData target to post the outcome

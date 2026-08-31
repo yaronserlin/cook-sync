@@ -130,6 +130,11 @@ public class AdminTagsViewModel extends BaseViewModel {
         }
     }
 
+    /**
+     * Re-inserts a duplicate-tag group into the loaded list after an undone merge.
+     *
+     * @param group the group to restore
+     */
     private void restoreTagGroup(DuplicateTagGroupResponse group) {
         if (!allTagGroups.contains(group)) {
             allTagGroups.add(group);
@@ -139,6 +144,16 @@ public class AdminTagsViewModel extends BaseViewModel {
 
     private String mergeGroupKey(DuplicateTagGroupResponse group) { return "merge-group-" + group.normalizedName(); }
 
+    /**
+     * Merges one source tag at a time into the target tag, recursing until every source in
+     * {@code sourceIds} has been merged, so the group's whole merge appears as a single
+     * deferred/undoable pending action.
+     *
+     * @param group the duplicate tag group being merged
+     * @param sourceIds the remaining source tag ids still to merge, in order
+     * @param targetTagId the canonical tag id every source is merged into
+     * @param index the index into {@code sourceIds} of the next merge to perform
+     */
     private void mergeNextInGroup(DuplicateTagGroupResponse group, List<String> sourceIds, String targetTagId, int index) {
         if (index >= sourceIds.size()) {
             tagMergeResult.postValue(new Event<>(new ApiResult.Success<>(null)));

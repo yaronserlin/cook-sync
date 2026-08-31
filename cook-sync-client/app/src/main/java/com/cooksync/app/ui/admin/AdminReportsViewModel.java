@@ -245,6 +245,11 @@ public class AdminReportsViewModel extends BaseViewModel {
         }
     }
 
+    /**
+     * Re-inserts a report into the loaded list after an undone remove/keep action.
+     *
+     * @param report the report to restore
+     */
     private void restoreReport(ReportedReviewResponse report) {
         if (!allReports.contains(report)) {
             allReports.add(report);

@@ -42,6 +42,12 @@ public class AdminConsoleActivity extends BaseActivity {
     private TextView tvBadge;
     private int activeTab = AdminPagerAdapter.TAB_REPORTS;
 
+    /**
+     * Guards entry to non-admin accounts, then wires the four moderation tabs, their shared
+     * ViewModels, and the tab badges/heading.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -211,6 +217,12 @@ public class AdminConsoleActivity extends BaseActivity {
         updateHeader();
     }
 
+    /**
+     * Updates a tab's custom-view count badge.
+     *
+     * @param position the {@code TAB_*} constant identifying the tab
+     * @param count the badge text to display
+     */
     private void setTabCount(int position, String count) {
         TabLayout.Tab tab = tabLayout.getTabAt(position);
         if (tab == null || tab.getCustomView() == null) return;

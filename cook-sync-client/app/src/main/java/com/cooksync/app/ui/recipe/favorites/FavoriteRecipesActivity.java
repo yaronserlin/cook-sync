@@ -43,6 +43,7 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
     private TextView chipAll;
     private TextView chipNotesOnly;
 
+    /** Which bottom-nav item corresponds to this screen. */
     @IdRes
     @Override
     protected int getSelectedNavItemId() {
@@ -70,6 +71,11 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         viewModel.loadTags();
     }
 
+    /**
+     * Configures the shared list layout's title/empty-state text, builds the favorites row
+     * adapter (heart-toggle trailing action, no visibility badge since favorites are always
+     * public), and wires up search, filters, the notes-only chip, and "Clear all".
+     */
     private void initViews() {
         tvTitle.setText(R.string.favorites_title);
         ivEmptyIcon.setImageResource(R.drawable.ic_heart_filled);
@@ -117,6 +123,10 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         });
     }
 
+    /**
+     * Observes the displayed favorites list (rendering it, the subtitle counts, and the correct
+     * empty/no-results state) and the tag catalog (for the filter sheet).
+     */
     private void setupObservers() {
         viewModel.getDisplayedResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
@@ -155,22 +165,34 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         });
     }
 
+    /**
+     * Switches between the "All" and "With notes" chips, filtering the list to favorites that
+     * carry a private note when the latter is selected.
+     *
+     * @param onlyWithNotes {@code true} to show only favorites with a note attached
+     */
     private void selectNotesFilter(boolean onlyWithNotes) {
         viewModel.setOnlyWithNotes(onlyWithNotes);
         styleChip(chipAll, !onlyWithNotes);
         styleChip(chipNotesOnly, onlyWithNotes);
     }
 
+    /** @return the ViewModel, which itself implements {@link FilterSheetLauncher.FilterState} */
     @Override
     protected FilterSheetLauncher.FilterState getFilterState() {
         return viewModel;
     }
 
+    /** @return the currently active search query */
     @Override
     protected String getCurrentSearchQuery() {
         return viewModel.getCurrentQuery();
     }
 
+    /**
+     * Reloads favorites on return to this screen, so an unfavorite made elsewhere (e.g. the
+     * recipe detail screen) is reflected immediately.
+     */
     @Override
     protected void onResume() {
         super.onResume();

@@ -24,15 +24,31 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
     /** ViewPager2 position of the Units tab. */
     public static final int TAB_UNITS = 3;
 
+    /**
+     * Constructs the pager adapter bound to its host activity.
+     *
+     * @param activity the hosting {@link AdminConsoleActivity}
+     */
     public AdminPagerAdapter(@NonNull FragmentActivity activity) {
         super(activity);
     }
 
+    /**
+     * Returns the fixed number of tabs.
+     *
+     * @return the number of tabs, always 4
+     */
     @Override
     public int getItemCount() {
         return 4;
     }
 
+    /**
+     * Builds the fragment for a given tab position.
+     *
+     * @param position one of the {@code TAB_*} constants
+     * @return the fragment backing that tab
+     */
     @NonNull
     @Override
     public Fragment createFragment(int position) {

@@ -69,12 +69,27 @@ public class WizardBasicsFragment extends Fragment {
     private ChipGroup cgSelectedTags;
     private ChipGroup cgPopularTags;
 
+    /**
+     * Creates the {@link RecipeImagePicker} used for cover/description photo picking; created
+     * here (rather than in {@link #onViewCreated}) since it must be registered before the
+     * fragment reaches {@code STARTED}.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         imagePicker = new RecipeImagePicker(this);
     }
 
+    /**
+     * Inflates this step's layout.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view this fragment will be attached to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -82,6 +97,14 @@ public class WizardBasicsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_wizard_basics, container, false);
     }
 
+    /**
+     * Binds the shared {@link AddRecipeViewModel} (seeding one blank description block if the
+     * draft has none yet), resolves views, renders the draft's current state, wires up
+     * listeners, and loads the tag catalog and popular tags.
+     *
+     * @param view the inflated view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -128,6 +151,12 @@ public class WizardBasicsFragment extends Fragment {
         }
     }
 
+    /**
+     * Resolves this step's views and builds the description block adapter (with drag-reorder)
+     * and the tag autocomplete controller.
+     *
+     * @param view the inflated view
+     */
     private void bindViews(View view) {
         etTitle = view.findViewById(R.id.et_title);
         etPrepTime = view.findViewById(R.id.et_prep_time);
@@ -220,6 +249,7 @@ public class WizardBasicsFragment extends Fragment {
         });
     }
 
+    /** Renders the title, prep/cook time, servings, cover preview, difficulty chip, and selected tags from the current draft. */
     private void renderFromDraft() {
         RecipeDraft draft = viewModel.getDraft();
         etTitle.setText(draft.title);
@@ -231,6 +261,12 @@ public class WizardBasicsFragment extends Fragment {
         renderSelectedTags();
     }
 
+    /**
+     * Renders a duration field as formatted text (e.g. "1h 30m"), or clears it if unset.
+     *
+     * @param field the field to render into
+     * @param totalMinutes the duration in minutes, or {@code null}/non-positive to clear
+     */
     private void renderDuration(EditText field, Integer totalMinutes) {
         if (totalMinutes == null || totalMinutes <= 0) {
             field.setText("");
@@ -239,6 +275,12 @@ public class WizardBasicsFragment extends Fragment {
         }
     }
 
+    /**
+     * Wires up the title/servings text watchers, the prep/cook time pickers, the difficulty
+     * chips, the cover photo picker, "Add description photo", and "Add tag".
+     *
+     * @param view the inflated view
+     */
     private void setupListeners(View view) {
         etTitle.addTextChangedListener(TextWatchers.onChanged(viewModel::setTitle));
         etServings.addTextChangedListener(TextWatchers.onChanged(text -> viewModel.setServings(parseIntOrNull(text))));
@@ -278,6 +320,7 @@ public class WizardBasicsFragment extends Fragment {
         view.findViewById(R.id.btn_add_tag).setOnClickListener(v -> tagController.submitCurrentText());
     }
 
+    /** Observes the tag catalog (for autocomplete) and the popular-tags result (for the suggestion row). */
     private void observeViewModel() {
         viewModel.getTagsResult().observe(getViewLifecycleOwner(), result -> {
             if (result instanceof ApiResult.Success<List<TagResponse>> success) {
@@ -296,6 +339,7 @@ public class WizardBasicsFragment extends Fragment {
         });
     }
 
+    /** Shows the cover photo preview if the draft has one set, otherwise the "pick a cover" placeholder. */
     private void renderCoverPreview() {
         String url = viewModel.getDraft().primaryImageUrl;
         boolean hasCover = url != null && !url.isEmpty();
@@ -309,11 +353,17 @@ public class WizardBasicsFragment extends Fragment {
         }
     }
 
+    /**
+     * Switches the draft's difficulty and restyles the difficulty chips to match.
+     *
+     * @param difficulty the newly selected difficulty, one of {@link DomainValues}' constants
+     */
     private void selectDifficulty(String difficulty) {
         viewModel.setDifficulty(difficulty);
         styleDifficultyChips();
     }
 
+    /** Restyles the Easy/Medium/Hard chips to highlight whichever matches the draft's current difficulty. */
     private void styleDifficultyChips() {
         String selected = viewModel.getDraft().difficulty;
         com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipEasy, DomainValues.DIFFICULTY_EASY.equals(selected));
@@ -321,10 +371,17 @@ public class WizardBasicsFragment extends Fragment {
         com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipHard, DomainValues.DIFFICULTY_HARD.equals(selected));
     }
 
+    /** Rebuilds the selected-tags chip row from the draft's resolved and pending tags. */
     private void renderSelectedTags() {
         tagController.renderSelectedTags(viewModel.getDraft().tags, viewModel.getPendingTagNames());
     }
 
+    /**
+     * Parses a text field's value as an integer, tolerating blank/invalid input.
+     *
+     * @param text the field's current text
+     * @return the parsed integer, or {@code null} if blank or not a valid integer
+     */
     private static Integer parseIntOrNull(String text) {
         try {
             return text.isEmpty() ? null : Integer.parseInt(text);

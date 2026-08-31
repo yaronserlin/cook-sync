@@ -81,6 +81,11 @@ public class RecipeDetailViewModel extends BaseViewModel {
      */
     public LiveData<ApiResult<Void>> getReviewActionResult() { return reviewActionResult; }
 
+    /**
+     * Fetches the full detail view of a recipe.
+     *
+     * @param recipeId the recipe's unique identifier
+     */
     public void loadRecipe(String recipeId) {
         repository.getRecipeDetail(recipeId, recipeResult);
     }

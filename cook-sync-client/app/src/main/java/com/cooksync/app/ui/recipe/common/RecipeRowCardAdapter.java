@@ -44,8 +44,20 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
 
     /** Notified on row/action interactions the host Activity needs to act on. */
     public interface Listener {
+        /**
+         * Invoked when the row itself is tapped, to open the recipe's detail screen.
+         *
+         * @param recipe the tapped row's recipe
+         */
         void onRecipeClick(RecipePreviewResponse recipe);
 
+        /**
+         * Invoked when the row's trailing icon is tapped (an overflow menu or a favorite
+         * toggle, depending on {@link #setTrailingAction}).
+         *
+         * @param recipe the row's recipe
+         * @param anchor the tapped trailing icon view, for anchoring a popup menu if applicable
+         */
         void onTrailingActionClick(RecipePreviewResponse recipe, View anchor);
     }
 
@@ -53,10 +65,20 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
     private TrailingAction trailingAction = TrailingAction.OPTIONS_MENU;
     private boolean showVisibilityBadge = true;
 
+    /**
+     * Replaces the displayed recipe list.
+     *
+     * @param newRecipes the complete recipe preview list to display
+     */
     public void setRecipes(List<RecipePreviewResponse> newRecipes) {
         setItems(newRecipes);
     }
 
+    /**
+     * Sets the listener notified of row/action interactions.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setListener(Listener listener) {
         this.listener = listener;
     }
@@ -81,6 +103,13 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
         this.showVisibilityBadge = show;
     }
 
+    /**
+     * Inflates a new recipe row view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -88,6 +117,13 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a recipe's thumbnail, title, rating, visibility badge, personal note, and trailing
+     * action to its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the recipe's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         RecipePreviewResponse recipe = getItem(position);

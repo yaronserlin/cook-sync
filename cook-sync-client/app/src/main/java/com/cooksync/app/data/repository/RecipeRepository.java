@@ -79,7 +79,7 @@ public interface RecipeRepository {
     /**
      * Fetches the complete set of the user's personal recipes marked as favorites. The server
      * paginates this endpoint, but the client loops through every page internally (see
-     * {@link RecipeRepositoryImp}) since callers rely on the full set for membership checks,
+     * {@link com.cooksync.app.data.repository.impl.RecipeRepositoryImp}) since callers rely on the full set for membership checks,
      * accurate counts, and instant client-side search/filter.
      *
      * @param resultTarget LiveData target to post the outcome
@@ -113,7 +113,7 @@ public interface RecipeRepository {
     /**
      * Fetches every private note for a recipe, both the general recipe-wide note and any
      * notes attached to individual instruction steps. The server paginates this endpoint, but
-     * the client loops through every page internally (see {@link RecipeRepositoryImp}) since
+     * the client loops through every page internally (see {@link com.cooksync.app.data.repository.impl.RecipeRepositoryImp}) since
      * callers build a complete per-step note lookup rather than rendering a scrollable list.
      *
      * @param recipeId recipe ID
@@ -143,7 +143,7 @@ public interface RecipeRepository {
     /**
      * Fetches every recipe (published or private) authored by the current user. The server
      * paginates this endpoint, but the client loops through every page internally (see
-     * {@link RecipeRepositoryImp}) since callers rely on the full set for accurate counts and
+     * {@link com.cooksync.app.data.repository.impl.RecipeRepositoryImp}) since callers rely on the full set for accurate counts and
      * instant client-side search/filter.
      *
      * @param resultTarget LiveData target to post the outcome

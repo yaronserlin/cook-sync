@@ -31,6 +31,8 @@ public final class CookingPreferencesStore {
     }
 
     /**
+     * Returns whether cooking mode should keep the screen awake.
+     *
      * @return {@code true} if the screen should stay awake during cooking mode, defaulting to
      *         {@code true} on a fresh install
      */
@@ -48,6 +50,8 @@ public final class CookingPreferencesStore {
     }
 
     /**
+     * Returns whether a finished step timer should play a sound and vibrate.
+     *
      * @return {@code true} if a finished timer should sound and vibrate, defaulting to
      *         {@code true} on a fresh install
      */
@@ -64,6 +68,11 @@ public final class CookingPreferencesStore {
         prefs().edit().putBoolean(KEY_TIMER_SOUND, enabled).apply();
     }
 
+    /**
+     * Opens this store's backing {@link SharedPreferences} file.
+     *
+     * @return the preferences file this class reads and writes through
+     */
     private static SharedPreferences prefs() {
         return CookSyncApplication.getAppContext().getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE);
     }

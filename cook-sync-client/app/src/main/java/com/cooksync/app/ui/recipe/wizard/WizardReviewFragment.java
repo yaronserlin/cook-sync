@@ -54,6 +54,14 @@ public class WizardReviewFragment extends Fragment {
     private TextView chipPublic;
     private TextView chipPrivate;
 
+    /**
+     * Inflates this step's layout.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view this fragment will be attached to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -61,6 +69,13 @@ public class WizardReviewFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_wizard_review, container, false);
     }
 
+    /**
+     * Binds the shared {@link AddRecipeViewModel}, wires the Public/Private visibility chips,
+     * and renders the initial summary and checklist.
+     *
+     * @param view the inflated view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -81,6 +96,10 @@ public class WizardReviewFragment extends Fragment {
         renderAll();
     }
 
+    /**
+     * Re-renders the summary and checklist, since the draft may have changed on an earlier step
+     * since this fragment's view was last bound.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -89,17 +108,24 @@ public class WizardReviewFragment extends Fragment {
         }
     }
 
+    /**
+     * Switches the draft's visibility and restyles the Public/Private chips to match.
+     *
+     * @param visibility the newly selected visibility, one of {@link DomainValues}' constants
+     */
     private void selectVisibility(String visibility) {
         viewModel.setVisibility(visibility);
         styleVisibilityChips();
     }
 
+    /** Re-renders the summary, checklist, and visibility chips from the current draft state. */
     private void renderAll() {
         renderSummary();
         renderChecklist();
         styleVisibilityChips();
     }
 
+    /** Renders the cover photo, title, description summary, and difficulty/time/servings meta line. */
     private void renderSummary() {
         RecipeDraft draft = viewModel.getDraft();
 
@@ -177,6 +203,13 @@ public class WizardReviewFragment extends Fragment {
                 : getString(R.string.wizard_checklist_cover_missing));
     }
 
+    /**
+     * Appends one checklist row (a check or alert icon plus a message) to {@link #llChecklist}.
+     *
+     * @param satisfied {@code true} to show a check icon and default text color, {@code false}
+     *                  for an alert icon and warning color
+     * @param message the row's label text
+     */
     private void addChecklistRow(boolean satisfied, String message) {
         LinearLayout row = new LinearLayout(requireContext());
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -206,16 +239,29 @@ public class WizardReviewFragment extends Fragment {
         llChecklist.addView(row);
     }
 
+    /**
+     * Converts a dp value to pixels using this fragment's context density.
+     *
+     * @param value the dimension in density-independent pixels
+     * @return the equivalent pixel value
+     */
     private int dp(int value) {
         return DimensionUtils.dpToPx(requireContext(), value);
     }
 
+    /** Restyles the Public/Private chips to highlight whichever matches the draft's current visibility. */
     private void styleVisibilityChips() {
         String visibility = viewModel.getVisibility();
         com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPublic, DomainValues.VISIBILITY_PUBLIC.equals(visibility));
         com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPrivate, DomainValues.VISIBILITY_PRIVATE.equals(visibility));
     }
 
+    /**
+     * Title-cases a raw difficulty value for display (e.g. "EASY" → "Easy").
+     *
+     * @param difficulty the raw difficulty value, or {@code null}/empty if unset
+     * @return a display-friendly capitalized version, or {@code "—"} if unset
+     */
     private String humanDifficulty(String difficulty) {
         if (difficulty == null || difficulty.isEmpty()) return "—";
         return difficulty.substring(0, 1) + difficulty.substring(1).toLowerCase(Locale.ROOT);

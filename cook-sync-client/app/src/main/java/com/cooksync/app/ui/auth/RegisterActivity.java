@@ -21,7 +21,7 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 /**
  * Activity presenting the "Create account" registration screen.
  *
- * <h3>Skeleton behaviour</h3>
+ * <h2>Skeleton behaviour</h2>
  * The skeleton is displayed for a brief {@value #SKELETON_DELAY_MS} ms on every entry to
  * give the screen a polished, deliberate loading feel consistent with the rest of the app.
  * This also covers the case where fonts or drawables are still being fetched from disk on

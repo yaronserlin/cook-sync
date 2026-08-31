@@ -55,18 +55,33 @@ public abstract class AbstractFilterableListViewModel extends BaseViewModel impl
         onFiltersChanged();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getCurrentSort() { return currentSort; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getCurrentDifficulty() { return currentDifficulty; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Double getCurrentMinRating() { return currentMinRating; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
 

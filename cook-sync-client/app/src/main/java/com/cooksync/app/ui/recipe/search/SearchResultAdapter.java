@@ -31,18 +31,41 @@ public class SearchResultAdapter extends BaseAdapter<RecipePreviewResponse, Sear
 
     private OnRecipeClickListener listener;
 
+    /** Notified when a search result row is tapped. */
     public interface OnRecipeClickListener {
+        /**
+         * Invoked when a result row is tapped, to open the recipe's detail screen.
+         *
+         * @param recipeId the tapped row's recipe id
+         */
         void onRecipeClick(String recipeId);
     }
 
+    /**
+     * Sets the listener notified when a result row is tapped.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnRecipeClickListener(OnRecipeClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Replaces the displayed search results.
+     *
+     * @param newRecipes the complete result list to display
+     */
     public void setRecipes(List<RecipePreviewResponse> newRecipes) {
         setItems(newRecipes);
     }
 
+    /**
+     * Inflates a new search result row view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -50,6 +73,13 @@ public class SearchResultAdapter extends BaseAdapter<RecipePreviewResponse, Sear
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a recipe's thumbnail, title, author/review-count subtitle, rating, and total time to
+     * its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the recipe's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         RecipePreviewResponse recipe = getItem(position);

@@ -34,6 +34,14 @@ public class WizardIngredientsFragment extends Fragment {
     private WizardIngredientAdapter adapter;
     private ItemTouchHelper touchHelper;
 
+    /**
+     * Inflates this step's layout.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view this fragment will be attached to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -41,6 +49,14 @@ public class WizardIngredientsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_wizard_ingredients, container, false);
     }
 
+    /**
+     * Binds the shared {@link AddRecipeViewModel}, sets up the ingredient list adapter with
+     * drag-reorder, wires "Add ingredient", seeds one blank row if the draft has none yet, and
+     * loads the unit catalog.
+     *
+     * @param view the inflated view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

@@ -23,10 +23,22 @@ import java.util.List;
  */
 public class IngredientAdapter extends BaseAdapter<IngredientResponse, IngredientAdapter.ViewHolder> {
 
+    /**
+     * Replaces the displayed ingredient list.
+     *
+     * @param newIngredients the complete ingredient list to display
+     */
     public void setIngredients(List<IngredientResponse> newIngredients) {
         setItems(newIngredients);
     }
 
+    /**
+     * Inflates a new ingredient row view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -34,6 +46,12 @@ public class IngredientAdapter extends BaseAdapter<IngredientResponse, Ingredien
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds an ingredient's name and quantity+unit amount to its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the ingredient's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         IngredientResponse ingredient = getItem(position);

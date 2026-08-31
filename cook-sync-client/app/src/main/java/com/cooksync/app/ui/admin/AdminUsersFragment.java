@@ -64,6 +64,14 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable pendingSearch;
 
+    /**
+     * Inflates this tab's layout.
+     *
+     * @param inflater layout inflater
+     * @param container the parent view this fragment's view will attach to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -71,6 +79,13 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         return inflater.inflate(R.layout.fragment_admin_users, container, false);
     }
 
+    /**
+     * Binds the user list, wires the status filter chips, debounced search, sort toggle, and
+     * per-row actions, then subscribes to the ViewModel's results.
+     *
+     * @param view this fragment's root view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -124,6 +139,13 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         observeViewModel();
     }
 
+    /**
+     * Applies a status filter chip selection, restyles the chip row, and re-fetches the first
+     * page of users under the new filter.
+     *
+     * @param enabled the server-side {@code enabled} filter to apply, or {@code null} for "All"
+     * @param statusFilter the client-side status sub-filter to apply on top, or {@code null} for none
+     */
     private void selectFilter(Boolean enabled, String statusFilter) {
         selectedEnabledFilter = enabled;
         selectedStatusFilter = statusFilter;
@@ -131,6 +153,9 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         viewModel.refreshUsers(searchInput.getText().toString(), enabled);
     }
 
+    /**
+     * Subscribes to the user list fetch, per-row action result, and account-deletion result.
+     */
     private void observeViewModel() {
         viewModel.getUsersResult().observe(getViewLifecycleOwner(), result -> {
             if (result instanceof ApiResult.Success<List<UserResponse>> success) {
@@ -182,6 +207,13 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSuspended, Boolean.FALSE.equals(selectedEnabledFilter) && AdminUsersViewModel.STATUS_SUSPENDED.equals(selectedStatusFilter));
     }
 
+    /**
+     * Reactivates a user immediately (with undo), or asks for confirmation before suspending
+     * one.
+     *
+     * @param user the row's user
+     * @param enabled the new enabled state requested (opposite of the user's current one)
+     */
     @Override
     public void onToggleEnabled(UserResponse user, boolean enabled) {
         String fullName = UserNameFormatter.fullName(user.firstName(), user.lastName());
@@ -206,6 +238,13 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                 });
     }
 
+    /**
+     * Starts the two-step permanent-delete confirmation flow for a long-pressed user row: a
+     * danger confirm dialog, followed by a typed-phrase confirmation before the delete actually
+     * fires.
+     *
+     * @param user the row that was long-pressed
+     */
     @Override
     public void onDeleteUser(UserResponse user) {
         String fullName = UserNameFormatter.fullName(user.firstName(), user.lastName());
@@ -228,6 +267,10 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                 });
     }
 
+    /**
+     * Cancels any still-pending debounced search callback so it doesn't fire after this
+     * fragment's view is gone.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

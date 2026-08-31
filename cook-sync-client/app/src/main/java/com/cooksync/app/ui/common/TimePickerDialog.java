@@ -14,8 +14,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /**
  * Unified hours/minutes/seconds time picker dialog, supporting both coarse duration selection
- * (hours & minutes, {@link Mode#HH_MM}) and fine step timer duration selection (hours, minutes &
- * seconds, {@link Mode#HH_MM_SS}).
+ * (hours &amp; minutes, {@link Mode#HH_MM}) and fine step timer duration selection (hours, minutes
+ * &amp; seconds, {@link Mode#HH_MM_SS}).
  *
  * Replaces and consolidates the previous {@code TimerPickerDialog} and {@code DurationPickerDialog}
  * into a single reusable component.

@@ -20,7 +20,7 @@ import com.cooksync.app.ui.home.HomeActivity;
 /**
  * Entry-point Activity presenting the Login screen.
  *
- * <h3>Skeleton / auto-login flow</h3>
+ * <h2>Skeleton / auto-login flow</h2>
  * <ol>
  *   <li>On creation the <em>skeleton</em> is shown immediately (warm Organic palette bones,
  *       pulsing shimmer via {@link BaseActivity#setupSkeleton}) while the Activity checks

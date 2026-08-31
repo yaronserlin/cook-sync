@@ -42,14 +42,31 @@ public class AdminReportAdapter extends BaseAdapter<ReportedReviewResponse, Admi
 
     private OnReportActionListener listener;
 
+    /**
+     * Replaces the displayed report list.
+     *
+     * @param newReports the complete reported-review list to display
+     */
     public void setReports(List<ReportedReviewResponse> newReports) {
         setItems(newReports);
     }
 
+    /**
+     * Sets the listener notified of row actions.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnReportActionListener(OnReportActionListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Inflates a new report card view holder.
+     *
+     * @param parent the RecyclerView this card is being added to
+     * @param viewType the view type, unused (single card layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -57,6 +74,13 @@ public class AdminReportAdapter extends BaseAdapter<ReportedReviewResponse, Admi
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a reported review's reviewer, recipe, reason, comments, and row actions to its card
+     * view holder.
+     *
+     * @param holder the card view holder to bind
+     * @param position the report's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ReportedReviewResponse report = getItem(position);

@@ -103,6 +103,13 @@ public class AccountDetailsActivity extends BaseActivity {
     private boolean loadedShowRecipesPublicly = true;
     private boolean loadedShowFavoritesPublicly = false;
 
+    /**
+     * Wires up the avatar picker launcher, the exit-confirmation back-press callback, view
+     * bindings, observers, and every button's click listener, then triggers the initial
+     * {@link SettingsViewModel#loadAccountDetails()} fetch.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,6 +159,9 @@ public class AccountDetailsActivity extends BaseActivity {
         viewModel.loadAccountDetails();
     }
 
+    /**
+     * Binds every view reference from the inflated layout.
+     */
     private void bindViews() {
         ivAvatar = findViewById(R.id.iv_avatar);
         tvAvatarInitials = findViewById(R.id.tv_avatar_initials);
@@ -185,17 +195,34 @@ public class AccountDetailsActivity extends BaseActivity {
         renderAvatar(SessionManager.getInstance().getAvatarUrl());
     }
 
+    /**
+     * Renders either the given avatar photo or the fallback initials badge into this screen's
+     * avatar views.
+     *
+     * @param avatarUrl the avatar photo URL to render, or {@code null}/blank to show initials
+     */
     private void renderAvatar(String avatarUrl) {
         GlideUtils.renderAvatarOrInitials(Glide.with(this), avatarUrl, ivAvatar, tvAvatarInitials,
                 SessionManager.getInstance().getInitials());
     }
 
+    /**
+     * Toggles the avatar progress spinner and disables the avatar-editing buttons while an
+     * upload is in flight.
+     *
+     * @param uploading {@code true} while an avatar upload is in progress
+     */
     private void setAvatarUploading(boolean uploading) {
         avatarProgress.setVisibility(uploading ? View.VISIBLE : View.GONE);
         ((MaterialButton) findViewById(R.id.btn_upload_photo)).setEnabled(!uploading);
         findViewById(R.id.btn_edit_avatar).setEnabled(!uploading);
     }
 
+    /**
+     * Subscribes to every {@link SettingsViewModel} LiveData stream this screen reacts to:
+     * validation errors, the account-details fetch, the avatar upload/signature/update chain,
+     * and the email-change OTP dialog's request/resend/verify flow.
+     */
     private void setupObservers() {
         viewModel.getValidationError().observe(this, event -> {
             String message = event.getContentIfNotHandled();
@@ -450,6 +477,10 @@ public class AccountDetailsActivity extends BaseActivity {
                 etRepeatNewPassword.getText().toString());
     }
 
+    /**
+     * Shows the account-deletion confirmation dialog, which collects the current password before
+     * starting the 30-day self-service deletion grace period via {@link SettingsViewModel#deleteAccount}.
+     */
     private void confirmDeleteAccount() {
         OrganicConfirmDialog.showWithPasswordConfirm(this,
                 getString(R.string.account_details_dialog_delete_title),

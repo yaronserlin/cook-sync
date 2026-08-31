@@ -29,15 +29,26 @@ public class AddRecipeWizardPagerAdapter extends FragmentStateAdapter {
     /** Total number of wizard steps. */
     public static final int STEP_COUNT = 4;
 
+    /**
+     * @param activity the hosting wizard activity
+     */
     public AddRecipeWizardPagerAdapter(@NonNull FragmentActivity activity) {
         super(activity);
     }
 
+    /** @return the total number of wizard steps */
     @Override
     public int getItemCount() {
         return STEP_COUNT;
     }
 
+    /**
+     * Creates the fragment for a given wizard step position.
+     *
+     * @param position the step index, one of {@link #STEP_BASICS}, {@link #STEP_INGREDIENTS},
+     *                 {@link #STEP_INSTRUCTIONS}, or {@link #STEP_REVIEW}
+     * @return the step's fragment
+     */
     @NonNull
     @Override
     public Fragment createFragment(int position) {

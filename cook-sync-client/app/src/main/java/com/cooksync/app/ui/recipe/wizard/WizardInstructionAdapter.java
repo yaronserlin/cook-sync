@@ -48,6 +48,11 @@ public class WizardInstructionAdapter extends BaseAdapter<RecipeDraft.DraftInstr
 
     /** Notified on row actions the host fragment needs to act on. */
     public interface Listener {
+        /**
+         * Invoked when a step's remove button is tapped.
+         *
+         * @param instruction the step to remove
+         */
         void onRemove(RecipeDraft.DraftInstruction instruction);
 
         /** @param position this instruction's current adapter position, needed to route the upload result back */
@@ -58,10 +63,18 @@ public class WizardInstructionAdapter extends BaseAdapter<RecipeDraft.DraftInstr
     private Listener listener;
     private ItemTouchHelper itemTouchHelper;
 
+    /**
+     * @param instructions the live, mutable list of draft instructions to render and edit in place
+     */
     public WizardInstructionAdapter(@NonNull List<RecipeDraft.DraftInstruction> instructions) {
         super(instructions);
     }
 
+    /**
+     * Sets the listener notified of row actions (remove, photo tap).
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setListener(Listener listener) {
         this.listener = listener;
     }
@@ -82,6 +95,13 @@ public class WizardInstructionAdapter extends BaseAdapter<RecipeDraft.DraftInstr
         notifyDataSetChanged();
     }
 
+    /**
+     * Inflates a new instruction step card view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -89,6 +109,13 @@ public class WizardInstructionAdapter extends BaseAdapter<RecipeDraft.DraftInstr
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a draft instruction's step number, description, timer/ingredient pills, and photo
+     * preview to its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the instruction's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.bind(items.get(position), position, ingredients, listener, this);

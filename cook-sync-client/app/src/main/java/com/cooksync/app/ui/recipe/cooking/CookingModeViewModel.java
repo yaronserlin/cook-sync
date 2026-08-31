@@ -43,10 +43,14 @@ public class CookingModeViewModel extends BaseViewModel {
 
     private CountDownTimer countDownTimer;
 
+    /**
+     * @param repository the repository used to load the recipe and its notes
+     */
     public CookingModeViewModel(RecipeRepository repository) {
         this.repository = repository;
     }
 
+    /** @return the loaded recipe's cooking-mode data */
     public LiveData<ApiResult<RecipeResponse>> getRecipeResult() { return recipeResult; }
 
     /**
@@ -55,11 +59,17 @@ public class CookingModeViewModel extends BaseViewModel {
      * alongside each step.
      */
     public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() { return notesResult; }
+    /** @return the index of the step currently shown */
     public LiveData<Integer> getCurrentStepIndex() { return currentStepIndex; }
+    /** @return the current step's timer's remaining seconds, or {@code null} if it has no timer */
     public LiveData<Integer> getTimerRemainingSeconds() { return timerRemainingSeconds; }
+    /** @return whether the current step's timer is actively counting down */
     public LiveData<Boolean> getTimerRunning() { return timerRunning; }
+    /** @return whether the current step's timer has ever been started */
     public LiveData<Boolean> getTimerStarted() { return timerStarted; }
+    /** @return a one-shot event fired when the running timer reaches zero */
     public LiveData<Event<Boolean>> getTimerFinishedEvent() { return timerFinishedEvent; }
+    /** @return the ids of ingredients the cook has marked as already added to the dish */
     public LiveData<Set<String>> getCheckedIngredientIds() { return checkedIngredientIds; }
 
     /**
@@ -78,6 +88,11 @@ public class CookingModeViewModel extends BaseViewModel {
         checkedIngredientIds.setValue(updated);
     }
 
+    /**
+     * Loads the recipe to cook into {@link #getRecipeResult()}.
+     *
+     * @param recipeId the recipe to load
+     */
     public void loadRecipe(String recipeId) {
         repository.getRecipeDetail(recipeId, recipeResult);
     }
@@ -234,6 +249,9 @@ public class CookingModeViewModel extends BaseViewModel {
         return maxProgress - (int) ((remainingSeconds / (float) totalSeconds) * maxProgress);
     }
 
+    /**
+     * Cancels any running step timer so it doesn't keep firing after the screen is torn down.
+     */
     @Override
     protected void onCleared() {
         super.onCleared();

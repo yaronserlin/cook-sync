@@ -33,12 +33,27 @@ public class WizardInstructionsFragment extends Fragment {
     private RecipeImagePicker imagePicker;
     private ItemTouchHelper touchHelper;
 
+    /**
+     * Creates the {@link RecipeImagePicker} used for per-step photo picking; created here
+     * (rather than in {@link #onViewCreated}) since it must be registered before the fragment
+     * reaches {@code STARTED}.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         imagePicker = new RecipeImagePicker(this);
     }
 
+    /**
+     * Inflates this step's layout.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view this fragment will be attached to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -46,6 +61,14 @@ public class WizardInstructionsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_wizard_instructions, container, false);
     }
 
+    /**
+     * Binds the shared {@link AddRecipeViewModel}, sets up the instruction list adapter with
+     * drag-reorder and photo picking, wires "Add step", and seeds one blank step if the draft
+     * has none yet.
+     *
+     * @param view the inflated view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -103,6 +126,10 @@ public class WizardInstructionsFragment extends Fragment {
         }
     }
 
+    /**
+     * Refreshes the adapter's ingredient catalog, since it may have changed on the previous step
+     * since this fragment's view was last bound.
+     */
     @Override
     public void onResume() {
         super.onResume();

@@ -28,20 +28,29 @@ public final class FilterSheetLauncher {
      * these exact getters, so implementing this interface is a no-op declaration for them.
      */
     public interface FilterState {
+        /** @return the currently active sort mode */
         String getCurrentSort();
 
+        /** @return the currently active difficulty filter, or {@code null} if none is set */
         String getCurrentDifficulty();
 
+        /** @return the currently selected tag names, possibly empty but never {@code null} */
         Set<String> getSelectedTags();
 
+        /** @return the currently active minimum-rating filter, or {@code null} if none is set */
         Double getCurrentMinRating();
 
+        /** @return the currently active maximum-total-time filter in minutes, or {@code null} if none is set */
         Integer getCurrentMaxTotalTimeMinutes();
 
         /** Drops the active difficulty filter alone, leaving every other constraint untouched. */
         void removeDifficulty();
 
-        /** Drops a single selected tag alone, leaving every other constraint untouched. */
+        /**
+         * Drops a single selected tag alone, leaving every other constraint untouched.
+         *
+         * @param tagName the tag name to remove from the selection
+         */
         void removeTag(String tagName);
 
         /** Drops the active minimum-rating filter alone, leaving every other constraint untouched. */

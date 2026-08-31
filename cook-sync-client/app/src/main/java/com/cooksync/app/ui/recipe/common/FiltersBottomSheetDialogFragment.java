@@ -38,6 +38,15 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
 
     /** Callback invoked with the chosen filter/sort values when "Apply" is tapped. */
     public interface OnFiltersAppliedListener {
+        /**
+         * Invoked with the sheet's current selections when the user taps "Apply" or "Reset".
+         *
+         * @param sortBy the selected sort option
+         * @param difficulty the selected difficulty filter, or {@code null} if none
+         * @param tags the selected dietary-preference tag names
+         * @param minRating the selected minimum-rating filter, or {@code null} if none
+         * @param maxTotalTimeMinutes the selected total-time filter in minutes, or {@code null} if none
+         */
         void onFiltersApplied(String sortBy, String difficulty, List<String> tags,
                                Double minRating, Integer maxTotalTimeMinutes);
     }
@@ -50,6 +59,12 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
     private Double initialMinRating = null;
     private Integer initialMaxTotalTimeMinutes = null;
 
+    /**
+     * Sets the listener notified with the sheet's selections when the user applies or resets
+     * the filters.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnFiltersAppliedListener(OnFiltersAppliedListener listener) {
         this.listener = listener;
     }
@@ -84,12 +99,26 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
         this.initialMaxTotalTimeMinutes = maxTotalTimeMinutes;
     }
 
+    /**
+     * Creates the underlying {@link BottomSheetDialog}, styled with the app's bottom sheet theme.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the styled bottom sheet dialog
+     */
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         return new BottomSheetDialog(requireContext(), R.style.Theme_CookSync_BottomSheetDialog);
     }
 
+    /**
+     * Inflates the filters sheet layout.
+     *
+     * @param inflater the layout inflater
+     * @param container the parent view the sheet will be attached to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated sheet view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -117,6 +146,14 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
         }
     }
 
+    /**
+     * Populates the dietary-preference chips, pre-checks every chip group to match the currently
+     * active filters, wires up the live selection summary, and wires the Apply/Reset buttons to
+     * report the sheet's final selections through {@link #listener}.
+     *
+     * @param view the inflated sheet view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

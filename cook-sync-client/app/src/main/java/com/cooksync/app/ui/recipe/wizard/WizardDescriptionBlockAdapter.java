@@ -44,10 +44,27 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
 
     /** Notified on block actions the host fragment needs to act on. */
     public interface Listener {
+        /**
+         * Invoked as a TEXT block's content is edited.
+         *
+         * @param block the block being edited
+         * @param text the block's current text
+         */
         void onTextChanged(DescriptionBlockDTO block, String text);
 
+        /**
+         * Invoked as an IMAGE block's caption is edited.
+         *
+         * @param block the block being edited
+         * @param caption the block's current caption
+         */
         void onCaptionChanged(DescriptionBlockDTO block, String caption);
 
+        /**
+         * Invoked when an IMAGE block's remove button is tapped.
+         *
+         * @param block the block to remove
+         */
         void onRemoveImage(DescriptionBlockDTO block);
 
         /** The author pressed Enter mid-paragraph — {@code block} keeps {@code beforeText}, a new TEXT block gets {@code afterText}. */
@@ -61,12 +78,23 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
     private ItemTouchHelper itemTouchHelper;
     private RecyclerView recyclerView;
 
+    /**
+     * Retains a reference to the attached RecyclerView, needed by {@link #focusTextBlockAt} to
+     * resolve a position's live view holder.
+     *
+     * @param recyclerView the RecyclerView this adapter is now attached to
+     */
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
         this.recyclerView = recyclerView;
     }
 
+    /**
+     * Releases the retained RecyclerView reference so it isn't leaked past this adapter's life.
+     *
+     * @param recyclerView the RecyclerView this adapter is being detached from
+     */
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
@@ -83,6 +111,13 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
         focusTextBlockAt(position, true);
     }
 
+    /**
+     * Requests focus and opens the keyboard on the TEXT block at a position, placing the cursor
+     * at either end.
+     *
+     * @param position the TEXT block's adapter position
+     * @param atEnd {@code true} to place the cursor at the end of the text, {@code false} for the start
+     */
     private void focusTextBlockAt(int position, boolean atEnd) {
         if (recyclerView == null) return;
         recyclerView.post(() -> {
@@ -96,10 +131,18 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
         });
     }
 
+    /**
+     * @param blocks the live, mutable list of description blocks to render and edit in place
+     */
     public WizardDescriptionBlockAdapter(@NonNull List<DescriptionBlockDTO> blocks) {
         super(blocks);
     }
 
+    /**
+     * Sets the listener notified of block edits and structural changes (split/remove).
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setListener(Listener listener) {
         this.listener = listener;
     }
@@ -109,6 +152,13 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
         this.itemTouchHelper = itemTouchHelper;
     }
 
+    /**
+     * Inflates a new description block view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (a single layout renders both TEXT and IMAGE blocks)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -116,6 +166,13 @@ public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockD
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a description block (TEXT or IMAGE, toggling which sub-views are visible) to its
+     * row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the block's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.bind(items.get(position), listener);

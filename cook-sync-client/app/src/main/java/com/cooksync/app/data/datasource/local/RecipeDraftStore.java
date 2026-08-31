@@ -127,10 +127,21 @@ public final class RecipeDraftStore {
         prefs().edit().remove(KEY_DRAFTS_JSON).apply();
     }
 
+    /**
+     * Serializes the full draft list to JSON and writes it back to preferences, replacing
+     * whatever was stored under {@link #KEY_DRAFTS_JSON} before.
+     *
+     * @param drafts the complete draft list to persist
+     */
     private static void persist(List<RecipeDraft> drafts) {
         prefs().edit().putString(KEY_DRAFTS_JSON, GSON.toJson(drafts)).apply();
     }
 
+    /**
+     * Opens this store's backing {@link SharedPreferences} file.
+     *
+     * @return the preferences file this class reads and writes through
+     */
     private static SharedPreferences prefs() {
         return CookSyncApplication.getAppContext().getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE);
     }

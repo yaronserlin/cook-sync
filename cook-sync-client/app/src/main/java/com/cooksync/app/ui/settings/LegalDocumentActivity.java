@@ -33,6 +33,12 @@ public class LegalDocumentActivity extends BaseActivity {
     /** {@link #EXTRA_DOCUMENT_TYPE} value selecting the Privacy Policy document. */
     public static final String DOCUMENT_PRIVACY_POLICY = "privacy_policy";
 
+    /**
+     * Selects and renders the requested legal document (title, last-updated date, and formatted
+     * body) based on {@link #EXTRA_DOCUMENT_TYPE}.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -130,6 +130,11 @@ public class AddRecipeViewModel extends BaseViewModel {
 
     // ── Basics (step 1) ──────────────────────────────────────────────
 
+    /**
+     * Sets the recipe's title.
+     *
+     * @param title the new title text
+     */
     public void setTitle(String title) {
         draft.title = title;
     }
@@ -145,6 +150,9 @@ public class AddRecipeViewModel extends BaseViewModel {
     /**
      * Updates a TEXT block's content. {@link DescriptionBlockDTO} is an immutable record, so
      * this replaces the block in place with a copy carrying the new text.
+     *
+     * @param block the TEXT block being edited
+     * @param text the block's new text content
      */
     public void updateDescriptionBlockText(DescriptionBlockDTO block, String text) {
         replaceDescriptionBlock(block, new DescriptionBlockDTO(block.type(), text, block.imageUrl(), block.caption()));
@@ -153,6 +161,9 @@ public class AddRecipeViewModel extends BaseViewModel {
     /**
      * Updates an IMAGE block's caption. {@link DescriptionBlockDTO} is an immutable record, so
      * this replaces the block in place with a copy carrying the new caption.
+     *
+     * @param block the IMAGE block being edited
+     * @param caption the block's new caption text
      */
     public void setDescriptionImageCaption(DescriptionBlockDTO block, String caption) {
         replaceDescriptionBlock(block, new DescriptionBlockDTO(block.type(), block.text(), block.imageUrl(), caption));
@@ -162,6 +173,9 @@ public class AddRecipeViewModel extends BaseViewModel {
      * Replaces {@code oldBlock} with {@code newBlock} at the same position (matched by
      * {@code equals} — in practice unique per block since each TEXT/IMAGE block carries its own
      * content/URL).
+     *
+     * @param oldBlock the block to replace
+     * @param newBlock the block to put in its place
      */
     private void replaceDescriptionBlock(DescriptionBlockDTO oldBlock, DescriptionBlockDTO newBlock) {
         int index = draft.descriptionBlocks.indexOf(oldBlock);
@@ -187,6 +201,11 @@ public class AddRecipeViewModel extends BaseViewModel {
         }
     }
 
+    /**
+     * Removes an IMAGE description block.
+     *
+     * @param block the IMAGE block to remove
+     */
     public void removeDescriptionImage(DescriptionBlockDTO block) {
         draft.descriptionBlocks.remove(block);
     }
@@ -209,9 +228,9 @@ public class AddRecipeViewModel extends BaseViewModel {
 
     /**
      * Splits a TEXT block into two at the point the author pressed Enter, so each paragraph is
-     * its own block and inline photos can be dragged between them — the same effect as
-     * {@link #addDescriptionTextBlock()}, but authored inline while typing rather than via a
-     * separate button.
+     * its own block and inline photos can be dragged between them — the same effect as adding a
+     * new empty TEXT block via the wizard's "add block" button, but authored inline while typing
+     * rather than via a separate button.
      *
      * @param block the TEXT block being edited
      * @param beforeText the text kept in {@code block}, before the cursor
@@ -238,23 +257,45 @@ public class AddRecipeViewModel extends BaseViewModel {
         return builder.toString();
     }
 
+    /**
+     * Sets the recipe's preparation time.
+     *
+     * @param minutes preparation duration in minutes, or {@code null} if not yet entered
+     */
     public void setPrepTimeMinutes(Integer minutes) {
         draft.prepTimeMinutes = minutes;
     }
 
+    /**
+     * Sets the recipe's active cooking time.
+     *
+     * @param minutes cooking duration in minutes, or {@code null} if not yet entered
+     */
     public void setCookTimeMinutes(Integer minutes) {
         draft.cookTimeMinutes = minutes;
     }
 
+    /**
+     * Sets the recipe's recommended serving yield.
+     *
+     * @param servings the number of servings, or {@code null} if not yet entered
+     */
     public void setServings(Integer servings) {
         draft.servings = servings;
     }
 
+    /**
+     * Sets the recipe's difficulty level.
+     *
+     * @param difficulty one of {@code "EASY"}, {@code "MEDIUM"}, {@code "HARD"}
+     */
     public void setDifficulty(String difficulty) {
         draft.difficulty = difficulty;
     }
 
     /**
+     * Sets the recipe's cover photo.
+     *
      * @param localUri the picked cover photo's local (file://) URI, as a string — not uploaded
      *                 until Publish (see {@link com.cooksync.app.data.service.RecipePublishManager})
      */
@@ -262,16 +303,29 @@ public class AddRecipeViewModel extends BaseViewModel {
         draft.primaryImageUrl = localUri;
     }
 
+    /**
+     * Adds a tag to the draft's selection, ignoring the call if it's already selected.
+     *
+     * @param tag the tag to select
+     */
     public void addTag(TagResponse tag) {
         if (draft.tags.stream().noneMatch(t -> Objects.equals(t.id(), tag.id()))) {
             draft.tags.add(tag);
         }
     }
 
+    /**
+     * Removes a tag from the draft's selection.
+     *
+     * @param tag the tag to deselect
+     */
     public void removeTag(TagResponse tag) {
         draft.tags.removeIf(t -> Objects.equals(t.id(), tag.id()));
     }
 
+    /**
+     * Loads the complete tag catalog for the wizard's tag picker/autocomplete.
+     */
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
@@ -299,6 +353,11 @@ public class AddRecipeViewModel extends BaseViewModel {
         }
     }
 
+    /**
+     * Un-marks a not-yet-existing tag name as selected.
+     *
+     * @param name the pending tag name to drop
+     */
     public void removePendingTag(String name) {
         draft.pendingNewTagNames.remove(name);
     }
@@ -308,16 +367,24 @@ public class AddRecipeViewModel extends BaseViewModel {
         return draft.pendingNewTagNames;
     }
 
+    /** @return observable result of the tag-catalog fetch */
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
 
+    /** @return observable result of the popular-tags fetch */
     public LiveData<ApiResult<List<TagResponse>>> getPopularTagsResult() { return popularTagsResult; }
 
     // ── Ingredients (step 2) ─────────────────────────────────────────
 
+    /** @return the draft's ingredient rows — the live list, so an adapter can reorder it directly */
     public List<RecipeDraft.DraftIngredient> getIngredients() {
         return draft.ingredients;
     }
 
+    /**
+     * Appends a new, blank ingredient row to the draft.
+     *
+     * @return the newly added, blank ingredient row
+     */
     public RecipeDraft.DraftIngredient addIngredient() {
         RecipeDraft.DraftIngredient ingredient = new RecipeDraft.DraftIngredient();
         draft.ingredients.add(ingredient);
@@ -332,24 +399,39 @@ public class AddRecipeViewModel extends BaseViewModel {
         }
     }
 
+    /**
+     * Loads the complete measurement-unit catalog for each ingredient row's unit picker.
+     */
     public void loadUnits() {
         unitRepository.getAllUnits(unitsResult);
     }
 
+    /** @return observable result of the unit-catalog fetch */
     public LiveData<ApiResult<List<UnitResponse>>> getUnitsResult() { return unitsResult; }
 
     // ── Instructions (step 3) ────────────────────────────────────────
 
+    /** @return the draft's instruction steps — the live list, so an adapter can reorder it directly */
     public List<RecipeDraft.DraftInstruction> getInstructions() {
         return draft.instructions;
     }
 
+    /**
+     * Appends a new, blank instruction step to the draft.
+     *
+     * @return the newly added, blank instruction step
+     */
     public RecipeDraft.DraftInstruction addInstruction() {
         RecipeDraft.DraftInstruction instruction = new RecipeDraft.DraftInstruction();
         draft.instructions.add(instruction);
         return instruction;
     }
 
+    /**
+     * Removes an instruction step from the draft.
+     *
+     * @param instruction the instruction step to remove
+     */
     public void removeInstruction(RecipeDraft.DraftInstruction instruction) {
         draft.instructions.remove(instruction);
     }
@@ -370,6 +452,13 @@ public class AddRecipeViewModel extends BaseViewModel {
         return RecipeDraftMediaHelper.collectPendingImageUploads(draft);
     }
 
+    /**
+     * Writes back a pending image's resulting Cloudinary URL once {@link AddRecipeWizardActivity}
+     * finishes uploading it.
+     *
+     * @param pending the pending upload descriptor being resolved
+     * @param uploadedUrl the uploaded asset's secure Cloudinary URL
+     */
     public void resolvePendingImageUpload(RecipeDraftMediaHelper.PendingImageUpload pending, String uploadedUrl) {
         RecipeDraftMediaHelper.resolvePendingImageUpload(draft, pending, uploadedUrl);
     }
@@ -379,6 +468,11 @@ public class AddRecipeViewModel extends BaseViewModel {
     /** @return the visibility currently selected ("PUBLIC" or "PRIVATE") */
     public String getVisibility() { return draft.visibility; }
 
+    /**
+     * Sets the recipe's visibility.
+     *
+     * @param visibility the new visibility setting ("PUBLIC" or "PRIVATE")
+     */
     public void setVisibility(String visibility) {
         draft.visibility = visibility;
     }

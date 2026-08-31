@@ -259,6 +259,12 @@ public abstract class RecipeListActivity extends BaseActivity {
         chip.setTextColor(getColor(active ? R.color.color_bg : R.color.color_text));
     }
 
+    /**
+     * Converts a dp value to pixels using this activity's display density.
+     *
+     * @param dp the dimension in density-independent pixels
+     * @return the equivalent pixel value
+     */
     private int dpToPx(int dp) {
         return DimensionUtils.dpToPx(this, dp);
     }

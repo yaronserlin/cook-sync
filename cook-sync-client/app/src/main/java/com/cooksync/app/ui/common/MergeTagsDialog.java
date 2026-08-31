@@ -91,6 +91,14 @@ public final class MergeTagsDialog {
         dialog.show();
     }
 
+    /**
+     * Updates the dialog's confirm button label to name the currently checked variant, so the
+     * moderator sees exactly which tag they're about to keep before confirming.
+     *
+     * @param context the hosting screen's context, used to resolve the label string
+     * @param dialog the dialog whose positive button label is updated
+     * @param radioGroup the variant radio group to read the current selection from
+     */
     private static void updatePositiveButtonLabel(Context context, AlertDialog dialog, RadioGroup radioGroup) {
         RadioButton checked = radioGroup.findViewById(radioGroup.getCheckedRadioButtonId());
         if (checked == null) return;

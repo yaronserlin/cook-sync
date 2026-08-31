@@ -97,6 +97,13 @@ public class TagChipAdapter extends BaseAdapter<TagResponse, TagChipAdapter.View
         notifyDataSetChanged();
     }
 
+    /**
+     * Inflates a new tag chip view holder.
+     *
+     * @param parent the RecyclerView this chip is being added to
+     * @param viewType the view type, unused (single chip layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -104,6 +111,12 @@ public class TagChipAdapter extends BaseAdapter<TagResponse, TagChipAdapter.View
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a tag's label and selected/unselected style to its chip view holder.
+     *
+     * @param holder the chip view holder to bind
+     * @param position the tag's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         TagResponse tag = getItem(position);

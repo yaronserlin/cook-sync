@@ -37,12 +37,27 @@ public class AdminUnitsFragment extends Fragment {
     private EditText etCode;
     private ProgressBar progressBar;
 
+    /**
+     * Inflates this tab's layout.
+     *
+     * @param inflater layout inflater
+     * @param container the parent view this fragment's view will attach to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_admin_units, container, false);
     }
 
+    /**
+     * Binds the unit list, wires the add-unit form and row delete/undo actions, and triggers the
+     * initial unit-catalog fetch.
+     *
+     * @param view this fragment's root view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -84,6 +99,9 @@ public class AdminUnitsFragment extends Fragment {
         viewModel.loadUnits();
     }
 
+    /**
+     * Subscribes to the unit list fetch, unit-create, and unit-delete results.
+     */
     private void observeViewModel() {
         viewModel.getUnitsResult().observe(getViewLifecycleOwner(), result -> {
             if (result instanceof ApiResult.Loading) {

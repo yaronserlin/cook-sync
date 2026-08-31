@@ -15,7 +15,7 @@ import java.util.List;
  * {@value #ALPHA_MIN} and {@value #ALPHA_MAX} in a repeating pulse, producing a
  * "breathing" skeleton effect without requiring an external shimmer library.
  *
- * <h3>Typical usage</h3>
+ * <h2>Typical usage</h2>
  * <pre>{@code
  * // In an Activity / Fragment:
  * SkeletonHelper skeleton = new SkeletonHelper();

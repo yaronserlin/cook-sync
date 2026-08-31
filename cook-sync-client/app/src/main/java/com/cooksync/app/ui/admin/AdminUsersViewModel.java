@@ -242,6 +242,14 @@ public class AdminUsersViewModel extends BaseViewModel {
 
     private String userStatusKey(UserResponse user) { return "user-status-" + user.id(); }
 
+    /**
+     * Updates a single user's enabled flag and status within the currently loaded page,
+     * optimistically reflecting a suspend/reactivate action before the server confirms it.
+     *
+     * @param userId the target user's id
+     * @param enabled the new enabled state to apply
+     * @param status the new status value to apply (e.g. {@link #STATUS_SUSPENDED})
+     */
     private void patchUserEnabled(String userId, boolean enabled, String status) {
         for (int i = 0; i < currentUsers.size(); i++) {
             UserResponse u = currentUsers.get(i);

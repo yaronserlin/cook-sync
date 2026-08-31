@@ -63,6 +63,11 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
     /** ID of the instruction step currently in inline note-edit mode, or {@code null} if none. */
     private String editingInstructionId;
 
+    /**
+     * Replaces the displayed instruction step list.
+     *
+     * @param newInstructions the complete instruction step list to display
+     */
     public void setInstructions(List<InstructionResponse> newInstructions) {
         setItems(newInstructions);
     }
@@ -85,10 +90,22 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         this.noteChangeListener = listener;
     }
 
+    /**
+     * Sets the listener notified when a step's illustration image is tapped.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnImageClickListener(OnImageClickListener listener) {
         this.imageClickListener = listener;
     }
 
+    /**
+     * Inflates a new instruction step view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -96,6 +113,13 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a step's number, description, optional illustration image, and inline note
+     * editing UI to its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the step's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         InstructionResponse step = getItem(position);

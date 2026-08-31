@@ -35,14 +35,31 @@ public class AdminTagGroupAdapter extends BaseAdapter<DuplicateTagGroupResponse,
 
     private OnMergeRequestListener listener;
 
+    /**
+     * Replaces the displayed duplicate-tag group list.
+     *
+     * @param newGroups the complete duplicate-tag group list to display
+     */
     public void setGroups(List<DuplicateTagGroupResponse> newGroups) {
         setItems(newGroups);
     }
 
+    /**
+     * Sets the listener notified when a group's merge action is tapped.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnMergeRequestListener(OnMergeRequestListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Inflates a new duplicate-tag group card view holder.
+     *
+     * @param parent the RecyclerView this card is being added to
+     * @param viewType the view type, unused (single card layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -50,6 +67,13 @@ public class AdminTagGroupAdapter extends BaseAdapter<DuplicateTagGroupResponse,
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a duplicate-tag group's name, per-variant rows, and merge action to its card view
+     * holder.
+     *
+     * @param holder the card view holder to bind
+     * @param position the group's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DuplicateTagGroupResponse group = getItem(position);

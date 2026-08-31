@@ -516,6 +516,12 @@ public class RecipeDetailActivity extends BaseActivity {
         Navigator.start(this, com.cooksync.app.ui.auth.UserProfileActivity.class, intent);
     }
 
+    /**
+     * Renders a fetched recipe's header, description, ingredients, instructions, tags, and
+     * review summary into their respective views.
+     *
+     * @param recipe the recipe detail to render
+     */
     private void bindRecipe(RecipeResponse recipe) {
         String authorName = recipe.createdBy() != null
                 ? recipe.createdBy().firstName() + " " + recipe.createdBy().lastName()
@@ -622,6 +628,13 @@ public class RecipeDetailActivity extends BaseActivity {
         bindStarChips();
     }
 
+    /**
+     * Binds one star-rating distribution bar's label, fill proportion, and count.
+     *
+     * @param rowId the row layout's view id
+     * @param star the star value this row represents (1-5)
+     * @param total the total number of reviews, used to compute the bar's fill proportion
+     */
     private void bindBarRow(int rowId, int star, int total) {
         View row = findViewById(rowId);
         TextView starLabel = row.findViewById(R.id.star_label);
@@ -700,6 +713,13 @@ public class RecipeDetailActivity extends BaseActivity {
         btnFavorite.setImageResource(isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
     }
 
+    /**
+     * Dismisses the keyboard and clears focus when the user taps outside the currently focused
+     * text field, since the review-comment field otherwise keeps the keyboard open indefinitely.
+     *
+     * @param ev the dispatched touch event
+     * @return the superclass's normal dispatch result
+     */
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
         if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {

@@ -40,6 +40,11 @@ public class WizardIngredientAdapter extends BaseAdapter<RecipeDraft.DraftIngred
 
     /** Notified when the row's remove action is tapped. */
     public interface Listener {
+        /**
+         * Invoked when a row's remove button is tapped.
+         *
+         * @param ingredient the ingredient to remove
+         */
         void onRemove(RecipeDraft.DraftIngredient ingredient);
     }
 
@@ -47,10 +52,18 @@ public class WizardIngredientAdapter extends BaseAdapter<RecipeDraft.DraftIngred
     private Listener listener;
     private ItemTouchHelper itemTouchHelper;
 
+    /**
+     * @param ingredients the live, mutable list of draft ingredients to render and edit in place
+     */
     public WizardIngredientAdapter(@NonNull List<RecipeDraft.DraftIngredient> ingredients) {
         super(ingredients);
     }
 
+    /**
+     * Sets the listener notified when a row is removed.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setListener(Listener listener) {
         this.listener = listener;
     }
@@ -71,6 +84,13 @@ public class WizardIngredientAdapter extends BaseAdapter<RecipeDraft.DraftIngred
         notifyDataSetChanged();
     }
 
+    /**
+     * Inflates a new ingredient row view holder.
+     *
+     * @param parent the RecyclerView this row is being added to
+     * @param viewType the view type, unused (single row layout)
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -78,6 +98,12 @@ public class WizardIngredientAdapter extends BaseAdapter<RecipeDraft.DraftIngred
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a draft ingredient's name, quantity, and unit fields to its row view holder.
+     *
+     * @param holder the row view holder to bind
+     * @param position the ingredient's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.bind(items.get(position), units, listener);

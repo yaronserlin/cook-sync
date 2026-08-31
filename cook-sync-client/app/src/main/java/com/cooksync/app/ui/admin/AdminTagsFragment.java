@@ -48,6 +48,14 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
     private TextView tvSectionLabel;
     private List<DuplicateTagGroupResponse> allGroups = Collections.emptyList();
 
+    /**
+     * Inflates this tab's layout.
+     *
+     * @param inflater layout inflater
+     * @param container the parent view this fragment's view will attach to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -55,6 +63,13 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
         return inflater.inflate(R.layout.fragment_admin_tags, container, false);
     }
 
+    /**
+     * Binds the duplicate-tag-group list, wires client-side search over the loaded groups, and
+     * subscribes to the fetch/merge results.
+     *
+     * @param view this fragment's root view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -104,6 +119,13 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
         });
     }
 
+    /**
+     * Filters the loaded duplicate-tag groups by a case-insensitive match against either the
+     * group's normalized name or any of its variants' names, and refreshes the list/empty-state
+     * views and section-label count accordingly.
+     *
+     * @param query the current search box text, may be {@code null}/blank to show every group
+     */
     private void applySearch(String query) {
         String needle = query == null ? "" : query.trim().toLowerCase(Locale.getDefault());
         List<DuplicateTagGroupResponse> filtered;
@@ -135,6 +157,12 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
                 + getString(R.string.admin_badge_tags, filtered.size()));
     }
 
+    /**
+     * Shows the merge dialog for a duplicate-tag group card's merge action, then submits the
+     * chosen merge (with undo) once the moderator confirms.
+     *
+     * @param group the duplicate tag group to resolve
+     */
     @Override
     public void onMergeRequested(DuplicateTagGroupResponse group) {
         MergeTagsDialog.show(requireContext(), group, (allVariantIds, keepTagId) -> {
@@ -145,6 +173,14 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
         });
     }
 
+    /**
+     * Looks up a tag variant's display name by id within a duplicate-tag group, for the
+     * merge-success toast's message.
+     *
+     * @param group the duplicate tag group the variant belongs to
+     * @param keepTagId the canonical tag id chosen to survive the merge
+     * @return the matching variant's name, or {@code keepTagId} itself if no variant matches
+     */
     private String keepTagName(DuplicateTagGroupResponse group, String keepTagId) {
         for (TagVariantResponse variant : group.variants()) {
             if (variant.id().equals(keepTagId)) {

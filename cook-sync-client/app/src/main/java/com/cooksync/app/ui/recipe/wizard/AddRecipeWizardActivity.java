@@ -77,6 +77,13 @@ public class AddRecipeWizardActivity extends BaseActivity {
         com.cooksync.app.ui.base.Navigator.start(context, AddRecipeWizardActivity.class, intent);
     }
 
+    /**
+     * Starts a new draft, resumes a saved one, or loads a recipe for editing (based on the
+     * launching intent's extras), wires up the step pager and its Back/Next/Draft/Close
+     * controls, and restores whichever step the draft last reached.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -170,11 +177,24 @@ public class AddRecipeWizardActivity extends BaseActivity {
         finish();
     }
 
+    /**
+     * Navigates the ViewPager2 to a step, animated, and persists it as the draft's last-reached
+     * step.
+     *
+     * @param step the step index to move to
+     */
     private void goToStep(int step) {
         viewModel.setLastReachedStep(step);
         viewPager.setCurrentItem(step, true);
     }
 
+    /**
+     * Updates the progress bar and the app bar/bottom bar controls (Back visibility, Draft/Save
+     * draft visibility, and the Next button's label/icon/enabled state) for the currently shown
+     * step.
+     *
+     * @param step the step index now shown
+     */
     private void updateStepUi(int step) {
         progressBar.setProgress(step);
         boolean isReview = step == RecipeDraftValidator.STEP_REVIEW;
@@ -205,6 +225,7 @@ public class AddRecipeWizardActivity extends BaseActivity {
         }
     }
 
+    /** Shows a confirmation dialog before discarding the draft and leaving the wizard, since exiting is easy to trigger by accident (close button or back). */
     private void confirmDiscard() {
         OrganicConfirmDialog.show(this, getString(R.string.wizard_discard_title), getString(R.string.wizard_discard_message),
                 getString(R.string.wizard_action_discard), getString(R.string.wizard_action_keep_editing), true, () -> {

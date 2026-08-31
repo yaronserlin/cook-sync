@@ -46,6 +46,14 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
     private MaterialButton chipAbuse;
     private MaterialButton chipOffTopic;
 
+    /**
+     * Inflates this tab's layout.
+     *
+     * @param inflater layout inflater
+     * @param container the parent view this fragment's view will attach to, unused
+     * @param savedInstanceState previously saved instance state, unused
+     * @return the inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -53,6 +61,13 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
         return inflater.inflate(R.layout.fragment_admin_reports, container, false);
     }
 
+    /**
+     * Binds the report-card list, wires the reason-filter chips, and subscribes to the
+     * ViewModel's results.
+     *
+     * @param view this fragment's root view
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -81,11 +96,19 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
         observeViewModel();
     }
 
+    /**
+     * Applies a reason filter chip selection and restyles the chip row.
+     *
+     * @param reason the report reason to filter by, or {@link AdminReportsViewModel#REASON_ALL}
+     */
     private void selectReason(String reason) {
         viewModel.setReasonFilter(reason);
         styleChips();
     }
 
+    /**
+     * Subscribes to the filtered report list and per-row action result.
+     */
     private void observeViewModel() {
         viewModel.getFilteredReports().observe(getViewLifecycleOwner(), reports -> {
             List<ReportedReviewResponse> data = reports == null ? Collections.emptyList() : reports;
@@ -123,6 +146,11 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
         com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipOffTopic, DomainValues.REPORT_REASON_OFF_TOPIC.equals(selected));
     }
 
+    /**
+     * Confirms then deletes the reported review (with undo).
+     *
+     * @param report the report whose review should be deleted
+     */
     @Override
     public void onRemove(ReportedReviewResponse report) {
         OrganicConfirmDialog.show(requireContext(),
@@ -139,6 +167,11 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
                 });
     }
 
+    /**
+     * Dismisses the report without deleting its review (with undo).
+     *
+     * @param report the report to dismiss
+     */
     @Override
     public void onKeep(ReportedReviewResponse report) {
         viewModel.keepReport(report);
@@ -147,6 +180,11 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
                 () -> viewModel.undoKeepReport(report));
     }
 
+    /**
+     * Confirms then suspends the reported review's author (with undo).
+     *
+     * @param report the report whose author (reviewer) should be banned
+     */
     @Override
     public void onBan(ReportedReviewResponse report) {
         OrganicConfirmDialog.show(requireContext(),

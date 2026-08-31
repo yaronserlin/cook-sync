@@ -60,6 +60,12 @@ public class AvatarView extends FrameLayout {
         init(context);
     }
 
+    /**
+     * Inflates the shared avatar layout and binds its image/initials sub-views, shared by both
+     * constructors.
+     *
+     * @param context the hosting context to inflate the layout with
+     */
     private void init(Context context) {
         inflate(context, R.layout.view_avatar, this);
         imageView = findViewById(R.id.avatar_image);

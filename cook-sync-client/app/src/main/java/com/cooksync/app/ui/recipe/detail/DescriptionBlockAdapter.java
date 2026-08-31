@@ -58,15 +58,33 @@ public class DescriptionBlockAdapter extends BaseAdapter<DescriptionBlockDTO, Re
         setItems(descriptionBlocks);
     }
 
+    /**
+     * Sets the listener notified when an image block is tapped.
+     *
+     * @param listener the listener to notify, or {@code null} to detach
+     */
     public void setOnImageClickListener(OnImageClickListener listener) {
         this.imageClickListener = listener;
     }
 
+    /**
+     * Determines which of the two row layouts a block renders as.
+     *
+     * @param position the block's position in the adapter
+     * @return {@link #VIEW_TYPE_IMAGE} for an IMAGE block, {@link #VIEW_TYPE_TEXT} otherwise
+     */
     @Override
     public int getItemViewType(int position) {
         return TYPE_IMAGE.equalsIgnoreCase(getItem(position).type()) ? VIEW_TYPE_IMAGE : VIEW_TYPE_TEXT;
     }
 
+    /**
+     * Inflates a new text or image block view holder, depending on {@code viewType}.
+     *
+     * @param parent the RecyclerView this block is being added to
+     * @param viewType {@link #VIEW_TYPE_IMAGE} or {@link #VIEW_TYPE_TEXT}
+     * @return the inflated view holder
+     */
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -80,6 +98,13 @@ public class DescriptionBlockAdapter extends BaseAdapter<DescriptionBlockDTO, Re
         return new TextViewHolder(view);
     }
 
+    /**
+     * Binds a block's text or image+caption content to its row view holder, dispatched by the
+     * concrete view holder type.
+     *
+     * @param holder the row view holder to bind
+     * @param position the block's position in the adapter
+     */
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         DescriptionBlockDTO block = getItem(position);

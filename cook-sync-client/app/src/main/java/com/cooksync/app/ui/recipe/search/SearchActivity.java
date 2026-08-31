@@ -104,6 +104,12 @@ public class SearchActivity extends BaseActivity {
     private View progress;
     private boolean hasSearched = false;
 
+    /**
+     * Wires up views/adapters/observers, applies any filters seeded on the launching intent, and
+     * focuses the search field so the keyboard opens immediately.
+     *
+     * @param savedInstanceState previously saved instance state, unused
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,6 +149,10 @@ public class SearchActivity extends BaseActivity {
         updateFiltersBadge();
     }
 
+    /**
+     * Resolves this screen's views and wires up the search field's live/submit query listeners,
+     * the filters button, and "Clear all".
+     */
     private void initViews() {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
@@ -231,6 +241,10 @@ public class SearchActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Cancels any pending debounced search and detaches the pagination scroll listener so
+     * neither fires after this screen is torn down.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -240,6 +254,11 @@ public class SearchActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Builds the search result adapter (navigating to recipe detail on tap) and the "Matching
+     * tags" suggestion adapter (applying a tapped tag as a filter), and wires pagination on the
+     * results list.
+     */
     private void setupAdapters() {
         recipeAdapter = new SearchResultAdapter();
         recipeAdapter.setOnRecipeClickListener(recipeId -> {
@@ -268,6 +287,10 @@ public class SearchActivity extends BaseActivity {
         rvMatchingTags.setAdapter(matchingTagsAdapter);
     }
 
+    /**
+     * Observes the search feed state (rendering results, the loading spinner, and errors) and
+     * the tag catalog (for the filter sheet's tag chips).
+     */
     private void setupObservers() {
         viewModel.getFeedState().observe(this, state -> {
             if (state instanceof FeedState.Loading loading) {
