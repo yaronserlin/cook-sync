@@ -113,6 +113,11 @@ public class AdminUnitsFragment extends Fragment {
                 viewModel.loadUnits();
             } else if (result instanceof ApiResult.Error<?> error) {
                 OrganicToast.showError(requireActivity(), null, error.getMessage());
+                // The row was already removed optimistically when the undo window started;
+                // since the delete didn't actually go through (e.g. the unit is still
+                // referenced by an ingredient), reload so it reappears instead of staying
+                // gone in the UI while still existing on the server.
+                viewModel.loadUnits();
             }
         });
     }
