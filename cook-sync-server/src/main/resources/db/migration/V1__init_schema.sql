@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
-    user_id VARCHAR(36) NULL,
+    user_id VARCHAR(36) NULL UNIQUE,
     token VARCHAR(255) NOT NULL UNIQUE,
     expiry_date DATETIME(6) NOT NULL,
     CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS recipe_tags (
 
 CREATE TABLE IF NOT EXISTS units (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
-    code VARCHAR(50) NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -178,27 +178,27 @@ CREATE TABLE IF NOT EXISTS description_blocks (
 -- only short-lived OTP state (rows are deleted the moment they're consumed
 -- and otherwise expire in minutes), so the missing ON DELETE CASCADE costs
 -- nothing: AccountDeletionService#purgeAccountImmediately deletes them
--- explicitly before removing the user. The indexes below keep
+-- explicitly before removing the user. user_id is UNIQUE (enforcing the
+-- one-active-token-per-user invariant the services already maintain via
+-- deleteByUserId-before-insert) and the implicit index it creates keeps
 -- PasswordResetTokenRepository/EmailChangeTokenRepository's findByUserId and
 -- deleteByUserId paths indexed despite the missing foreign key.
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL UNIQUE,
     code_hash VARCHAR(255) NOT NULL,
     expiry_date DATETIME(6) NOT NULL,
-    attempt_count INT NOT NULL DEFAULT 0,
-    INDEX idx_password_reset_tokens_user (user_id)
+    attempt_count INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS email_change_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL UNIQUE,
     new_email VARCHAR(255) NOT NULL,
     code_hash VARCHAR(255) NOT NULL,
     expiry_date DATETIME(6) NOT NULL,
-    attempt_count INT NOT NULL DEFAULT 0,
-    INDEX idx_email_change_tokens_user (user_id)
+    attempt_count INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS pending_registrations (

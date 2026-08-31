@@ -45,7 +45,7 @@ public class PasswordResetToken {
     private String id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false,
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true,
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private User user;
 

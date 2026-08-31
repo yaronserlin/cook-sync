@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,10 +26,7 @@ import lombok.Setter;
  * @since 02/08/2026
  */
 @Entity
-@Table(name = "units", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"code"}),
-        @UniqueConstraint(columnNames = {"name"})
-})
+@Table(name = "units")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -43,10 +39,10 @@ public class Unit {
     @Column(length = SchemaConstants.UUID_COLUMN_LENGTH)
     private String id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String code;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 255, unique = true)
     private String name;
 
     @Column(name = "created_at", nullable = false, updatable = false)
