@@ -49,7 +49,7 @@ public class CloudinaryServiceImp implements CloudinaryService {
             params.put("public_id", publicId);
         }
 
-        String signature = cloudinary.apiSignRequest(params, cloudinary.config.apiSecret, (int) timestamp);
+        String signature = cloudinary.apiSignRequest(params, cloudinary.config.apiSecret, 2);
 
         return new CloudinarySignatureResponse(
                 signature,
