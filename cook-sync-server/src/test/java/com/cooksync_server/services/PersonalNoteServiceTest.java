@@ -102,6 +102,46 @@ class PersonalNoteServiceTest {
     }
 
     @Test
+    void saveNote_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        NoteRequestDTO request = new NoteRequestDTO(recipeUuid, null, "Reduce salt next time");
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> personalNoteService.saveNote(request, "missing@cooksync.com"));
+
+        verify(noteRepository, never()).save(org.mockito.ArgumentMatchers.any(PersonalInstructionNote.class));
+    }
+
+    @Test
+    void saveNote_ShouldThrowResourceNotFoundException_WhenRecipeMissing() {
+        NoteRequestDTO request = new NoteRequestDTO(recipeUuid, null, "Reduce salt next time");
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(recipeRepository.findById(recipeUuid.toString())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> personalNoteService.saveNote(request, "gordon@cooksync.com"));
+
+        verify(noteRepository, never()).save(org.mockito.ArgumentMatchers.any(PersonalInstructionNote.class));
+    }
+
+    @Test
+    void saveNote_ShouldUpdateExistingNote_WhenNoteAlreadyExists() {
+        NoteRequestDTO request = new NoteRequestDTO(recipeUuid, null, "Reduce salt next time");
+        PersonalInstructionNote existingNote = PersonalInstructionNote.builder()
+                .id("note-1").user(sampleUser).recipe(sampleRecipe).note("Original note").build();
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(recipeRepository.findById(recipeUuid.toString())).thenReturn(Optional.of(sampleRecipe));
+        when(noteRepository.findByUserIdAndRecipeIdAndInstructionIdIsNull("user-1", recipeUuid.toString()))
+                .thenReturn(Optional.of(existingNote));
+        when(favoriteRepository.existsByUserIdAndRecipeId("user-1", recipeUuid.toString())).thenReturn(true);
+
+        personalNoteService.saveNote(request, "gordon@cooksync.com");
+
+        assertEquals("Reduce salt next time", existingNote.getNote());
+        verify(noteRepository).save(existingNote);
+    }
+
+    @Test
     void saveNote_ShouldSaveStepNote_WhenInstructionBelongsToRecipe() {
         UUID instructionUuid = UUID.randomUUID();
         NoteRequestDTO request = new NoteRequestDTO(recipeUuid, instructionUuid, "Whisk until stiff peaks");

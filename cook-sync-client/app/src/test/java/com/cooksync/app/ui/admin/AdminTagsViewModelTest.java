@@ -65,6 +65,38 @@ public class AdminTagsViewModelTest {
     }
 
     @Test
+    public void loadDuplicateTagGroups_error_postsErrorResult() {
+        doAnswer(ApiResultAnswers.<PagedResponse<DuplicateTagGroupResponse>>error("network error"))
+                .when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+
+        viewModel.loadDuplicateTagGroups();
+
+        ApiResult<List<DuplicateTagGroupResponse>> result = viewModel.getTagGroupsResult().getValue();
+        assertTrue(result instanceof ApiResult.Error<List<DuplicateTagGroupResponse>>);
+        assertEquals("network error", ((ApiResult.Error<List<DuplicateTagGroupResponse>>) result).getMessage());
+    }
+
+    @Test
+    public void loadNextTagGroupsPage_noOp_whenLastPageAlreadyLoaded() {
+        loadOnePageContainingGroup();
+
+        viewModel.loadNextTagGroupsPage();
+
+        verify(adminRepository, never()).getDuplicateTagGroups(eq(1), eq(20), any());
+    }
+
+    @Test
+    public void loadNextTagGroupsPage_noOp_whileFetchAlreadyInFlight() {
+        doAnswer(invocation -> null).when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+        viewModel.loadDuplicateTagGroups();
+        assertTrue(viewModel.getTagGroupsResult().getValue() instanceof ApiResult.Loading<List<DuplicateTagGroupResponse>>);
+
+        viewModel.loadNextTagGroupsPage();
+
+        verify(adminRepository, never()).getDuplicateTagGroups(eq(1), eq(20), any());
+    }
+
+    @Test
     public void mergeGroup_removesGroupFromListImmediately() {
         loadOnePageContainingGroup();
 
@@ -98,6 +130,36 @@ public class AdminTagsViewModelTest {
         verify(adminRepository).mergeTags(eq("t2"), eq("t1"), any());
         ApiResult<Void> mergeResult = ((ApiResult.Success<Void>) viewModel.getTagMergeResult().getValue().getContentIfNotHandled());
         assertTrue(mergeResult instanceof ApiResult.Success<Void>);
+    }
+
+    @Test
+    public void mergeGroup_mergeFailureMidSequence_restoresGroup_andPostsErrorEvent() {
+        TagVariantResponse thirdVariant = new TagVariantResponse("t3", "tomatos", 1);
+        DuplicateTagGroupResponse threeVariantGroup =
+                new DuplicateTagGroupResponse("tomato", List.of(keptVariant, duplicateVariant, thirdVariant));
+        PagedResponse<DuplicateTagGroupResponse> page =
+                new PagedResponse<>(List.of(threeVariantGroup), 0, 20, 1, 1, true);
+        doAnswer(ApiResultAnswers.success(page))
+                .when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+        viewModel.loadDuplicateTagGroups();
+
+        doAnswer(ApiResultAnswers.<Void>success(null))
+                .when(adminRepository).mergeTags(eq("t2"), eq("t1"), any());
+        doAnswer(ApiResultAnswers.<Void>error("network error"))
+                .when(adminRepository).mergeTags(eq("t3"), eq("t1"), any());
+
+        viewModel.mergeGroup(threeVariantGroup, List.of("t1", "t2", "t3"), "t1");
+        viewModel.onCleared();
+
+        verify(adminRepository).mergeTags(eq("t2"), eq("t1"), any());
+        verify(adminRepository).mergeTags(eq("t3"), eq("t1"), any());
+
+        ApiResult<List<DuplicateTagGroupResponse>> result = viewModel.getTagGroupsResult().getValue();
+        assertEquals(List.of(threeVariantGroup), ((ApiResult.Success<List<DuplicateTagGroupResponse>>) result).getData());
+
+        ApiResult<Void> mergeResult = viewModel.getTagMergeResult().getValue().getContentIfNotHandled();
+        assertTrue(mergeResult instanceof ApiResult.Error<Void>);
+        assertEquals("network error", ((ApiResult.Error<Void>) mergeResult).getMessage());
     }
 
     private void loadOnePageContainingGroup() {

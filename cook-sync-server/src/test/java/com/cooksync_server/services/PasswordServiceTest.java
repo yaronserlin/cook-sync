@@ -1,9 +1,11 @@
 package com.cooksync_server.services;
 
+import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.cooksync_server.entities.PasswordResetToken;
 import com.cooksync_server.entities.User;
+import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
 import com.cooksync_server.exceptions.auth.InvalidOtpException;
 import com.cooksync_server.exceptions.auth.OtpExpiredException;
 import com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException;
@@ -56,6 +58,32 @@ class PasswordServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(passwordEncoder.encode(anyString())).thenReturn("hashed-password");
+    }
+
+    @Test
+    void changePassword_ShouldUpdatePasswordAndRevokeSessions_WhenCurrentPasswordIsCorrect() {
+        ChangePasswordRequestDTO request = new ChangePasswordRequestDTO("OldPassword123!", "NewPassword123!");
+        User existingUser = User.builder().id("user-123").email("john@example.com").passwordHash("old-hash").build();
+
+        when(credentialVerifier.verifyCurrentPassword("john@example.com", "OldPassword123!")).thenReturn(existingUser);
+
+        passwordService.changePassword("john@example.com", request);
+
+        assertEquals("hashed-password", existingUser.getPasswordHash());
+        verify(userRepository, times(1)).save(existingUser);
+        verify(refreshTokenService, times(1)).deleteByUserId("user-123");
+    }
+
+    @Test
+    void changePassword_ShouldThrowInvalidCredentialsException_WhenCurrentPasswordIsIncorrect() {
+        ChangePasswordRequestDTO request = new ChangePasswordRequestDTO("WrongPassword", "NewPassword123!");
+
+        when(credentialVerifier.verifyCurrentPassword("john@example.com", "WrongPassword"))
+                .thenThrow(new InvalidCredentialsException("Current password is incorrect"));
+
+        assertThrows(InvalidCredentialsException.class, () -> passwordService.changePassword("john@example.com", request));
+        verify(userRepository, never()).save(any(User.class));
+        verify(refreshTokenService, never()).deleteByUserId(anyString());
     }
 
     @Test

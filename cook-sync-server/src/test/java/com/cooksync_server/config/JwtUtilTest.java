@@ -1,10 +1,18 @@
 package com.cooksync_server.config;
 
+import java.security.Key;
 import java.util.Collection;
+import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,6 +50,20 @@ class JwtUtilTest {
 
         assertTrue(jwtUtil.isTokenValid(token, email));
         assertFalse(jwtUtil.isTokenValid(token, "other@cooksync.com"));
+    }
+
+    @Test
+    void isTokenValid_ShouldThrowExpiredJwtException_WhenTokenHasExpired() {
+        String email = "expired@cooksync.com";
+        Key signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(BASE64_SECRET));
+        String expiredToken = Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis() - 1000 * 60 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() - 1000 * 60 * 15))
+                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .compact();
+
+        assertThrows(ExpiredJwtException.class, () -> jwtUtil.isTokenValid(expiredToken, email));
     }
 
     @Test

@@ -1,10 +1,12 @@
 package com.cooksync.app.ui.admin;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
@@ -66,6 +68,32 @@ public class AdminUnitsViewModelTest {
     @Test
     public void deleteUnit_forwardsIdToRepository() {
         viewModel.deleteUnit("u1");
+
+        verify(unitRepository).deleteUnit(eq("u1"), any());
+    }
+
+    @Test
+    public void scheduleDeleteUnit_cancelledBeforeFlush_neverSendsDelete() {
+        viewModel.scheduleDeleteUnit("u1");
+
+        boolean cancelled = viewModel.cancelPendingDelete("u1");
+
+        assertTrue(cancelled);
+        verify(unitRepository, never()).deleteUnit(any(), any());
+    }
+
+    @Test
+    public void cancelPendingDelete_withNothingPending_returnsFalse() {
+        boolean cancelled = viewModel.cancelPendingDelete("u1");
+
+        assertFalse(cancelled);
+    }
+
+    @Test
+    public void scheduleDeleteUnit_flushedWithoutCancel_sendsDeleteOnCleared() {
+        viewModel.scheduleDeleteUnit("u1");
+
+        viewModel.onCleared();
 
         verify(unitRepository).deleteUnit(eq("u1"), any());
     }

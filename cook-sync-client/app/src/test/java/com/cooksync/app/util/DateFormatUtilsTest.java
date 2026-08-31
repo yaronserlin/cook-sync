@@ -42,4 +42,60 @@ public class DateFormatUtilsTest {
     public void parseIsoDate_null_forStringShorterThanDatePortion() {
         assertNull(DateFormatUtils.parseIsoDate("2026"));
     }
+
+    @Test
+    public void formatRelativeDay_empty_forUnparseableInput() {
+        assertEquals("", DateFormatUtils.formatRelativeDay("not-a-date"));
+        assertEquals("", DateFormatUtils.formatRelativeDay(null));
+    }
+
+    @Test
+    public void formatRelativeDay_today_forZeroDays() {
+        assertEquals("Today", DateFormatUtils.formatRelativeDay(LocalDate.now().toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_today_forFutureDate() {
+        assertEquals("Today", DateFormatUtils.formatRelativeDay(LocalDate.now().plusDays(5).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_oneDayAgo() {
+        assertEquals("1 day ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(1).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_daysAgo_atLowBoundaryOfBucket() {
+        assertEquals("2 days ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(2).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_daysAgo_atHighBoundaryOfBucket() {
+        assertEquals("29 days ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(29).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_oneMonthAgo_atLowBoundaryOfBucket() {
+        assertEquals("1 month ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(30).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_monthsAgo_plural() {
+        assertEquals("3 months ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(90).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_monthsAgo_atHighBoundaryOfBucket() {
+        assertEquals("12 months ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(364).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_oneYearAgo_atLowBoundaryOfBucket() {
+        assertEquals("1 year ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(365).toString()));
+    }
+
+    @Test
+    public void formatRelativeDay_yearsAgo_plural() {
+        assertEquals("2 years ago", DateFormatUtils.formatRelativeDay(LocalDate.now().minusDays(800).toString()));
+    }
 }

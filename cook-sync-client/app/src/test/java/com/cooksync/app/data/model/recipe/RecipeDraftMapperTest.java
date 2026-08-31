@@ -60,6 +60,21 @@ public class RecipeDraftMapperTest {
     }
 
     @Test
+    public void toDto_defaultsPrepCookTimeAndServings_whenNull() {
+        RecipeDraft draft = new RecipeDraft();
+        draft.title = "Tomato Soup";
+        draft.difficulty = "EASY";
+        draft.visibility = "PUBLIC";
+        // prepTimeMinutes, cookTimeMinutes, servings left null (not yet entered)
+
+        RecipeCreateRequestDTO dto = RecipeDraftMapper.toDto(draft);
+
+        assertEquals(0, dto.prepTimeMinutes());
+        assertEquals(0, dto.cookTimeMinutes());
+        assertEquals(1, dto.servings());
+    }
+
+    @Test
     public void toDto_skipsBlankIngredientRows() {
         RecipeDraft draft = draftWithBasics();
         RecipeDraft.DraftIngredient valid = new RecipeDraft.DraftIngredient();
@@ -77,6 +92,41 @@ public class RecipeDraftMapperTest {
         assertEquals(2.0, mapped.quantity(), 0.0001);
         assertEquals("unit-1", mapped.unitId());
         assertEquals(valid.tmpId, mapped.tmpId());
+    }
+
+    @Test
+    public void toDto_defaultsQuantityToZero_whenQuantityUnparseable() {
+        RecipeDraft draft = draftWithBasics();
+        RecipeDraft.DraftIngredient ingredient = new RecipeDraft.DraftIngredient();
+        ingredient.name = "Tomato";
+        ingredient.quantity = "abc"; // non-numeric, but row isn't blank (name is set)
+        ingredient.unitId = "unit-1";
+        draft.ingredients.add(ingredient);
+
+        IngredientRequestDTO mapped = RecipeDraftMapper.toDto(draft).ingredients().get(0);
+
+        assertEquals(0.0, mapped.quantity(), 0.0001);
+    }
+
+    @Test
+    public void toDto_defaultsQuantityToZero_whenQuantityZeroOrNegative() {
+        RecipeDraft draft = draftWithBasics();
+        RecipeDraft.DraftIngredient zero = new RecipeDraft.DraftIngredient();
+        zero.name = "Tomato";
+        zero.quantity = "0";
+        zero.unitId = "unit-1";
+        draft.ingredients.add(zero);
+
+        RecipeDraft.DraftIngredient negative = new RecipeDraft.DraftIngredient();
+        negative.name = "Salt";
+        negative.quantity = "-5";
+        negative.unitId = "unit-2";
+        draft.ingredients.add(negative);
+
+        List<IngredientRequestDTO> mapped = RecipeDraftMapper.toDto(draft).ingredients();
+
+        assertEquals(0.0, mapped.get(0).quantity(), 0.0001);
+        assertEquals(0.0, mapped.get(1).quantity(), 0.0001);
     }
 
     @Test

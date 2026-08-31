@@ -99,6 +99,57 @@ class IngredientServiceTest {
     }
 
     @Test
+    void updateIngredient_ShouldUpdateIngredient_WhenUserIsOwner() {
+        Ingredient ingredient = Ingredient.builder().id("ing-1").recipe(sampleRecipe).name("Flour")
+                .quantity(BigDecimal.TEN).unit(sampleUnit).build();
+        IngredientRequestDTO request = new IngredientRequestDTO("tmp-1", "Sugar", 100, "unit-1");
+        when(ingredientRepository.findById("ing-1")).thenReturn(Optional.of(ingredient));
+        when(userRepository.findByEmail("owner@cooksync.com")).thenReturn(Optional.of(owner));
+        when(unitRepository.findById("unit-1")).thenReturn(Optional.of(sampleUnit));
+        when(ingredientRepository.save(org.mockito.ArgumentMatchers.any(Ingredient.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        IngredientResponse response = ingredientService.updateIngredient("ing-1", request, "owner@cooksync.com");
+
+        assertEquals("Sugar", response.name());
+        assertEquals(0, BigDecimal.valueOf(100).compareTo(response.quantity()));
+    }
+
+    @Test
+    void updateIngredient_ShouldThrowResourceNotFoundException_WhenIngredientMissing() {
+        IngredientRequestDTO request = new IngredientRequestDTO("tmp-1", "Sugar", 100, "unit-1");
+        when(ingredientRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ingredientService.updateIngredient("missing", request, "owner@cooksync.com"));
+    }
+
+    @Test
+    void updateIngredient_ShouldThrowUnauthorizedActionException_WhenUserIsNotOwner() {
+        Ingredient ingredient = Ingredient.builder().id("ing-1").recipe(sampleRecipe).name("Flour")
+                .quantity(BigDecimal.TEN).unit(sampleUnit).build();
+        IngredientRequestDTO request = new IngredientRequestDTO("tmp-1", "Sugar", 100, "unit-1");
+        when(ingredientRepository.findById("ing-1")).thenReturn(Optional.of(ingredient));
+        when(userRepository.findByEmail("other@cooksync.com")).thenReturn(Optional.of(otherUser));
+
+        assertThrows(UnauthorizedActionException.class,
+                () -> ingredientService.updateIngredient("ing-1", request, "other@cooksync.com"));
+    }
+
+    @Test
+    void updateIngredient_ShouldThrowResourceNotFoundException_WhenUnitMissing() {
+        Ingredient ingredient = Ingredient.builder().id("ing-1").recipe(sampleRecipe).name("Flour")
+                .quantity(BigDecimal.TEN).unit(sampleUnit).build();
+        IngredientRequestDTO request = new IngredientRequestDTO("tmp-1", "Sugar", 100, "missing-unit");
+        when(ingredientRepository.findById("ing-1")).thenReturn(Optional.of(ingredient));
+        when(userRepository.findByEmail("owner@cooksync.com")).thenReturn(Optional.of(owner));
+        when(unitRepository.findById("missing-unit")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ingredientService.updateIngredient("ing-1", request, "owner@cooksync.com"));
+    }
+
+    @Test
     void deleteIngredient_ShouldThrowResourceNotFoundException_WhenIngredientMissing() {
         when(ingredientRepository.findById("missing")).thenReturn(Optional.empty());
 

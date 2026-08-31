@@ -151,6 +151,41 @@ public class SearchViewModelTest {
     }
 
     @Test
+    public void loadNextPage_noOpWhileCurrentFetchStillLoading() {
+        // No stub configured for searchRecipes, so observeOnce's callback never fires and
+        // feedState stays FeedState.Loading after the initial call.
+        viewModel.search("pasta");
+        assertTrue(viewModel.getFeedState().getValue() instanceof FeedState.Loading);
+
+        viewModel.loadNextPage();
+
+        verify(recipeRepository, times(1)).searchRecipes(any(), any(Integer.class), any(Integer.class), any());
+    }
+
+    @Test
+    public void search_repositoryError_publishesFeedStateError() {
+        doAnswer(ApiResultAnswers.<PagedResponse<RecipePreviewResponse>>error("Server unavailable"))
+                .when(recipeRepository).searchRecipes(eq("pasta"), eq(0), eq(10), any());
+
+        viewModel.search("pasta");
+
+        FeedState state = viewModel.getFeedState().getValue();
+        assertTrue(state instanceof FeedState.Error);
+        assertEquals("Server unavailable", ((FeedState.Error) state).getMessage());
+    }
+
+    @Test
+    public void searchByTag_repositoryError_publishesFeedStateError() {
+        doAnswer(ApiResultAnswers.<PagedResponse<RecipePreviewResponse>>error("Server unavailable"))
+                .when(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
+
+        viewModel.searchByTag("Vegan");
+
+        FeedState state = viewModel.getFeedState().getValue();
+        assertTrue(state instanceof FeedState.Error);
+    }
+
+    @Test
     public void loadTags_populatesTagsResult() {
         List<TagResponse> tags = List.of(new TagResponse("t1", "Vegan", null, null),
                 new TagResponse("t2", "Vegetarian", null, null));
@@ -162,6 +197,18 @@ public class SearchViewModelTest {
         ApiResult.Success<List<TagResponse>> result =
                 (ApiResult.Success<List<TagResponse>>) viewModel.getTagsResult().getValue();
         assertEquals(tags, result.getData());
+    }
+
+    @Test
+    public void loadTags_repositoryError_leavesTagSuggestionsEmpty_butPublishesError() {
+        doAnswer(ApiResultAnswers.<List<TagResponse>>error("Server unavailable"))
+                .when(tagRepository).getAllTags(any());
+
+        viewModel.loadTags();
+
+        ApiResult<List<TagResponse>> result = viewModel.getTagsResult().getValue();
+        assertTrue(result instanceof ApiResult.Error<List<TagResponse>>);
+        assertTrue(viewModel.getMatchingTagSuggestions("veg").isEmpty());
     }
 
     @Test

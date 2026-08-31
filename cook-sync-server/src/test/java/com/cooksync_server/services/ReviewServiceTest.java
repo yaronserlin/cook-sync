@@ -103,6 +103,37 @@ class ReviewServiceTest {
     }
 
     /**
+     * Verifies that adding a review fails fast with {@link ResourceNotFoundException} when the
+     * acting user cannot be resolved, before any review or recipe mutation happens.
+     */
+    @Test
+    void addReview_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        ReviewRequestDTO request = new ReviewRequestDTO(4.0, "Fantastic", "Loved it");
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> reviewService.addReview("recipe-1", request, "missing@cooksync.com"));
+
+        verify(reviewRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any(Review.class));
+    }
+
+    /**
+     * Verifies that adding a review fails fast with {@link ResourceNotFoundException} when the
+     * target recipe cannot be resolved.
+     */
+    @Test
+    void addReview_ShouldThrowResourceNotFoundException_WhenRecipeMissing() {
+        ReviewRequestDTO request = new ReviewRequestDTO(4.0, "Fantastic", "Loved it");
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(author));
+        when(recipeRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> reviewService.addReview("missing", request, "gordon@cooksync.com"));
+
+        verify(reviewRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any(Review.class));
+    }
+
+    /**
      * Verifies that deleting a review authored by someone else is rejected with
      * {@link UnauthorizedActionException}.
      */
@@ -154,5 +185,56 @@ class ReviewServiceTest {
         verify(reviewReportRepository).save(org.mockito.ArgumentMatchers.any());
         assertEquals(Review.ReportReason.SPAM, review.getReportReason());
         assertEquals(true, review.isReported());
+    }
+
+    /**
+     * Verifies that reporting a review fails fast with {@link ResourceNotFoundException} when the
+     * reporting user cannot be resolved, before any report is persisted.
+     */
+    @Test
+    void reportReview_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        ReportReviewRequestDTO request = new ReportReviewRequestDTO("SPAM", "Looks like spam");
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> reviewService.reportReview("review-1", request, "missing@cooksync.com"));
+
+        verify(reviewReportRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    /**
+     * Verifies that reporting a review fails fast with {@link ResourceNotFoundException} when the
+     * target review cannot be resolved.
+     */
+    @Test
+    void reportReview_ShouldThrowResourceNotFoundException_WhenReviewMissing() {
+        ReportReviewRequestDTO request = new ReportReviewRequestDTO("SPAM", "Looks like spam");
+        when(userRepository.findByEmail("other@cooksync.com")).thenReturn(Optional.of(otherUser));
+        when(reviewRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> reviewService.reportReview("missing", request, "other@cooksync.com"));
+
+        verify(reviewReportRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    /**
+     * Verifies that reporting a review with an unrecognized reason string propagates
+     * {@link IllegalArgumentException} from {@code Review.ReportReason.valueOf}, since the service
+     * itself performs no validation of the reason beyond what the DTO's bean validation already
+     * guards at the controller boundary.
+     */
+    @Test
+    void reportReview_ShouldThrowIllegalArgumentException_WhenReasonInvalid() {
+        Review review = Review.builder().id("review-1").user(author).recipe(sampleRecipe)
+                .rating(BigDecimal.valueOf(4.0)).build();
+        ReportReviewRequestDTO request = new ReportReviewRequestDTO("NOT_A_REAL_REASON", "Looks like spam");
+        when(userRepository.findByEmail("other@cooksync.com")).thenReturn(Optional.of(otherUser));
+        when(reviewRepository.findById("review-1")).thenReturn(Optional.of(review));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> reviewService.reportReview("review-1", request, "other@cooksync.com"));
+
+        verify(reviewReportRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
     }
 }

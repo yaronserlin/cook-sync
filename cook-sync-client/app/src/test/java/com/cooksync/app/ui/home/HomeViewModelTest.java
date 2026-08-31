@@ -119,6 +119,18 @@ public class HomeViewModelTest {
     }
 
     @Test
+    public void loadInitialFeed_publishesErrorState_whenRepositoryFails() {
+        doAnswer(ApiResultAnswers.<PagedResponse<RecipePreviewResponse>>error("Server unavailable"))
+                .when(recipeRepository).getPublicFeed(eq(0), eq(10), any());
+
+        viewModel.loadInitialFeed();
+
+        FeedState state = viewModel.getFeedState().getValue();
+        assertTrue(state instanceof FeedState.Error);
+        assertEquals("Server unavailable", ((FeedState.Error) state).getMessage());
+    }
+
+    @Test
     public void toggleTag_singleSelection_routesToTagFilteredEndpoint() {
         doAnswer(ApiResultAnswers.success(page(List.of(recipeOne), true)))
                 .when(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
@@ -183,6 +195,48 @@ public class HomeViewModelTest {
 
         assertEquals(List.of(recipeOne), successFavorites());
         verify(recipeRepository, never()).removeFavorite(eq("recipe-1"), any());
+    }
+
+    @Test
+    public void toggleFavorite_addingWhileMatchingRemoveStillPending_cancelsPendingRemove_withoutCallingAddFavorite() {
+        stubPublicFeed(0, page(List.of(recipeOne), true));
+        viewModel.loadInitialFeed();
+        loadFavoritesContaining(recipeOne);
+
+        viewModel.toggleFavorite("recipe-1"); // removes optimistically, defers removeFavorite
+        viewModel.toggleFavorite("recipe-1"); // re-adds; should cancel the pending remove instead
+
+        assertEquals(List.of(recipeOne), successFavorites());
+        verify(recipeRepository, never()).addFavorite(eq("recipe-1"), any());
+        verify(recipeRepository, never()).removeFavorite(eq("recipe-1"), any());
+    }
+
+    @Test
+    public void toggleFavorite_addFavoriteServerError_rollsBackOptimisticAdd_andFiresErrorEvent() {
+        stubPublicFeed(0, page(List.of(recipeOne), true));
+        viewModel.loadInitialFeed();
+        doAnswer(ApiResultAnswers.<Void>error("Server unavailable"))
+                .when(recipeRepository).addFavorite(eq("recipe-1"), any());
+
+        viewModel.toggleFavorite("recipe-1");
+
+        assertTrue(successFavorites().isEmpty());
+        Event<String> event = viewModel.getErrorEvent().getValue();
+        assertEquals("Server unavailable", event.getContentIfNotHandled());
+    }
+
+    @Test
+    public void onCleared_flushedFavoriteRemoval_serverError_rollsBackOptimisticRemove_andFiresErrorEvent() {
+        loadFavoritesContaining(recipeOne);
+        viewModel.toggleFavorite("recipe-1");
+        doAnswer(ApiResultAnswers.<Void>error("Server unavailable"))
+                .when(recipeRepository).removeFavorite(eq("recipe-1"), any());
+
+        viewModel.onCleared();
+
+        assertEquals(List.of(recipeOne), successFavorites());
+        Event<String> event = viewModel.getErrorEvent().getValue();
+        assertEquals("Server unavailable", event.getContentIfNotHandled());
     }
 
     @Test

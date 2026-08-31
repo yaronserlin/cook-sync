@@ -2,6 +2,7 @@ package com.cooksync.app.ui.admin;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,6 +44,9 @@ public class AdminUsersViewModelTest {
     private final UserResponse activeUser = new UserResponse("u1", "Ada", "Lovelace",
             "ada@example.com", false, null, "2026-01-01", "2026-01-01", true, "ACTIVE",
             null, null, true, true);
+    private final UserResponse suspendedUser = new UserResponse("u2", "Grace", "Hopper",
+            "grace@example.com", false, null, "2026-01-01", "2026-01-01", false, "SUSPENDED",
+            null, null, true, true);
 
     @Before
     public void setUp() {
@@ -58,6 +62,73 @@ public class AdminUsersViewModelTest {
         assertTrue(result instanceof ApiResult.Success<List<UserResponse>>);
         assertEquals(List.of(activeUser), ((ApiResult.Success<List<UserResponse>>) result).getData());
         assertEquals(1, viewModel.getUsersTotalElements());
+    }
+
+    @Test
+    public void refreshUsers_error_postsErrorResult() {
+        doAnswer(ApiResultAnswers.<PagedResponse<UserResponse>>error("network error"))
+                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+
+        viewModel.refreshUsers(null, null);
+
+        ApiResult<List<UserResponse>> result = viewModel.getUsersResult().getValue();
+        assertTrue(result instanceof ApiResult.Error<List<UserResponse>>);
+        assertEquals("network error", ((ApiResult.Error<List<UserResponse>>) result).getMessage());
+    }
+
+    @Test
+    public void loadNextUsersPage_noOp_whenLastPageAlreadyLoaded() {
+        loadOnePageContainingActiveUser();
+
+        viewModel.loadNextUsersPage();
+
+        verify(adminRepository, never()).getUsers(eq(1), eq(20), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    public void loadNextUsersPage_fetchesAndAppendsNextPage() {
+        PagedResponse<UserResponse> firstPage = new PagedResponse<>(List.of(activeUser), 0, 20, 2, 2, false);
+        doAnswer(ApiResultAnswers.success(firstPage))
+                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+        viewModel.refreshUsers(null, null);
+
+        PagedResponse<UserResponse> secondPage = new PagedResponse<>(List.of(suspendedUser), 1, 20, 2, 2, true);
+        doAnswer(ApiResultAnswers.success(secondPage))
+                .when(adminRepository).getUsers(eq(1), eq(20), any(), any(), any(), any(), any());
+
+        viewModel.loadNextUsersPage();
+
+        ApiResult<List<UserResponse>> result = viewModel.getUsersResult().getValue();
+        assertEquals(List.of(activeUser, suspendedUser), ((ApiResult.Success<List<UserResponse>>) result).getData());
+        assertEquals(2, viewModel.getUsersTotalElements());
+    }
+
+    @Test
+    public void toggleUsersSortDirection_flipsDirection_andReloadsFromFirstPage() {
+        loadOnePageContainingActiveUser();
+
+        viewModel.toggleUsersSortDirection();
+
+        verify(adminRepository).getUsers(eq(0), eq(20), any(), any(), eq("createdAt"), eq("asc"), any());
+    }
+
+    @Test
+    public void setUserEnabled_enable_routesToEnableUser_andDoesNotFireDisabledEvent() {
+        loadOnePageContainingSuspendedUser();
+        doAnswer(ApiResultAnswers.<Void>success(null))
+                .when(adminRepository).enableUser(eq("u2"), any());
+
+        viewModel.setUserEnabled(suspendedUser, true);
+
+        UserResponse patched = firstUser();
+        assertTrue(patched.enabled());
+        assertEquals("ACTIVE", patched.status());
+        assertNull(viewModel.getUserDisabledEvent().getValue());
+
+        viewModel.onCleared();
+
+        verify(adminRepository).enableUser(eq("u2"), any());
+        verify(adminRepository, never()).suspendUser(eq("u2"), any());
     }
 
     @Test
@@ -142,6 +213,13 @@ public class AdminUsersViewModelTest {
 
     private void loadOnePageContainingActiveUser() {
         PagedResponse<UserResponse> page = new PagedResponse<>(List.of(activeUser), 0, 20, 1, 1, true);
+        doAnswer(ApiResultAnswers.success(page))
+                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+        viewModel.refreshUsers(null, null);
+    }
+
+    private void loadOnePageContainingSuspendedUser() {
+        PagedResponse<UserResponse> page = new PagedResponse<>(List.of(suspendedUser), 0, 20, 1, 1, true);
         doAnswer(ApiResultAnswers.success(page))
                 .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
         viewModel.refreshUsers(null, null);

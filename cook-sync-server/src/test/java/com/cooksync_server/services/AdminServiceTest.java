@@ -2,6 +2,7 @@ package com.cooksync_server.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -9,6 +10,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.cooksync_server.entities.Review;
 import com.cooksync_server.entities.Tag;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
@@ -37,6 +41,7 @@ import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
+import com.dtos.response.admin.ReportedReviewResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -112,6 +117,53 @@ class AdminServiceTest {
     }
 
     @Test
+    void getReportedReviews_ShouldReturnPagedReportedReviews() {
+        Review review = Review.builder()
+                .id("review-1")
+                .comment("Undercooked and salty.")
+                .rating(BigDecimal.valueOf(1))
+                .reported(true)
+                .reportReason(Review.ReportReason.ABUSE)
+                .reportedAt(LocalDateTime.now())
+                .build();
+        Page<Review> reviewPage = new PageImpl<>(List.of(review), PageRequest.of(0, 10), 1);
+        when(reviewRepository.findByReportedTrueAndHiddenFalse(any(Pageable.class))).thenReturn(reviewPage);
+        when(reviewReportRepository.findTopByReviewIdOrderByCreatedAtDesc("review-1")).thenReturn(Optional.empty());
+
+        PagedResponse<ReportedReviewResponse> response = adminService.getReportedReviews(0, 10);
+
+        assertEquals(1, response.content().size());
+        assertEquals("review-1", response.content().get(0).id());
+        assertEquals("Undercooked and salty.", response.content().get(0).comment());
+    }
+
+    @Test
+    void dismissReport_ShouldClearReportFlagsAndSave_WhenReviewExists() {
+        Review review = Review.builder()
+                .id("review-1")
+                .reported(true)
+                .reportReason(Review.ReportReason.SPAM)
+                .reportedAt(LocalDateTime.now())
+                .build();
+        when(reviewRepository.findById("review-1")).thenReturn(Optional.of(review));
+
+        adminService.dismissReport("review-1");
+
+        assertFalse(review.isReported());
+        assertNull(review.getReportReason());
+        assertNull(review.getReportedAt());
+        verify(reviewRepository).save(review);
+    }
+
+    @Test
+    void dismissReport_ShouldThrowResourceNotFoundException_WhenReviewDoesNotExist() {
+        when(reviewRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> adminService.dismissReport("missing"));
+        verify(reviewRepository, never()).save(any());
+    }
+
+    @Test
     void suspendUser_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
@@ -164,6 +216,44 @@ class AdminServiceTest {
     }
 
     @Test
+    void deleteUserPermanently_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminService.deleteUserPermanently("missing", "admin@cooksync.com"));
+    }
+
+    @Test
+    void deleteUserPermanently_ShouldDelegateToAccountDeletionService_WhenUserExists() {
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+
+        adminService.deleteUserPermanently("user-1", "admin@cooksync.com");
+
+        verify(accountDeletionService).purgeAccountImmediately(sampleUser);
+    }
+
+    @Test
+    void deleteUserPermanently_ShouldThrowUnauthorizedActionException_WhenTargetIsActingAdmin() {
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+
+        assertThrows(UnauthorizedActionException.class,
+                () -> adminService.deleteUserPermanently("user-1", sampleUser.getEmail()));
+
+        verify(accountDeletionService, never()).purgeAccountImmediately(any());
+    }
+
+    @Test
+    void deleteUserPermanently_ShouldThrowUnauthorizedActionException_WhenTargetIsAnotherAdmin() {
+        sampleUser.setAdmin(true);
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
+
+        assertThrows(UnauthorizedActionException.class,
+                () -> adminService.deleteUserPermanently("user-1", "other-admin@cooksync.com"));
+
+        verify(accountDeletionService, never()).purgeAccountImmediately(any());
+    }
+
+    @Test
     void mergeTags_ShouldThrowIllegalArgumentException_WhenSourceEqualsTarget() {
         TagMergeRequestDTO request = new TagMergeRequestDTO("tag-1", "tag-1");
 
@@ -177,6 +267,16 @@ class AdminServiceTest {
         when(tagRepository.existsById("missing-source")).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class, () -> adminService.mergeTags(request));
+    }
+
+    @Test
+    void mergeTags_ShouldThrowResourceNotFoundException_WhenTargetTagMissing() {
+        TagMergeRequestDTO request = new TagMergeRequestDTO("tag-1", "missing-target");
+        when(tagRepository.existsById("tag-1")).thenReturn(true);
+        when(tagRepository.existsById("missing-target")).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> adminService.mergeTags(request));
+        verify(jdbcTemplate, never()).update(anyString(), any(), any());
     }
 
     @Test

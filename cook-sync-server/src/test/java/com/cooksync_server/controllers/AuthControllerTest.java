@@ -2,8 +2,11 @@ package com.cooksync_server.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,9 +25,16 @@ import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
 import com.cooksync_server.services.AuthService;
 import com.cooksync_server.services.PasswordService;
 import com.cooksync_server.services.UserProfileService;
+import com.dtos.request.auth.AvatarUpdateRequestDTO;
+import com.dtos.request.auth.ChangePasswordRequestDTO;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
+import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResetPasswordRequestDTO;
+import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
@@ -236,5 +246,142 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void changePassword_ShouldReturnOk_WhenPayloadValid() throws Exception {
+        ChangePasswordRequestDTO request = new ChangePasswordRequestDTO("OldPassword123!", "NewPassword123!");
+
+        mockMvc.perform(put("/api/auth/password")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(passwordService).changePassword("john@example.com", request);
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void changePassword_ShouldReturnUnauthorized_WhenCurrentPasswordWrong() throws Exception {
+        ChangePasswordRequestDTO request = new ChangePasswordRequestDTO("WrongPassword1!", "NewPassword123!");
+        org.mockito.Mockito.doThrow(new InvalidCredentialsException("Current password is incorrect"))
+                .when(passwordService).changePassword("john@example.com", request);
+
+        mockMvc.perform(put("/api/auth/password")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void refreshToken_ShouldReturnOk_WhenTokenValid() throws Exception {
+        TokenRefreshRequestDTO request = new TokenRefreshRequestDTO("refresh-token");
+        when(authService.refreshToken(any(TokenRefreshRequestDTO.class)))
+                .thenReturn(new AuthResponse("new-jwt-token", "new-refresh-token", "user-1", "John", "Doe", false, null));
+
+        mockMvc.perform(post("/api/auth/refresh-token")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.token").value("new-jwt-token"));
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void logout_ShouldReturnOk_AndRouteCallerEmail() throws Exception {
+        mockMvc.perform(post("/api/auth/logout").with(csrf()))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(authService).logout("john@example.com");
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void deactivateAccount_ShouldReturnOk_AndRouteCallerEmail() throws Exception {
+        mockMvc.perform(patch("/api/auth/deactivate").with(csrf()))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(userProfileService).deactivateAccount("john@example.com");
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void updatePrivacySettings_ShouldReturnOk_AndRouteCallerEmail() throws Exception {
+        PrivacySettingsUpdateRequestDTO request = new PrivacySettingsUpdateRequestDTO(true, false);
+
+        mockMvc.perform(put("/api/auth/privacy")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(userProfileService).updatePrivacySettings("john@example.com", request);
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void requestAccountDeletion_ShouldReturnOk_AndRouteCallerEmail() throws Exception {
+        DeleteAccountRequestDTO request = new DeleteAccountRequestDTO("Password123!");
+
+        mockMvc.perform(delete("/api/auth/account")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(userProfileService).requestAccountDeletion("john@example.com", request);
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void resetPassword_ShouldReturnOk_WhenPayloadValid() throws Exception {
+        ResetPasswordRequestDTO request = new ResetPasswordRequestDTO("john@example.com", "123456", "NewPassword123!");
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(passwordService).resetPassword(request);
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void updateAvatar_ShouldReturnOk_AndRouteCallerEmail() throws Exception {
+        AvatarUpdateRequestDTO request = new AvatarUpdateRequestDTO("https://example.com/avatar.png");
+
+        mockMvc.perform(put("/api/auth/avatar")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(userProfileService).updateAvatar("john@example.com", request.avatarUrl());
+    }
+
+    @Test
+    @WithMockUser(username = "john@example.com")
+    void updateProfile_ShouldReturnOk_AndRouteCallerEmail() throws Exception {
+        ProfileUpdateRequestDTO request = new ProfileUpdateRequestDTO("John", "Doe", "Springfield", "Loves cooking");
+
+        mockMvc.perform(put("/api/auth/profile")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(userProfileService).updateProfile("john@example.com", request);
+    }
+
+    @Test
+    void getCurrentUser_ShouldRejectAnonymousCaller() throws Exception {
+        mockMvc.perform(get("/api/auth/me").with(anonymous()))
+                .andExpect(status().isUnauthorized());
     }
 }

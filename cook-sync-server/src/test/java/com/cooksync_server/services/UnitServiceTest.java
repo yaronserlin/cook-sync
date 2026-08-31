@@ -20,7 +20,9 @@ import org.springframework.data.domain.Pageable;
 
 import com.cooksync_server.entities.Unit;
 import com.cooksync_server.exceptions.ResourceAlreadyExistsException;
+import com.cooksync_server.exceptions.ResourceInUseException;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.cooksync_server.repositories.IngredientRepository;
 import com.cooksync_server.repositories.UnitRepository;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
@@ -38,6 +40,9 @@ class UnitServiceTest {
 
     @Mock
     private UnitRepository unitRepository;
+
+    @Mock
+    private IngredientRepository ingredientRepository;
 
     @InjectMocks
     private UnitServiceImp unitService;
@@ -101,9 +106,20 @@ class UnitServiceTest {
     @Test
     void deleteUnit_ShouldDelete_WhenFound() {
         when(unitRepository.findById("unit-1")).thenReturn(Optional.of(sampleUnit));
+        when(ingredientRepository.countByUnitId("unit-1")).thenReturn(0L);
 
         unitService.deleteUnit("unit-1");
 
         verify(unitRepository).delete(sampleUnit);
+    }
+
+    @Test
+    void deleteUnit_ShouldThrowResourceInUseException_WhenIngredientsReferenceIt() {
+        when(unitRepository.findById("unit-1")).thenReturn(Optional.of(sampleUnit));
+        when(ingredientRepository.countByUnitId("unit-1")).thenReturn(3L);
+
+        assertThrows(ResourceInUseException.class, () -> unitService.deleteUnit("unit-1"));
+
+        verify(unitRepository, org.mockito.Mockito.never()).delete(sampleUnit);
     }
 }

@@ -10,10 +10,14 @@ import com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException;
 import com.cooksync_server.exceptions.auth.UserAlreadyExistsException;
 import com.cooksync_server.repositories.EmailChangeTokenRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
+import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
+import com.dtos.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -110,6 +115,173 @@ class UserProfileServiceTest {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userProfileService.getUserProfileById("missing"));
+    }
+
+    @Test
+    void getCurrentUserProfile_ShouldReturnFullProfile_WhenUserExists() {
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        UserResponse response = userProfileService.getCurrentUserProfile("jane@cooksync.com");
+
+        assertNotNull(response);
+        assertEquals("user-2", response.id());
+        assertEquals("jane@cooksync.com", response.email());
+        assertEquals("Tel Aviv", response.city());
+        assertEquals("Home cook.", response.bio());
+        assertTrue(response.showRecipesPublicly());
+        assertFalse(response.showFavoritesPublicly());
+    }
+
+    @Test
+    void getCurrentUserProfile_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> userProfileService.getCurrentUserProfile("missing@cooksync.com"));
+    }
+
+    @Test
+    void updateAvatar_ShouldDeleteOldCloudinaryAsset_WhenOldAvatarExistsAndDiffersFromNewUrl() {
+        sampleUser.setAvatarUrl("https://res.cloudinary.com/old.jpg");
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.updateAvatar("jane@cooksync.com", "https://res.cloudinary.com/new.jpg");
+
+        verify(cloudinaryService, times(1)).deleteImage("https://res.cloudinary.com/old.jpg");
+        assertEquals("https://res.cloudinary.com/new.jpg", sampleUser.getAvatarUrl());
+        verify(userRepository, times(1)).save(sampleUser);
+    }
+
+    @Test
+    void updateAvatar_ShouldSkipDeletion_WhenOldAvatarIsNull() {
+        sampleUser.setAvatarUrl(null);
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.updateAvatar("jane@cooksync.com", "https://res.cloudinary.com/new.jpg");
+
+        verify(cloudinaryService, never()).deleteImage(anyString());
+        assertEquals("https://res.cloudinary.com/new.jpg", sampleUser.getAvatarUrl());
+        verify(userRepository, times(1)).save(sampleUser);
+    }
+
+    @Test
+    void updateAvatar_ShouldSkipDeletion_WhenOldAvatarIsBlank() {
+        sampleUser.setAvatarUrl("   ");
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.updateAvatar("jane@cooksync.com", "https://res.cloudinary.com/new.jpg");
+
+        verify(cloudinaryService, never()).deleteImage(anyString());
+        assertEquals("https://res.cloudinary.com/new.jpg", sampleUser.getAvatarUrl());
+    }
+
+    @Test
+    void updateAvatar_ShouldSkipDeletion_WhenNewUrlEqualsOldUrl() {
+        sampleUser.setAvatarUrl("https://res.cloudinary.com/same.jpg");
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.updateAvatar("jane@cooksync.com", "https://res.cloudinary.com/same.jpg");
+
+        verify(cloudinaryService, never()).deleteImage(anyString());
+        assertEquals("https://res.cloudinary.com/same.jpg", sampleUser.getAvatarUrl());
+        verify(userRepository, times(1)).save(sampleUser);
+    }
+
+    @Test
+    void updateAvatar_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> userProfileService.updateAvatar("missing@cooksync.com", "https://res.cloudinary.com/new.jpg"));
+        verify(cloudinaryService, never()).deleteImage(anyString());
+    }
+
+    @Test
+    void updateProfile_ShouldUpdateNameCityAndBio_WhenUserExists() {
+        ProfileUpdateRequestDTO request = new ProfileUpdateRequestDTO("John", "Doe", "Haifa", "Updated bio.");
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.updateProfile("jane@cooksync.com", request);
+
+        assertEquals("John", sampleUser.getFirstName());
+        assertEquals("Doe", sampleUser.getLastName());
+        assertEquals("Haifa", sampleUser.getCity());
+        assertEquals("Updated bio.", sampleUser.getBio());
+        verify(userRepository, times(1)).save(sampleUser);
+    }
+
+    @Test
+    void updateProfile_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        ProfileUpdateRequestDTO request = new ProfileUpdateRequestDTO("John", "Doe", "Haifa", "Updated bio.");
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> userProfileService.updateProfile("missing@cooksync.com", request));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updatePrivacySettings_ShouldUpdateVisibilityPreferences_WhenUserExists() {
+        PrivacySettingsUpdateRequestDTO request = new PrivacySettingsUpdateRequestDTO(false, true);
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.updatePrivacySettings("jane@cooksync.com", request);
+
+        assertFalse(sampleUser.isShowRecipesPublicly());
+        assertTrue(sampleUser.isShowFavoritesPublicly());
+        verify(userRepository, times(1)).save(sampleUser);
+    }
+
+    @Test
+    void updatePrivacySettings_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        PrivacySettingsUpdateRequestDTO request = new PrivacySettingsUpdateRequestDTO(false, true);
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> userProfileService.updatePrivacySettings("missing@cooksync.com", request));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void deactivateAccount_ShouldDisableAccountAndRevokeRefreshTokens_WhenUserExists() {
+        when(userRepository.findByEmail("jane@cooksync.com")).thenReturn(Optional.of(sampleUser));
+
+        userProfileService.deactivateAccount("jane@cooksync.com");
+
+        assertFalse(sampleUser.isEnabled());
+        assertEquals(User.AccountStatus.DEACTIVATED, sampleUser.getStatus());
+        verify(userRepository, times(1)).save(sampleUser);
+        verify(refreshTokenService, times(1)).deleteByUserId("user-2");
+    }
+
+    @Test
+    void deactivateAccount_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> userProfileService.deactivateAccount("missing@cooksync.com"));
+        verify(refreshTokenService, never()).deleteByUserId(anyString());
+    }
+
+    @Test
+    void requestAccountDeletion_ShouldDelegateToAccountDeletionService_WhenPasswordCorrect() {
+        DeleteAccountRequestDTO request = new DeleteAccountRequestDTO("correct-password");
+        when(credentialVerifier.verifyCurrentPassword("jane@cooksync.com", "correct-password")).thenReturn(sampleUser);
+
+        userProfileService.requestAccountDeletion("jane@cooksync.com", request);
+
+        verify(accountDeletionService, times(1)).requestDeletion(sampleUser);
+    }
+
+    @Test
+    void requestAccountDeletion_ShouldThrowInvalidCredentialsException_WhenPasswordIncorrect() {
+        DeleteAccountRequestDTO request = new DeleteAccountRequestDTO("wrong-password");
+        when(credentialVerifier.verifyCurrentPassword("jane@cooksync.com", "wrong-password"))
+                .thenThrow(new InvalidCredentialsException("Current password is incorrect"));
+
+        assertThrows(InvalidCredentialsException.class,
+                () -> userProfileService.requestAccountDeletion("jane@cooksync.com", request));
+        verify(accountDeletionService, never()).requestDeletion(any(User.class));
     }
 
     @Test

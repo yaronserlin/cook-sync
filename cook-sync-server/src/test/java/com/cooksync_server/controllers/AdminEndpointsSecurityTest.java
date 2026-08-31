@@ -2,7 +2,9 @@ package com.cooksync_server.controllers;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.services.AdminService;
 import com.cooksync_server.services.UnitService;
+import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.unit.UnitResponse;
@@ -102,6 +105,74 @@ class AdminEndpointsSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void deleteUnit_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(delete("/api/units/unit-1").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getAllUsers_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(get("/api/admin/users"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getReportedReviews_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(get("/api/admin/reviews/reported"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void dismissReport_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(post("/api/admin/reviews/review-1/dismiss").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void suspendUser_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(patch("/api/admin/users/user-1/suspend").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void enableUser_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(patch("/api/admin/users/user-1/enable").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void deleteUser_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(delete("/api/admin/users/user-1").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getDuplicateTagGroups_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(get("/api/admin/tags/duplicates"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void mergeTags_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        TagMergeRequestDTO request = new TagMergeRequestDTO("tag-1", "tag-2");
+
+        mockMvc.perform(post("/api/admin/tags/merge")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 
     @TestConfiguration

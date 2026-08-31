@@ -1,6 +1,7 @@
 package com.cooksync.app.ui.recipe.detail;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,6 +9,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
@@ -16,6 +18,7 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.testutil.ApiResultAnswers;
 import com.dtos.response.note.NoteResponse;
+import com.dtos.response.review.ReviewResponse;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -154,6 +157,135 @@ public class RecipeDetailViewModelTest {
     @Test
     public void clampStars_defaultsToOne_whenNull() {
         assertEquals(1, viewModel.clampStars(null));
+    }
+
+    @Test
+    public void clampStars_clampsAboveRangeToFive() {
+        assertEquals(5, viewModel.clampStars(BigDecimal.valueOf(7)));
+    }
+
+    @Test
+    public void toggleFavorite_addingWhenNotFavorite_callsAddFavoriteImmediately() {
+        doAnswer(ApiResultAnswers.<Void>success(null)).when(repository).addFavorite(eq("recipe-1"), any());
+
+        viewModel.toggleFavorite("recipe-1", false);
+
+        verify(repository).addFavorite(eq("recipe-1"), any());
+    }
+
+    @Test
+    public void toggleFavorite_removingWhenFavorite_defersRemoveFavoriteCall() {
+        viewModel.toggleFavorite("recipe-1", true);
+
+        verify(repository, never()).removeFavorite(eq("recipe-1"), any());
+    }
+
+    @Test
+    public void toggleFavorite_removingWhenFavorite_flushedOnCleared_callsRemoveFavorite() {
+        doAnswer(ApiResultAnswers.<Void>success(null)).when(repository).removeFavorite(eq("recipe-1"), any());
+        viewModel.toggleFavorite("recipe-1", true);
+
+        viewModel.onCleared();
+
+        verify(repository).removeFavorite(eq("recipe-1"), any());
+    }
+
+    @Test
+    public void undoRemoveFavorite_beforeWindowElapses_returnsTrue_andNeverCallsRemove() {
+        viewModel.toggleFavorite("recipe-1", true);
+
+        assertTrue(viewModel.undoRemoveFavorite("recipe-1"));
+        verify(repository, never()).removeFavorite(any(), any());
+    }
+
+    @Test
+    public void undoRemoveFavorite_returnsFalse_whenNothingPending() {
+        assertFalse(viewModel.undoRemoveFavorite("recipe-1"));
+    }
+
+    @Test
+    public void toggleFavorite_addingWhileMatchingRemoveStillPending_cancelsPendingRemove_withoutCallingAddFavorite() {
+        viewModel.toggleFavorite("recipe-1", true); // schedules a deferred remove
+
+        viewModel.toggleFavorite("recipe-1", false); // re-add should cancel it instead
+
+        verify(repository, never()).addFavorite(any(), any());
+        verify(repository, never()).removeFavorite(any(), any());
+    }
+
+    @Test
+    public void getStarBreakdown_countsReviewsByWholeStarRating() {
+        List<ReviewResponse> reviews = List.of(
+                review("r1", BigDecimal.valueOf(5)),
+                review("r2", BigDecimal.valueOf(5)),
+                review("r3", BigDecimal.valueOf(3.6)), // rounds to 4
+                review("r4", null)); // defaults to 1
+
+        int[] breakdown = viewModel.getStarBreakdown(reviews);
+
+        assertEquals(1, breakdown[1]);
+        assertEquals(0, breakdown[2]);
+        assertEquals(0, breakdown[3]);
+        assertEquals(1, breakdown[4]);
+        assertEquals(2, breakdown[5]);
+    }
+
+    @Test
+    public void getDisplayedReviews_starFilter_removesNonMatchingReviews() {
+        ReviewResponse fiveStar = review("r1", BigDecimal.valueOf(5));
+        ReviewResponse threeStar = review("r2", BigDecimal.valueOf(3));
+        List<ReviewResponse> reviews = List.of(fiveStar, threeStar);
+
+        List<ReviewResponse> displayed = viewModel.getDisplayedReviews(reviews, 5, RecipeDetailViewModel.ReviewSort.NEWEST);
+
+        assertEquals(List.of(fiveStar), displayed);
+    }
+
+    @Test
+    public void getDisplayedReviews_highestRated_sortsDescending_withNullRatingAsZero() {
+        ReviewResponse high = review("r1", BigDecimal.valueOf(4));
+        ReviewResponse low = review("r2", BigDecimal.valueOf(2));
+        ReviewResponse nullRating = review("r3", null);
+        List<ReviewResponse> reviews = List.of(low, nullRating, high);
+
+        List<ReviewResponse> displayed =
+                viewModel.getDisplayedReviews(reviews, null, RecipeDetailViewModel.ReviewSort.HIGHEST_RATED);
+
+        assertEquals(List.of(high, low, nullRating), displayed);
+    }
+
+    @Test
+    public void getDisplayedReviews_lowestRated_sortsAscending_withNullRatingAsZero() {
+        ReviewResponse high = review("r1", BigDecimal.valueOf(4));
+        ReviewResponse low = review("r2", BigDecimal.valueOf(2));
+        ReviewResponse nullRating = review("r3", null);
+        List<ReviewResponse> reviews = List.of(high, low, nullRating);
+
+        List<ReviewResponse> displayed =
+                viewModel.getDisplayedReviews(reviews, null, RecipeDetailViewModel.ReviewSort.LOWEST_RATED);
+
+        assertEquals(List.of(nullRating, low, high), displayed);
+    }
+
+    @Test
+    public void getDisplayedReviews_newest_sortsByCreatedAtDescending_withNullCreatedAtAsEmpty() {
+        ReviewResponse recent = reviewWithCreatedAt("r1", "2026-03-01");
+        ReviewResponse older = reviewWithCreatedAt("r2", "2026-01-01");
+        ReviewResponse nullCreatedAt = reviewWithCreatedAt("r3", null);
+        List<ReviewResponse> reviews = List.of(older, nullCreatedAt, recent);
+
+        List<ReviewResponse> displayed =
+                viewModel.getDisplayedReviews(reviews, null, RecipeDetailViewModel.ReviewSort.NEWEST);
+
+        assertEquals(List.of(recent, older, nullCreatedAt), displayed);
+    }
+
+    private ReviewResponse review(String id, BigDecimal rating) {
+        return new ReviewResponse(id, "user-1", "Author", null, "recipe-1", rating, "Title", "Comment", "2026-01-01", "2026-01-01");
+    }
+
+    private ReviewResponse reviewWithCreatedAt(String id, String createdAt) {
+        return new ReviewResponse(id, "user-1", "Author", null, "recipe-1", BigDecimal.valueOf(4), "Title", "Comment", createdAt, createdAt);
     }
 
     // formatPublishedDate's java.time branch is gated on Build.VERSION.SDK_INT >= O, and the

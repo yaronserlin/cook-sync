@@ -70,12 +70,33 @@ public class RecipeDraftValidatorTest {
     }
 
     @Test
+    public void isStepValid_basics_false_whenPrepTimeNegative() {
+        RecipeDraft draft = validBasics();
+        draft.prepTimeMinutes = -1;
+        assertFalse(RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_BASICS));
+    }
+
+    @Test
+    public void isStepValid_basics_false_whenCookTimeNegative() {
+        RecipeDraft draft = validBasics();
+        draft.cookTimeMinutes = -1;
+        assertFalse(RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_BASICS));
+    }
+
+    @Test
     public void isTitleValid_false_forNullOrWhitespace() {
         RecipeDraft draft = new RecipeDraft();
         draft.title = null;
         assertFalse(RecipeDraftValidator.isTitleValid(draft));
         draft.title = "   ";
         assertFalse(RecipeDraftValidator.isTitleValid(draft));
+    }
+
+    @Test
+    public void isDifficultySet_false_forEmptyString() {
+        RecipeDraft draft = new RecipeDraft();
+        draft.difficulty = "";
+        assertFalse(RecipeDraftValidator.isDifficultySet(draft));
     }
 
 
@@ -98,6 +119,24 @@ public class RecipeDraftValidatorTest {
         RecipeDraft draft = new RecipeDraft();
         RecipeDraft.DraftIngredient ingredient = validIngredient();
         ingredient.unitId = null;
+        draft.ingredients.add(ingredient);
+        assertFalse(RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_INGREDIENTS));
+    }
+
+    @Test
+    public void isStepValid_ingredients_false_whenNonBlankRowHasUnparseableQuantity() {
+        RecipeDraft draft = new RecipeDraft();
+        RecipeDraft.DraftIngredient ingredient = validIngredient();
+        ingredient.quantity = "abc";
+        draft.ingredients.add(ingredient);
+        assertFalse(RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_INGREDIENTS));
+    }
+
+    @Test
+    public void isStepValid_ingredients_false_whenNonBlankRowHasZeroQuantity() {
+        RecipeDraft draft = new RecipeDraft();
+        RecipeDraft.DraftIngredient ingredient = validIngredient();
+        ingredient.quantity = "0";
         draft.ingredients.add(ingredient);
         assertFalse(RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_INGREDIENTS));
     }

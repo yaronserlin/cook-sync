@@ -3,15 +3,19 @@ package com.cooksync_server.services;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
+import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
 import com.cooksync_server.entities.PendingRegistration;
+import com.cooksync_server.entities.RefreshToken;
 import com.cooksync_server.entities.User;
+import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.InvalidCredentialsException;
 import com.cooksync_server.exceptions.auth.InvalidOtpException;
 import com.cooksync_server.exceptions.auth.OtpExpiredException;
 import com.cooksync_server.exceptions.auth.TooManyOtpAttemptsException;
+import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.exceptions.auth.UserAlreadyExistsException;
 import com.cooksync_server.repositories.PendingRegistrationRepository;
 import com.cooksync_server.repositories.UserRepository;
@@ -25,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
@@ -277,6 +282,141 @@ class AuthServiceTest {
         when(passwordEncoder.matches("WrongPassword", "hashed-password")).thenReturn(false);
 
         assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_ShouldRestoreAccountAndReturnAuthResponse_WhenWithinDeletionGracePeriod() {
+        LoginRequestDTO request = new LoginRequestDTO("john@example.com", "Password123!");
+        User existingUser = User.builder()
+                .id("user-123")
+                .firstName("John")
+                .lastName("Doe")
+                .email("john@example.com")
+                .passwordHash("hashed-password")
+                .enabled(false)
+                .status(User.AccountStatus.DEACTIVATED)
+                .deletionRequestedAt(LocalDateTime.now().minusDays(5))
+                .isAdmin(false)
+                .build();
+
+        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches("Password123!", "hashed-password")).thenReturn(true);
+        when(sessionIssuer.issue(existingUser))
+                .thenReturn(new AuthResponse("mock-jwt-token", "mock-refresh-token", "user-123", "John", "Doe", false, null));
+
+        AuthResponse response = authService.login(request);
+
+        assertNotNull(response);
+        assertEquals("mock-jwt-token", response.token());
+        verify(accountDeletionService, times(1)).restoreFromPendingDeletion(existingUser);
+        verify(sessionIssuer, times(1)).issue(existingUser);
+    }
+
+    @Test
+    void login_ShouldThrowUnauthorizedActionException_WhenDisabledAccountIsOutsideDeletionGracePeriod() {
+        LoginRequestDTO request = new LoginRequestDTO("john@example.com", "Password123!");
+        User existingUser = User.builder()
+                .id("user-123")
+                .email("john@example.com")
+                .passwordHash("hashed-password")
+                .enabled(false)
+                .status(User.AccountStatus.DEACTIVATED)
+                .deletionRequestedAt(LocalDateTime.now().minusDays(45))
+                .build();
+
+        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.matches("Password123!", "hashed-password")).thenReturn(true);
+
+        UnauthorizedActionException exception = assertThrows(UnauthorizedActionException.class,
+                () -> authService.login(request));
+
+        assertEquals("This account has been disabled.", exception.getMessage());
+        verify(accountDeletionService, never()).restoreFromPendingDeletion(any(User.class));
+        verify(sessionIssuer, never()).issue(any(User.class));
+    }
+
+    @Test
+    void refreshToken_ShouldReturnNewAuthResponse_WhenTokenIsValid() {
+        TokenRefreshRequestDTO request = new TokenRefreshRequestDTO("valid-refresh-token");
+        User user = User.builder().id("user-123").email("john@example.com").firstName("John").lastName("Doe").build();
+        RefreshToken refreshToken = RefreshToken.builder()
+                .id("rt-id")
+                .token("valid-refresh-token")
+                .user(user)
+                .expiryDate(Instant.now().plusSeconds(300))
+                .build();
+
+        when(refreshTokenService.findByToken("valid-refresh-token")).thenReturn(Optional.of(refreshToken));
+        when(refreshTokenService.verifyExpiration(refreshToken)).thenReturn(refreshToken);
+        when(sessionIssuer.issue(user))
+                .thenReturn(new AuthResponse("new-jwt-token", "new-refresh-token", "user-123", "John", "Doe", false, null));
+
+        AuthResponse response = authService.refreshToken(request);
+
+        assertNotNull(response);
+        assertEquals("new-jwt-token", response.token());
+        assertEquals("new-refresh-token", response.refreshToken());
+        assertEquals("user-123", response.userId());
+        verify(sessionIssuer, times(1)).issue(user);
+    }
+
+    @Test
+    void refreshToken_ShouldThrowUnauthorizedActionException_WhenTokenNotFound() {
+        TokenRefreshRequestDTO request = new TokenRefreshRequestDTO("unknown-token");
+        when(refreshTokenService.findByToken("unknown-token")).thenReturn(Optional.empty());
+
+        assertThrows(UnauthorizedActionException.class, () -> authService.refreshToken(request));
+        verify(sessionIssuer, never()).issue(any(User.class));
+    }
+
+    @Test
+    void validateToken_ShouldReturnAuthResponseWithProfileDetails_WhenUserExists() {
+        User user = User.builder()
+                .id("user-123")
+                .email("john@example.com")
+                .firstName("John")
+                .lastName("Doe")
+                .isAdmin(true)
+                .avatarUrl("avatar.png")
+                .build();
+
+        when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
+
+        AuthResponse response = authService.validateToken("john@example.com");
+
+        assertNotNull(response);
+        assertNull(response.token());
+        assertNull(response.refreshToken());
+        assertEquals("user-123", response.userId());
+        assertEquals("John", response.firstName());
+        assertEquals("Doe", response.lastName());
+        assertTrue(response.isAdmin());
+        assertEquals("avatar.png", response.avatarUrl());
+    }
+
+    @Test
+    void validateToken_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> authService.validateToken("unknown@example.com"));
+    }
+
+    @Test
+    void logout_ShouldDeleteRefreshTokenForUser_WhenUserExists() {
+        User user = User.builder().id("user-123").email("john@example.com").build();
+        when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
+
+        authService.logout("john@example.com");
+
+        verify(refreshTokenService, times(1)).deleteByUserId("user-123");
+    }
+
+    @Test
+    void logout_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
+        when(userRepository.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> authService.logout("unknown@example.com"));
+        verify(refreshTokenService, never()).deleteByUserId(anyString());
     }
 
     @Test

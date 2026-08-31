@@ -2,6 +2,7 @@ package com.cooksync_server.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -20,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
+import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.services.IngredientService;
 import com.dtos.request.ingredient.IngredientRequestDTO;
@@ -104,5 +106,36 @@ class IngredientControllerTest {
                 .andExpect(status().isOk());
 
         verify(ingredientService).deleteIngredient("ing-1", "chef@example.com");
+    }
+
+    @Test
+    void addIngredient_ShouldReturnForbidden_WhenCallerDoesNotOwnRecipe() throws Exception {
+        IngredientRequestDTO request = new IngredientRequestDTO(null, "Flour", 2.5, "unit-1");
+        when(ingredientService.addIngredientToRecipe(eq("recipe-1"), any(), eq("chef@example.com")))
+                .thenThrow(new UnauthorizedActionException("You are not allowed to modify this recipe."));
+
+        mockMvc.perform(post("/api/recipes/recipe-1/ingredients")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteIngredient_ShouldReturnForbidden_WhenCallerDoesNotOwnRecipe() throws Exception {
+        doThrow(new UnauthorizedActionException("You are not allowed to modify this ingredient."))
+                .when(ingredientService).deleteIngredient("ing-1", "chef@example.com");
+
+        mockMvc.perform(delete("/api/ingredients/ing-1").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteIngredient_ShouldReturnNotFound_WhenIngredientMissing() throws Exception {
+        doThrow(new ResourceNotFoundException("Ingredient", "missing"))
+                .when(ingredientService).deleteIngredient("missing", "chef@example.com");
+
+        mockMvc.perform(delete("/api/ingredients/missing").with(csrf()))
+                .andExpect(status().isNotFound());
     }
 }

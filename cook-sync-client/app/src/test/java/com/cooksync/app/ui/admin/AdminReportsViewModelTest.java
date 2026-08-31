@@ -1,6 +1,7 @@
 package com.cooksync.app.ui.admin;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -13,6 +14,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
 import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
+import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.domain.Event;
 import com.cooksync.app.testutil.ApiResultAnswers;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
@@ -66,6 +69,19 @@ public class AdminReportsViewModelTest {
     }
 
     @Test
+    public void loadReportedReviews_error_postsErrorEvent() {
+        doAnswer(ApiResultAnswers.<PagedResponse<ReportedReviewResponse>>error("network error"))
+                .when(adminRepository).getReportedReviews(eq(0), eq(20), any());
+
+        viewModel.loadReportedReviews();
+
+        Event<ApiResult<Void>> event = viewModel.getReportActionResult().getValue();
+        ApiResult<Void> result = event.getContentIfNotHandled();
+        assertTrue(result instanceof ApiResult.Error<Void>);
+        assertEquals("network error", ((ApiResult.Error<Void>) result).getMessage());
+    }
+
+    @Test
     public void setReasonFilter_filtersClientSideWithoutNetworkCall() {
         loadOnePageWithAllThreeReports();
 
@@ -98,6 +114,47 @@ public class AdminReportsViewModelTest {
     }
 
     @Test
+    public void removeReport_flushedWithoutUndo_serverError_restoresReport_andPostsErrorEvent() {
+        loadOnePageWithAllThreeReports();
+        doAnswer(ApiResultAnswers.<Void>error("network error"))
+                .when(recipeRepository).deleteReview(eq("r1"), any());
+
+        viewModel.removeReport(spamReport);
+        viewModel.onCleared();
+
+        assertEquals(List.of(abuseReportSameUser, otherUserReport, spamReport), viewModel.getFilteredReports().getValue());
+        ApiResult<Void> result = viewModel.getReportActionResult().getValue().getContentIfNotHandled();
+        assertTrue(result instanceof ApiResult.Error<Void>);
+        assertEquals("network error", ((ApiResult.Error<Void>) result).getMessage());
+    }
+
+    @Test
+    public void keepReport_hidesImmediately_undoneBeforeFlush_restoresAndNeverDismisses() {
+        loadOnePageWithAllThreeReports();
+
+        viewModel.keepReport(spamReport);
+        assertEquals(List.of(abuseReportSameUser, otherUserReport), viewModel.getFilteredReports().getValue());
+
+        viewModel.undoKeepReport(spamReport);
+        assertEquals(List.of(abuseReportSameUser, otherUserReport, spamReport), viewModel.getFilteredReports().getValue());
+        verify(adminRepository, never()).dismissReport(any(), any());
+    }
+
+    @Test
+    public void keepReport_flushedWithoutUndo_dismissesTheReportWithoutDeletingTheReview() {
+        loadOnePageWithAllThreeReports();
+        doAnswer(ApiResultAnswers.<Void>success(null))
+                .when(adminRepository).dismissReport(eq("r1"), any());
+
+        viewModel.keepReport(spamReport);
+        viewModel.onCleared();
+
+        verify(adminRepository).dismissReport(eq("r1"), any());
+        verify(recipeRepository, never()).deleteReview(any(), any());
+        assertEquals(List.of(abuseReportSameUser, otherUserReport), viewModel.getFilteredReports().getValue());
+    }
+
+    @Test
     public void removeReportsForUser_removesEveryReportFromThatReviewer() {
         loadOnePageWithAllThreeReports();
 
@@ -117,6 +174,23 @@ public class AdminReportsViewModelTest {
 
         viewModel.onCleared();
         verify(adminRepository).suspendUser(eq("user-bob"), any());
+    }
+
+    @Test
+    public void banReporter_serverError_reloadsQueue_andPostsErrorEvent() {
+        loadOnePageWithAllThreeReports();
+        doAnswer(ApiResultAnswers.<Void>error("network error"))
+                .when(adminRepository).suspendUser(eq("user-bob"), any());
+
+        viewModel.banReporter(spamReport);
+        assertEquals(List.of(otherUserReport), viewModel.getFilteredReports().getValue());
+
+        viewModel.onCleared();
+
+        assertEquals(List.of(spamReport, abuseReportSameUser, otherUserReport), viewModel.getFilteredReports().getValue());
+        ApiResult<Void> result = viewModel.getReportActionResult().getValue().getContentIfNotHandled();
+        assertTrue(result instanceof ApiResult.Error<Void>);
+        assertEquals("network error", ((ApiResult.Error<Void>) result).getMessage());
     }
 
     private void loadOnePageWithAllThreeReports() {

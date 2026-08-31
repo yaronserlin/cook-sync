@@ -58,6 +58,17 @@ class TagServiceTest {
     }
 
     @Test
+    void getPopularTags_ShouldReturnTagsOrderedByUsage() {
+        when(tagRepository.findPopularTags(org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(java.util.List.of(sampleTag));
+
+        java.util.List<TagResponse> response = tagService.getPopularTags(5);
+
+        assertEquals(1, response.size());
+        assertEquals("dessert", response.get(0).name());
+    }
+
+    @Test
     void getOrCreateTag_ShouldReturnExistingTag_WhenAlreadyPresent() {
         TagRequestDTO request = new TagRequestDTO("Dessert");
         when(tagRepository.findByNameIgnoreCase("dessert")).thenReturn(Optional.of(sampleTag));

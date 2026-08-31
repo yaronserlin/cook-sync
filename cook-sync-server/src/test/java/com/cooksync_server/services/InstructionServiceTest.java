@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Instruction;
 import com.cooksync_server.entities.Recipe;
+import com.cooksync_server.entities.Unit;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
@@ -93,6 +96,44 @@ class InstructionServiceTest {
     }
 
     @Test
+    void updateInstruction_ShouldUpdateStep_WhenUserIsOwner() {
+        Instruction instruction = Instruction.builder().id("inst-1").recipe(sampleRecipe).stepNumber(1)
+                .description("Preheat the oven").build();
+        InstructionRequestDTO request = new InstructionRequestDTO(2, "Chill the dough", true, 300, List.of(), null);
+        when(instructionRepository.findById("inst-1")).thenReturn(Optional.of(instruction));
+        when(userRepository.findByEmail("owner@cooksync.com")).thenReturn(Optional.of(owner));
+        when(instructionRepository.save(org.mockito.ArgumentMatchers.any(Instruction.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        InstructionResponse response = instructionService.updateInstruction("inst-1", request, "owner@cooksync.com");
+
+        assertEquals("Chill the dough", response.description());
+        assertEquals(2, response.stepNumber());
+    }
+
+    @Test
+    void updateInstruction_ShouldResolveIngredients_WhenIngredientIdsProvided() {
+        Instruction instruction = Instruction.builder().id("inst-1").recipe(sampleRecipe).stepNumber(1)
+                .description("Preheat the oven").build();
+        UUID ingredientUuid = UUID.randomUUID();
+        InstructionRequestDTO request = new InstructionRequestDTO(1, "Preheat the oven", false, null,
+                List.of(ingredientUuid), null);
+        Unit sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").build();
+        Ingredient ingredient = Ingredient.builder().id(ingredientUuid.toString()).recipe(sampleRecipe)
+                .name("Flour").unit(sampleUnit).build();
+        when(instructionRepository.findById("inst-1")).thenReturn(Optional.of(instruction));
+        when(userRepository.findByEmail("owner@cooksync.com")).thenReturn(Optional.of(owner));
+        when(ingredientRepository.findAllById(List.of(ingredientUuid.toString()))).thenReturn(List.of(ingredient));
+        when(instructionRepository.save(org.mockito.ArgumentMatchers.any(Instruction.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        InstructionResponse response = instructionService.updateInstruction("inst-1", request, "owner@cooksync.com");
+
+        assertEquals(1, response.ingredients().size());
+        org.mockito.Mockito.verify(ingredientRepository).findAllById(List.of(ingredientUuid.toString()));
+    }
+
+    @Test
     void deleteInstruction_ShouldDelete_WhenUserIsOwner() {
         Instruction instruction = Instruction.builder().id("inst-1").recipe(sampleRecipe).stepNumber(1)
                 .description("Preheat the oven").build();
@@ -102,6 +143,14 @@ class InstructionServiceTest {
         instructionService.deleteInstruction("inst-1", "owner@cooksync.com");
 
         org.mockito.Mockito.verify(instructionRepository).delete(instruction);
+    }
+
+    @Test
+    void deleteInstruction_ShouldThrowResourceNotFoundException_WhenInstructionMissing() {
+        when(instructionRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> instructionService.deleteInstruction("missing", "owner@cooksync.com"));
     }
 
     @Test

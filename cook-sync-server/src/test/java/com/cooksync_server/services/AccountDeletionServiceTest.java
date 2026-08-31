@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -117,6 +118,62 @@ class AccountDeletionServiceTest {
         assertNull(sampleUser.getDeletionRequestedAt());
         verify(userRepository).save(sampleUser);
         verify(reviewRepository).setHiddenByUserId(false, "user-999");
+    }
+
+    @Test
+    void purgeExpiredAccounts_ShouldDoNothing_WhenNoExpiredAccountsFound() {
+        when(userRepository.findByStatusAndDeletionRequestedAtBefore(eq(User.AccountStatus.DEACTIVATED), any()))
+                .thenReturn(List.of());
+
+        accountDeletionService.purgeExpiredAccounts();
+
+        verify(recipeRepository, never()).findByCreatedById(any(), any());
+        verify(reviewRepository, never()).deleteByUserId(any());
+        verify(cloudinaryService, never()).deleteImages(any());
+        verify(cloudinaryService, never()).deleteFolder(any());
+        verify(userRepository, never()).delete(any());
+    }
+
+    @Test
+    void purgeAccountImmediately_ShouldPurgeAccountAndSkipRecipeDeletion_WhenUserOwnsNoRecipes() {
+        when(recipeRepository.findByCreatedById(eq("user-999"), any(Pageable.class)))
+                .thenReturn(new PageImpl<Recipe>(List.of()));
+        when(reviewRepository.findIdsByUserIdOrRecipeIdIn(eq("user-999"), anyList()))
+                .thenReturn(List.of());
+
+        accountDeletionService.purgeAccountImmediately(sampleUser);
+
+        verify(recipeRepository, never()).deleteAll(anyList());
+        verify(reviewReportRepository, never()).deleteByReviewIdIn(anyList());
+        verify(reviewReportRepository).deleteByReporterId("user-999");
+        verify(cloudinaryService).deleteImages(List.of(sampleUser.getAvatarUrl()));
+        verify(userRepository).delete(sampleUser);
+    }
+
+    @Test
+    void purgeAccount_ShouldSkipAvatarDeletion_WhenAvatarUrlIsNullOrBlank() {
+        sampleUser.setAvatarUrl("");
+        when(userRepository.findByStatusAndDeletionRequestedAtBefore(eq(User.AccountStatus.DEACTIVATED), any()))
+                .thenReturn(List.of(sampleUser));
+
+        Recipe sampleRecipe = Recipe.builder()
+                .id("recipe-1")
+                .title("Sample Recipe")
+                .createdBy(sampleUser)
+                .images(Set.of(RecipeImage.builder()
+                        .imageUrl("https://res.cloudinary.com/demo/image/upload/v12345/CookSyncApp/recipe_1.jpg")
+                        .build()))
+                .build();
+        when(recipeRepository.findByCreatedById(eq("user-999"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(sampleRecipe)));
+        when(reviewRepository.findIdsByUserIdOrRecipeIdIn(eq("user-999"), anyList()))
+                .thenReturn(List.of());
+
+        accountDeletionService.purgeExpiredAccounts();
+
+        verify(cloudinaryService).deleteImages(List.of(
+                "https://res.cloudinary.com/demo/image/upload/v12345/CookSyncApp/recipe_1.jpg"
+        ));
     }
 
     @Test

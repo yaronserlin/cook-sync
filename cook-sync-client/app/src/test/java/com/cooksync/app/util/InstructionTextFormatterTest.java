@@ -103,4 +103,35 @@ public class InstructionTextFormatterTest {
         assertEquals(25f, InstructionTextFormatter.stepTextSizeSp(len150), 0f);
         assertEquals(19f, InstructionTextFormatter.stepTextSizeSp(len400), 0f);
     }
+
+    @Test
+    public void stepTextSizeSp_middleBucket_221to350ReturnsTwentyTwo() {
+        assertEquals(22f, InstructionTextFormatter.stepTextSizeSp("x".repeat(221)), 0f);
+        assertEquals(22f, InstructionTextFormatter.stepTextSizeSp("x".repeat(280)), 0f);
+        assertEquals(22f, InstructionTextFormatter.stepTextSizeSp("x".repeat(350)), 0f);
+    }
+
+    @Test
+    public void stepTextSizeSp_boundary_at60And61() {
+        assertEquals(34f, InstructionTextFormatter.stepTextSizeSp("x".repeat(60)), 0f);
+        assertEquals(29f, InstructionTextFormatter.stepTextSizeSp("x".repeat(61)), 0f);
+    }
+
+    @Test
+    public void stepTextSizeSp_boundary_at120And121() {
+        assertEquals(29f, InstructionTextFormatter.stepTextSizeSp("x".repeat(120)), 0f);
+        assertEquals(25f, InstructionTextFormatter.stepTextSizeSp("x".repeat(121)), 0f);
+    }
+
+    @Test
+    public void stepTextSizeSp_boundary_at220And221() {
+        assertEquals(25f, InstructionTextFormatter.stepTextSizeSp("x".repeat(220)), 0f);
+        assertEquals(22f, InstructionTextFormatter.stepTextSizeSp("x".repeat(221)), 0f);
+    }
+
+    @Test
+    public void stepTextSizeSp_boundary_at350And351() {
+        assertEquals(22f, InstructionTextFormatter.stepTextSizeSp("x".repeat(350)), 0f);
+        assertEquals(19f, InstructionTextFormatter.stepTextSizeSp("x".repeat(351)), 0f);
+    }
 }

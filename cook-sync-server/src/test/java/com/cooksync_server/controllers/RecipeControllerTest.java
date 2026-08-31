@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.services.RecipeService;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
@@ -181,6 +183,134 @@ class RecipeControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void createRecipe_ShouldReturnForbidden_WhenServiceDeniesOwnership() throws Exception {
+        RecipeCreateRequestDTO request = validCreateRequest();
+        when(recipeService.createRecipe(any(RecipeCreateRequestDTO.class), eq("chef@example.com")))
+                .thenThrow(new UnauthorizedActionException("You are not allowed to create this recipe."));
+
+        mockMvc.perform(post("/api/recipes")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void updateRecipe_ShouldReturnOk_WhenPayloadValid() throws Exception {
+        RecipeCreateRequestDTO request = validCreateRequest();
+        RecipeResponse response = new RecipeResponse("recipe-1", null, "Pasta", "EASY", "PUBLIC",
+                10, 20, 2, 0, null, List.of(), "2026-08-01T00:00:00Z", null, List.of(), java.util.Set.of(),
+                List.of(), null, List.of());
+        when(recipeService.updateRecipe(eq("recipe-1"), any(RecipeCreateRequestDTO.class), eq("chef@example.com")))
+                .thenReturn(response);
+
+        mockMvc.perform(put("/api/recipes/recipe-1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value("recipe-1"));
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void updateRecipe_ShouldReturnForbidden_WhenCallerDoesNotOwnRecipe() throws Exception {
+        RecipeCreateRequestDTO request = validCreateRequest();
+        when(recipeService.updateRecipe(eq("recipe-1"), any(RecipeCreateRequestDTO.class), eq("chef@example.com")))
+                .thenThrow(new UnauthorizedActionException("You are not allowed to edit this recipe."));
+
+        mockMvc.perform(put("/api/recipes/recipe-1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void updateRecipe_ShouldReturnNotFound_WhenRecipeMissing() throws Exception {
+        RecipeCreateRequestDTO request = validCreateRequest();
+        when(recipeService.updateRecipe(eq("missing"), any(RecipeCreateRequestDTO.class), eq("chef@example.com")))
+                .thenThrow(new ResourceNotFoundException("Recipe", "missing"));
+
+        mockMvc.perform(put("/api/recipes/missing")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void updateVisibility_ShouldReturnOk_WhenPayloadValid() throws Exception {
+        RecipeVisibilityUpdateRequestDTO request = new RecipeVisibilityUpdateRequestDTO("PRIVATE");
+        RecipeResponse response = new RecipeResponse("recipe-1", null, "Pasta", "EASY", "PRIVATE",
+                10, 20, 2, 0, null, List.of(), "2026-08-01T00:00:00Z", null, List.of(), java.util.Set.of(),
+                List.of(), null, List.of());
+        when(recipeService.updateVisibility(eq("recipe-1"), any(RecipeVisibilityUpdateRequestDTO.class), eq("chef@example.com")))
+                .thenReturn(response);
+
+        mockMvc.perform(patch("/api/recipes/recipe-1/visibility")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.visibility").value("PRIVATE"));
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void updateVisibility_ShouldReturnForbidden_WhenCallerDoesNotOwnRecipe() throws Exception {
+        RecipeVisibilityUpdateRequestDTO request = new RecipeVisibilityUpdateRequestDTO("PRIVATE");
+        when(recipeService.updateVisibility(eq("recipe-1"), any(RecipeVisibilityUpdateRequestDTO.class), eq("chef@example.com")))
+                .thenThrow(new UnauthorizedActionException("You are not allowed to edit this recipe."));
+
+        mockMvc.perform(patch("/api/recipes/recipe-1/visibility")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void updateVisibility_ShouldReturnNotFound_WhenRecipeMissing() throws Exception {
+        RecipeVisibilityUpdateRequestDTO request = new RecipeVisibilityUpdateRequestDTO("PRIVATE");
+        when(recipeService.updateVisibility(eq("missing"), any(RecipeVisibilityUpdateRequestDTO.class), eq("chef@example.com")))
+                .thenThrow(new ResourceNotFoundException("Recipe", "missing"));
+
+        mockMvc.perform(patch("/api/recipes/missing/visibility")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void deleteRecipe_ShouldReturnForbidden_WhenCallerDoesNotOwnRecipe() throws Exception {
+        org.mockito.Mockito.doThrow(new UnauthorizedActionException("You are not allowed to delete this recipe."))
+                .when(recipeService).deleteRecipe("recipe-1", "chef@example.com");
+
+        mockMvc.perform(delete("/api/recipes/recipe-1")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "chef@example.com")
+    void deleteRecipe_ShouldReturnNotFound_WhenRecipeMissing() throws Exception {
+        org.mockito.Mockito.doThrow(new ResourceNotFoundException("Recipe", "missing"))
+                .when(recipeService).deleteRecipe("missing", "chef@example.com");
+
+        mockMvc.perform(delete("/api/recipes/missing")
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
     }
 
     @Test

@@ -96,6 +96,17 @@ class FavoriteServiceTest {
     }
 
     @Test
+    void addFavorite_ShouldThrowResourceNotFoundException_WhenRecipeMissing() {
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(java.util.Optional.of(sampleUser));
+        when(recipeRepository.findById("missing")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> favoriteService.addFavorite("missing", "gordon@cooksync.com"));
+
+        verify(favoriteRepository, never()).save(org.mockito.ArgumentMatchers.any(FavoriteRecipe.class));
+    }
+
+    @Test
     void removeFavorite_ShouldDeleteFavoriteAndAssociatedNote() {
         when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(java.util.Optional.of(sampleUser));
         when(recipeRepository.findById("recipe-1")).thenReturn(java.util.Optional.of(sampleRecipe));
@@ -104,6 +115,35 @@ class FavoriteServiceTest {
 
         verify(favoriteRepository).deleteByUserIdAndRecipeId("user-1", "recipe-1");
         verify(personalInstructionNoteRepository).deleteByUserIdAndRecipeId("user-1", "recipe-1");
+    }
+
+    @Test
+    void removeFavorite_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> favoriteService.removeFavorite("recipe-1", "missing@cooksync.com"));
+
+        verify(favoriteRepository, never()).deleteByUserIdAndRecipeId(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void removeFavorite_ShouldThrowResourceNotFoundException_WhenRecipeMissing() {
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(java.util.Optional.of(sampleUser));
+        when(recipeRepository.findById("missing")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> favoriteService.removeFavorite("missing", "gordon@cooksync.com"));
+
+        verify(favoriteRepository, never()).deleteByUserIdAndRecipeId(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void getUserFavorites_ShouldThrowResourceNotFoundException_WhenUserMissing() {
+        when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> favoriteService.getUserFavorites("missing@cooksync.com", 0, 10));
     }
 
     @Test

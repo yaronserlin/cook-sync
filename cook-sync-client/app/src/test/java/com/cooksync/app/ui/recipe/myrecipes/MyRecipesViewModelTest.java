@@ -223,6 +223,32 @@ public class MyRecipesViewModelTest {
         verify(recipeRepository).updateRecipeVisibility(eq("recipe-1"), eq("PRIVATE"), any());
     }
 
+    @Test
+    public void onCleared_flushesPendingVisibilityToggle_serverError_rollsBackVisibility_andPublishesError() {
+        stubMyRecipes(List.of(recipeOne));
+        viewModel.loadMyRecipes();
+        viewModel.toggleVisibility(recipeOne);
+        doAnswer(ApiResultAnswers.<RecipeResponse>error("Server unavailable"))
+                .when(recipeRepository).updateRecipeVisibility(eq("recipe-1"), eq("PRIVATE"), any());
+
+        viewModel.onCleared();
+
+        verify(recipeRepository).updateRecipeVisibility(eq("recipe-1"), eq("PRIVATE"), any());
+        assertEquals("PUBLIC", successRecipes().get(0).visibility());
+        assertTrue(viewModel.getVisibilityResult().getValue() instanceof ApiResult.Error<RecipeResponse>);
+    }
+
+    @Test
+    public void loadMyRecipes_publishesError_whenRepositoryFails() {
+        doAnswer(ApiResultAnswers.<List<RecipePreviewResponse>>error("Server unavailable"))
+                .when(recipeRepository).getMyRecipes(any());
+
+        viewModel.loadMyRecipes();
+
+        assertTrue(viewModel.getRecipesResult().getValue() instanceof ApiResult.Error<List<RecipePreviewResponse>>);
+        assertFalse(viewModel.hasAnyRecipes());
+    }
+
     private void stubMyRecipes(List<RecipePreviewResponse> recipes) {
         doAnswer(ApiResultAnswers.success(recipes)).when(recipeRepository).getMyRecipes(any());
     }
