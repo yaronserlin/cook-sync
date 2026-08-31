@@ -15,12 +15,14 @@ import jakarta.validation.constraints.Pattern;
  * new/changed-password field across the auth request DTOs: at least one uppercase letter, one
  * lowercase letter, one digit, and one special character from {@code @$!%*?&}. Delegates
  * entirely to the meta-annotated {@link Pattern} constraint rather than a dedicated validator.
+ * Permits {@link ElementType#ANNOTATION_TYPE} as a target so it can itself be meta-annotated onto
+ * the higher-level {@link NewPassword} composed constraint.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 22/08/2026
  */
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.RECORD_COMPONENT})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.RECORD_COMPONENT, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Constraint(validatedBy = {})

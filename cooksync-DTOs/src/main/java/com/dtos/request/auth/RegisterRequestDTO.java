@@ -1,9 +1,9 @@
 package com.dtos.request.auth;
 
-import com.dtos.validation.StrongPassword;
+import com.dtos.validation.NewPassword;
+import com.dtos.validation.ValidEmail;
 
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -18,7 +18,7 @@ import jakarta.validation.constraints.Size;
  * @param termsAccepted whether the user accepted the terms of use; registration is rejected unless {@code true}
  * @param marketingOptIn whether the user opted in to marketing communications; optional, defaults to {@code false}
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record RegisterRequestDTO(
@@ -32,15 +32,10 @@ public record RegisterRequestDTO(
         @Size(max = 50, message = "Last name cannot exceed 50 characters")
         String lastName,
 
-        @NotBlank(message = "Email cannot be blank")
-        @Email(message = "Email should be valid")
-        @Size(max = 255, message = "Email cannot exceed 255 characters")
+        @ValidEmail
         String email,
 
-        @NotBlank(message = "Password cannot be blank")
-        @Size(min = 6, message = "Password must be at least 6 characters long")
-        @Size(max = 100, message = "Password cannot exceed 100 characters")
-        @StrongPassword
+        @NewPassword
         String password,
 
         @AssertTrue(message = "You must accept the terms of use to create an account")

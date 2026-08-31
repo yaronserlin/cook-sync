@@ -10,7 +10,7 @@ package com.dtos.response;
  * @param error error detail payload returned on failure
  * @param message contextual message summarizing result
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 02/08/2026
  */
 public record ApiResponse<T>(
@@ -19,6 +19,18 @@ public record ApiResponse<T>(
         Object error,
         String message
 ) {
+
+    /**
+     * Constructs a successful API response with a data payload and description message.
+     *
+     * @param <T> the payload type
+     * @param data the successful result payload, or {@code null} if the endpoint returns no body
+     * @param message human-readable description of the successful outcome
+     * @return a new successful ApiResponse instance
+     */
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<>(true, data, null, message);
+    }
 
     /**
      * Constructs a failed API response with error payload and message.

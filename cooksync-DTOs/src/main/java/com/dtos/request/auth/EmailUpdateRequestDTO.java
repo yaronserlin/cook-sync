@@ -1,10 +1,7 @@
 package com.dtos.request.auth;
 
 import com.dtos.validation.CurrentPassword;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.dtos.validation.ValidEmail;
 
 /**
  * Request payload for a self-service email-address change, submitted from the Android client's
@@ -14,13 +11,11 @@ import jakarta.validation.constraints.Size;
  * @param newEmail the requested replacement email address; required, must be a well-formed email, and limited to 255 characters
  * @param currentPassword the user's active password, checked to confirm their identity before the change is accepted
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record EmailUpdateRequestDTO(
-        @NotBlank(message = "New email cannot be blank")
-        @Email(message = "Email should be valid")
-        @Size(max = 255, message = "Email cannot exceed 255 characters")
+        @ValidEmail
         String newEmail,
 
         @CurrentPassword

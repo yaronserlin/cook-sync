@@ -1,11 +1,8 @@
 package com.dtos.request.auth;
 
+import com.dtos.validation.NewPassword;
 import com.dtos.validation.OtpCode;
-import com.dtos.validation.StrongPassword;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.dtos.validation.ValidEmail;
 
 /**
  * Data Transfer Object for completing the forgot-password flow with a valid reset code.
@@ -14,22 +11,17 @@ import jakarta.validation.constraints.Size;
  * @param code the 6-digit reset code issued via the forgot-password email
  * @param newPassword the new raw password, requiring uppercase, lowercase, numeric, and special characters
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 05/08/2026
  */
 public record ResetPasswordRequestDTO(
-        @NotBlank(message = "Email cannot be blank")
-        @Email(message = "Email should be valid")
-        @Size(max = 255, message = "Email cannot exceed 255 characters")
+        @ValidEmail
         String email,
 
         @OtpCode
         String code,
 
-        @NotBlank(message = "Password cannot be blank")
-        @Size(min = 6, message = "Password must be at least 6 characters long")
-        @Size(max = 100, message = "Password cannot exceed 100 characters")
-        @StrongPassword
+        @NewPassword
         String newPassword
 ) {
 }
