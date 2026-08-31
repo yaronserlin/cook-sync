@@ -22,3 +22,4 @@ graphify-out/
 .semanticgraphs/*
 
 doc/**
+output/**
