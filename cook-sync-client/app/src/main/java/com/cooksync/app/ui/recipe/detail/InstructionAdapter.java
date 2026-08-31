@@ -148,8 +148,6 @@ public class InstructionAdapter extends BaseAdapter<InstructionResponse, Instruc
         boolean hasNote = note != null && !note.isEmpty();
         boolean editing = Objects.equals(step.id(), editingInstructionId);
 
-        // Once a note exists, the note text itself is the edit entry point; "Add a note" is
-        // only shown as an affordance when there's nothing to tap yet.
         holder.note.setVisibility(hasNote && !editing ? View.VISIBLE : View.GONE);
         if (hasNote) {
             holder.note.setText(note);

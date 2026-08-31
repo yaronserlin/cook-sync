@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Shared horizontal recipe row, used by both "My Recipes" and "Favorites" (which use
-     identical card styling in the design, differing only in the trailing action: an overflow
-     menu for My Recipes, a heart toggle for Favorites) and a bottom note strip when the user
-     has a private note on that recipe, matching the design's favorites-list note callout. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -127,8 +123,6 @@
 
         </LinearLayout>
 
-        <!-- Private note strip, matching the design's favorites-list note callout; hidden
-             when the recipe has no personal note. -->
         <TextView
             android:id="@+id/recipe_note_strip"
             android:layout_width="match_parent"

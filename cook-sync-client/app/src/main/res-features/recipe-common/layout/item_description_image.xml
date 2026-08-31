@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A single supplementary photo (+ optional caption) shown inline within the recipe
-     description, matching the design's descBlocks "figure" concept: a full-width rounded
-     image with an optional figcaption below it, interspersed with text blocks rather than
-     shown in a horizontal-scroll gallery. The image container is ratio-locked (16:9) instead
-     of a fixed height so crop behavior is consistent regardless of source photo dimensions. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  "Recipe Tag Card" mark: a tagged recipe card with a sprouting garnish, nodding to
-  recipes/tags/personal notes. Content is scaled 0.58x and recentered onto the adaptive-icon
-  safe zone (66dp circle centered at 54,54) so it isn't clipped by circle/squircle OEM masks;
-  the untransformed art (viewBox 0-108) runs from x:22-89, y:18-98, well outside that zone.
-  Reused as the monochrome/themed layer (see ic_launcher.xml) — its fillAlpha steps (0.14
-  shadow, 0.32 text lines, 1.0 card/ribbon/leaf) still read as tonal depth under a flat
-  system tint.
--->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"

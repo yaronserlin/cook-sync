@@ -8,7 +8,6 @@
     android:orientation="vertical"
     tools:context=".ui.admin.AdminConsoleActivity">
 
-    <!-- Dark chrome header: back nav, "MODERATION" eyebrow + dynamic heading + badge, tabs. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

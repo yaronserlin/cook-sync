@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Login skeleton layout: pixel-faithful placeholder of activity_login.xml.
-  Every visual element that has meaningful size is represented by a corresponding
-  skeleton bone View with the same approximate dimensions and layout_margins.
-  Animated by SkeletonHelper.attachAll() in LoginActivity.
--->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/skeleton_login_root"
@@ -17,21 +11,18 @@
     android:paddingTop="@dimen/dp_64"
     android:paddingBottom="@dimen/dp_32">
 
-    <!-- ── Brand wordmark bone ──────────────────────────────────────── -->
     <View
         android:layout_width="@dimen/dp_160"
         android:layout_height="@dimen/dp_42"
         android:layout_marginBottom="@dimen/dp_32"
         android:background="@drawable/bg_skeleton_bone" />
 
-    <!-- ── Headline bone ────────────────────────────────────────────── -->
     <View
         android:layout_width="@dimen/dp_240"
         android:layout_height="@dimen/dp_28"
         android:layout_marginBottom="@dimen/dp_10"
         android:background="@drawable/bg_skeleton_bone" />
 
-    <!-- ── Subtitle bones (two lines) ───────────────────────────────── -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_12"
@@ -43,20 +34,16 @@
         android:layout_marginBottom="@dimen/dp_36"
         android:background="@drawable/bg_skeleton_bone" />
 
-    <!-- ── Email field ───────────────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Password field ────────────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Primary button bone ──────────────────────────────────────── -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_54"
         android:layout_marginBottom="@dimen/dp_12"
         android:background="@drawable/bg_skeleton_bone_dark" />
 
-    <!-- ── Secondary button bone ─────────────────────────────────────── -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_54"

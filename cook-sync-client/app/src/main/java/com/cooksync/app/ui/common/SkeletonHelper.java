@@ -118,7 +118,6 @@ public class SkeletonHelper {
         targets.clear();
     }
 
-    // ─── Private helpers ─────────────────────────────────────────────────────────
 
     /**
      * Recursively collects leaf {@link View}s (non-{@link ViewGroup} children, plus

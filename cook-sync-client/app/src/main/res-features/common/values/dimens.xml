@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!--
-      Every literal dp/sp value used anywhere in res-features/*/layout — one entry per
-      distinct value, named after the value itself (not a guessed semantic role), so
-      extracting these out of layout files was a value-preserving, zero-visual-change
-      refactor. Reuse an existing entry for a new value rather than adding a near-duplicate.
-    -->
 
     <dimen name="dp_0">0dp</dimen>
     <dimen name="dp_1">1dp</dimen>

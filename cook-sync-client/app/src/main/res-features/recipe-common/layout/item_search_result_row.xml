@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Compact search-result row, matching the design's search screen (distinct from the
-     elevated item_recipe_card used on Home): 76dp flat thumbnail, title/author/rating/time,
-     trailing chevron, bottom divider — no card background or elevation. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Register skeleton layout: bone-for-bone placeholder of activity_register.xml.
-  Five skeleton_field includes (first name, last name, email, password, repeat password)
-  plus two button bones at the bottom. Animated by SkeletonHelper in RegisterActivity.
--->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/skeleton_register_root"
@@ -16,43 +11,34 @@
     android:paddingTop="@dimen/dp_64"
     android:paddingBottom="@dimen/dp_32">
 
-    <!-- ── Brand wordmark bone ──────────────────────────────────────── -->
     <View
         android:layout_width="@dimen/dp_160"
         android:layout_height="@dimen/dp_42"
         android:layout_marginBottom="@dimen/dp_32"
         android:background="@drawable/bg_skeleton_bone" />
 
-    <!-- ── Headline bone ────────────────────────────────────────────── -->
     <View
         android:layout_width="@dimen/dp_200"
         android:layout_height="@dimen/dp_28"
         android:layout_marginBottom="@dimen/dp_32"
         android:background="@drawable/bg_skeleton_bone" />
 
-    <!-- ── First name field ──────────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Last name field ───────────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Email field ───────────────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Password field ────────────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Repeat password field ─────────────────────────────────────── -->
     <include layout="@layout/skeleton_field" />
 
-    <!-- ── Primary (create account) button bone ──────────────────────── -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_54"
         android:layout_marginBottom="@dimen/dp_12"
         android:background="@drawable/bg_skeleton_bone_dark" />
 
-    <!-- ── Secondary (have account) button bone ──────────────────────── -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_54"

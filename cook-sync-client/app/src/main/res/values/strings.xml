@@ -18,7 +18,6 @@
     <string name="error_session_expired">Your session expired — please sign in again.</string>
     <string name="error_load_image">Couldn\'t load image</string>
 
-    <!-- Validation Errors -->
     <string name="error_validation_email_blank">Email cannot be blank</string>
     <string name="error_validation_email_invalid">Please enter a valid email address</string>
     <string name="error_validation_email_dangerous">Email contains invalid characters</string>
@@ -38,7 +37,6 @@
     <string name="error_validation_otp_blank">Verification code cannot be blank</string>
     <string name="error_validation_otp_invalid">Enter the 6-digit code from your email</string>
 
-    <!-- Auth Titles & Subtitles -->
     <string name="login_title">Welcome back</string>
     <string name="login_subtitle">Sign in to sync your recipes and private notes across every device.</string>
     <string name="register_title">Create account</string>
@@ -48,7 +46,6 @@
     <string name="verify_otp_title">Verify your email</string>
     <string name="verify_otp_subtitle">Enter the 6-digit code we sent to %1$s to finish creating your account.</string>
 
-    <!-- Labels -->
     <string name="label_email">Email address</string>
     <string name="label_password">Password</string>
     <string name="label_first_name">First name</string>
@@ -68,7 +65,6 @@
     <string name="label_otp_code">Verification code</string>
     <string name="hint_otp_code">000000</string>
 
-    <!-- Auth Actions -->
     <string name="action_sign_in">Sign in</string>
     <string name="action_create_account">Create account</string>
     <string name="action_create_account_submit">Create account</string>
@@ -83,7 +79,6 @@
     <string name="action_resend_code_countdown">Resend code in %1$ds</string>
     <string name="resend_otp_success">A new code has been sent to your email</string>
 
-    <!-- Common Actions -->
     <string name="action_add">Add</string>
     <string name="action_undo">Undo</string>
     <string name="action_cancel">Cancel</string>
@@ -105,10 +100,8 @@
     <string name="action_make_private">Make private</string>
     <string name="action_edit_recipe">Edit recipe</string>
 
-    <!-- Footer -->
     <string name="footer_privacy">Your data is yours. We don\'t sell your recipes or private notes.</string>
 
-    <!-- Labels -->
     <string name="label_prep">PREP</string>
     <string name="label_cook">COOK</string>
     <string name="label_serves">SERVES</string>
@@ -116,7 +109,6 @@
     <string name="label_reviews">Reviews</string>
     <string name="label_fullscreen_photo_description">Full-screen photo</string>
 
-    <!-- Filters -->
     <string name="filter_all">All</string>
     <string name="filter_public">Public</string>
     <string name="filter_private">Private</string>
@@ -126,7 +118,6 @@
     <string name="filters_none_applied">None applied</string>
     <string name="filters_applied_summary_format">Showing · %1$s</string>
 
-    <!-- Filters Sheet -->
     <string name="filters_title">Filters</string>
     <string name="filters_tags_label">Tags</string>
     <string name="filters_total_time_label">Total time</string>
@@ -153,13 +144,11 @@
     <string name="review_sort_highest_rated">Highest rated</string>
     <string name="review_sort_lowest_rated">Lowest rated</string>
 
-    <!-- Home -->
     <string name="home_title">Discover</string>
     <string name="home_search_hint">Search recipes&#8230;</string>
     <string name="home_empty_title">No recipes yet</string>
     <string name="home_empty_subtitle">Be the first to publish a recipe!</string>
 
-    <!-- Favorites -->
     <string name="favorites_title">Favorites</string>
     <string name="favorites_empty_title">No favorites yet</string>
     <string name="favorites_empty_subtitle">Tap the heart on any recipe. Your favorites keep private notes that nobody else can see.</string>
@@ -169,7 +158,6 @@
     <string name="favorites_subtitle_format">%1$d recipes · %2$d with notes</string>
     <string name="favorites_with_notes_chip_format">With notes %1$d</string>
 
-    <!-- My Recipes -->
     <string name="my_recipes_title_format">My recipes · %1$d published</string>
     <string name="my_recipes_empty_title">No recipes yet</string>
     <string name="my_recipes_empty_subtitle">Recipes you publish will show up here.</string>
@@ -181,7 +169,6 @@
     <string name="dialog_delete_recipe_title">Delete this recipe?</string>
     <string name="dialog_delete_recipe_message">\"%1$s\" will be permanently deleted. This can\'t be undone.</string>
 
-    <!-- Recipe Detail -->
     <string name="recipe_kicker_format">%1$s · %2$s</string>
     <string name="review_count_format">%1$d reviews</string>
     <string name="time_format_short">%1$d min</string>
@@ -208,7 +195,6 @@
     <string name="label_favorite">Favorite</string>
     <string name="label_review_options">Review options</string>
 
-    <!-- Cooking Mode -->
     <string name="cook_step_label_format">STEP %1$d OF %2$d</string>
     <string name="cook_note_prefix_format">Your note: %1$s</string>
     <string name="cook_uses_chip_format">%1$s %2$s %3$s</string>
@@ -233,7 +219,6 @@
     <string name="cook_timer_add_minute">+1 min</string>
     <string name="cook_edit_timer_description">Edit timer</string>
 
-    <!-- Search -->
     <string name="search_matching_tags_label">Matching tags</string>
     <string name="search_hint">Search recipes&#8230;</string>
     <string name="search_empty_prompt">Search for recipes, ingredients, or authors</string>
@@ -246,7 +231,6 @@
     <string name="search_results_summary_with_query_format">%1$s for \"%2$s\" · sorted by %3$s</string>
     <string name="search_result_subtitle_format">%1$s · %2$d reviews</string>
 
-    <!-- Review Submission -->
     <string name="review_title">Rate &amp; review</string>
     <string name="review_subtitle">How did it turn out? Your feedback helps the author and other cooks.</string>
     <string name="review_star_content_description">Star</string>
@@ -264,10 +248,8 @@
     <string name="report_reason_abusive">Abusive or harmful</string>
     <string name="report_reason_off_topic">Off-topic</string>
 
-    <!-- Auth -->
     <string name="reset_password_success">Password reset successfully</string>
 
-    <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_avatar_content_description">Profile avatar</string>
     <string name="settings_updated">Profile updated</string>
@@ -276,7 +258,6 @@
     <string name="settings_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
     <string name="settings_action_logout">Sign out</string>
 
-    <!-- Settings rows -->
     <string name="settings_row_favorites_label">Favorites</string>
     <string name="settings_row_favorites_sub_format">%1$d saved</string>
     <string name="settings_row_my_recipes_label">My recipes</string>
@@ -290,7 +271,6 @@
     <string name="settings_row_admin_console_sub">Moderation &amp; management tools</string>
     <string name="settings_footer_legal_links">Terms of Use · Privacy Policy</string>
 
-    <!-- Account details -->
     <string name="account_details_title">Account details</string>
     <string name="account_details_upload_photo">Upload photo</string>
     <string name="account_details_use_initials">Use initials instead</string>
@@ -321,14 +301,12 @@
     <string name="account_details_dialog_email_otp_title">Verify your new email</string>
     <string name="account_details_dialog_email_otp_message">Enter the 6-digit code we sent to %1$s.</string>
 
-    <!-- Cooking preferences -->
     <string name="cooking_preferences_title">Cooking preferences</string>
     <string name="cooking_preferences_screen_awake_label">Keep screen awake</string>
     <string name="cooking_preferences_screen_awake_sub">Prevents the screen from sleeping while cooking mode is open</string>
     <string name="cooking_preferences_timer_sound_label">Timer sound &amp; vibration</string>
     <string name="cooking_preferences_timer_sound_sub">Play a sound and vibrate when a step timer finishes</string>
 
-    <!-- Legal documents -->
     <string name="legal_terms_of_use_title">Terms of Use</string>
     <string name="legal_privacy_policy_title">Privacy Policy</string>
     <string name="legal_last_updated_format">Last updated: %1$s</string>
@@ -336,13 +314,11 @@
     <string name="legal_terms_of_use_body">Welcome to CookSync. These Terms of Use (\"Terms\") govern your access to and use of the CookSync app. By creating an account or using the app, you agree to these Terms.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;1. Your account&lt;/b&gt;&lt;br/&gt; You must provide accurate information when creating an account and are responsible for keeping your login credentials confidential. You\'re responsible for all activity that happens under your account.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;2. Content you share&lt;/b&gt;&lt;br/&gt; Recipes, photos, comments, and ratings you post (\"your content\") remain yours. By posting it, you grant CookSync a non-exclusive, worldwide license to host, display, and distribute it within the app so other users can view it. You\'re responsible for making sure you have the right to share anything you upload.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;3. Acceptable use&lt;/b&gt;&lt;br/&gt; Don\'t post content that\'s unlawful, infringes someone else\'s rights, or is abusive or misleading. Don\'t attempt to disrupt the service, scrape it at scale, or interfere with other users\' accounts.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;4. Third-party services&lt;/b&gt;&lt;br/&gt; Recipe photos and avatars are stored using Cloudinary, a third-party media hosting provider. Uploading an image means it will be transmitted to and stored by Cloudinary on CookSync\'s behalf.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;5. Termination&lt;/b&gt;&lt;br/&gt; You may stop using CookSync and delete your account at any time from Account details. We may suspend or terminate accounts that violate these Terms.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;6. Disclaimer&lt;/b&gt;&lt;br/&gt; CookSync is provided \"as is.\" Recipes are submitted by the community; we don\'t guarantee their accuracy, safety, or nutritional content. Use your own judgment, especially around allergens and food safety.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;7. Changes to these Terms&lt;/b&gt;&lt;br/&gt; We may update these Terms from time to time. Continuing to use the app after a change means you accept the updated Terms.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;8. Contact&lt;/b&gt;&lt;br/&gt; Questions about these Terms can be sent to the app\'s support contact listed on your account page.</string>
     <string name="legal_privacy_policy_body">This Privacy Policy explains what information CookSync collects, how it\'s used, and the choices you have.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;1. Information we collect&lt;/b&gt;&lt;br/&gt; Account information (name, email, password), profile details you choose to add (city, bio, avatar), the recipes, photos, favorites, and reviews you create, and your in-app cooking preferences (e.g. keep-screen-awake, timer sound).&lt;br/&gt;&lt;br/&gt; &lt;b&gt;2. How we use it&lt;/b&gt;&lt;br/&gt; To operate your account, show your content to other users where you\'ve chosen to make it public, personalize the app, and keep the service secure (for example, refreshing your login session).&lt;br/&gt;&lt;br/&gt; &lt;b&gt;3. Image storage via Cloudinary&lt;/b&gt;&lt;br/&gt; Photos you upload — avatars and recipe photos — are sent directly from your device to Cloudinary, our media hosting provider, using a short-lived signed upload link issued by our server. The image files themselves never pass through CookSync\'s own servers.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;4. Cookies &amp; local storage&lt;/b&gt;&lt;br/&gt; The app stores a session (access and refresh tokens) and a few local preferences on your device so you stay signed in and your device settings are remembered. These aren\'t used for third-party advertising.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;5. Sharing of information&lt;/b&gt;&lt;br/&gt; We don\'t sell your data. Your published recipes and favorites are shown to other users only according to the privacy choices you set in Account details; your private notes always stay hidden.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;6. Data retention &amp; deletion&lt;/b&gt;&lt;br/&gt; If you delete your account, your recipes and reviews are hidden immediately and your account is permanently deleted after 30 days, unless you log back in within that window to cancel the deletion.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;7. Your choices&lt;/b&gt;&lt;br/&gt; You can review and update your profile information, toggle what\'s visible on your public profile, and delete your account at any time from Account details.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;8. Changes to this policy&lt;/b&gt;&lt;br/&gt; We may update this Privacy Policy from time to time. Continuing to use the app after a change means you accept the updated policy.&lt;br/&gt;&lt;br/&gt; &lt;b&gt;9. Contact us&lt;/b&gt;&lt;br/&gt; Questions about this policy can be sent to the app\'s support contact listed on your account page.</string>
 
-    <!-- Navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_favorites">Favorites</string>
     <string name="nav_my_recipes">My Recipes</string>
     <string name="nav_settings">Settings</string>
 
-    <!-- Admin console -->
     <string name="admin_eyebrow">ADMIN CONTROL</string>
     <string name="admin_tab_reports">Reports</string>
     <string name="admin_tab_tags">Tags</string>
@@ -415,7 +391,6 @@
     <string name="admin_toast_user_deleted_format">%1$s permanently deleted</string>
     <string name="action_delete_permanently">Delete permanently</string>
 
-    <!-- Create Recipe wizard -->
     <string name="wizard_title">New recipe</string>
     <string name="wizard_step1_of4">STEP 1 OF 4</string>
     <string name="wizard_step2_of4">STEP 2 OF 4</string>
@@ -473,7 +448,6 @@
     <string name="wizard_draft_saved_toast">Draft saved</string>
     <string name="wizard_published_toast">Recipe published</string>
 
-    <!-- Publish progress card (layout_publish_progress_card.xml, driven by RecipePublishManager) -->
     <string name="wizard_publish_title">Publishing recipe&#8230;</string>
     <string name="wizard_publish_uploading_media">Uploading media&#8230;</string>
     <string name="wizard_publish_processing_details">Processing recipe details&#8230;</string>

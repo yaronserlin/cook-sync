@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 public final class RelativeTimeFormatter {
 
     private RelativeTimeFormatter() {
-        // Utility class
     }
 
     /**

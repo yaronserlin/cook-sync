@@ -59,7 +59,6 @@ public class AddRecipeViewModel extends BaseViewModel {
         this.unitRepository = unitRepository;
     }
 
-    // ── Draft lifecycle ──────────────────────────────────────────────
 
     /**
      * Returns whether at least one locally saved draft exists to resume, without loading any of
@@ -128,7 +127,6 @@ public class AddRecipeViewModel extends BaseViewModel {
         draft = new RecipeDraft();
     }
 
-    // ── Basics (step 1) ──────────────────────────────────────────────
 
     /**
      * Sets the recipe's title.
@@ -373,7 +371,6 @@ public class AddRecipeViewModel extends BaseViewModel {
     /** @return observable result of the popular-tags fetch */
     public LiveData<ApiResult<List<TagResponse>>> getPopularTagsResult() { return popularTagsResult; }
 
-    // ── Ingredients (step 2) ─────────────────────────────────────────
 
     /** @return the draft's ingredient rows — the live list, so an adapter can reorder it directly */
     public List<RecipeDraft.DraftIngredient> getIngredients() {
@@ -409,7 +406,6 @@ public class AddRecipeViewModel extends BaseViewModel {
     /** @return observable result of the unit-catalog fetch */
     public LiveData<ApiResult<List<UnitResponse>>> getUnitsResult() { return unitsResult; }
 
-    // ── Instructions (step 3) ────────────────────────────────────────
 
     /** @return the draft's instruction steps — the live list, so an adapter can reorder it directly */
     public List<RecipeDraft.DraftInstruction> getInstructions() {
@@ -436,7 +432,6 @@ public class AddRecipeViewModel extends BaseViewModel {
         draft.instructions.remove(instruction);
     }
 
-    // ── Cloudinary uploads (deferred to Publish time) ────────────────
 
     /**
      * One picked-but-not-yet-uploaded image, identifying exactly where its resulting Cloudinary
@@ -463,7 +458,6 @@ public class AddRecipeViewModel extends BaseViewModel {
         RecipeDraftMediaHelper.resolvePendingImageUpload(draft, pending, uploadedUrl);
     }
 
-    // ── Review & publish (step 4) ────────────────────────────────────
 
     /** @return the visibility currently selected ("PUBLIC" or "PRIVATE") */
     public String getVisibility() { return draft.visibility; }

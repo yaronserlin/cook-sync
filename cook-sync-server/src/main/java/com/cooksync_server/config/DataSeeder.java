@@ -399,7 +399,6 @@ public class DataSeeder implements CommandLineRunner {
 
         List<Recipe> recipeList = new ArrayList<>();
 
-        // 1. Classic Spaghetti Carbonara
         recipeList.add(createRecipe(
                 "Classic Spaghetti Carbonara",
                 "Authentic Roman pasta Carbonara made with crispy guanciale, egg yolks, freshly grated Pecorino Romano cheese, and cracked black pepper.",
@@ -422,7 +421,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 2. Authentic Middle Eastern Shakshuka
         recipeList.add(createRecipe(
                 "Authentic Middle Eastern Shakshuka",
                 "Poached eggs in a rich simmered tomato, bell pepper, and garlic sauce spiced with cumin and smoked paprika, topped with crumbled feta.",
@@ -446,7 +444,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 3. Japanese Chicken Teriyaki Bowl
         recipeList.add(createRecipe(
                 "Japanese Chicken Teriyaki Bowl",
                 "Pan-seared tender chicken thighs glazed in a sticky homemade teriyaki sauce, served over fluffy steamed rice with steamed broccoli.",
@@ -470,7 +467,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 4. Authentic Mexican Beef Birria Tacos
         recipeList.add(createRecipe(
                 "Authentic Mexican Beef Birria Tacos",
                 "Slow-braised tender shredded beef in rich guajillo-ancho chili broth, stuffed into corn tortillas with melted Oaxaca cheese and seared crispy.",
@@ -493,7 +489,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 5. Creamy Tuscan Garlic Chicken
         recipeList.add(createRecipe(
                 "Creamy Tuscan Garlic Chicken",
                 "Golden pan-seared chicken breasts simmered in a velvety garlic cream sauce enriched with sun-dried tomatoes and fresh spinach.",
@@ -515,7 +510,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 6. Fresh Greek Salad with Feta & Olives
         recipeList.add(createRecipe(
                 "Fresh Greek Salad with Feta & Olives",
                 "Crisp cucumbers, ripe vine tomatoes, red onion, Kalamata olives, and a slab of creamy Greek feta tossed in extra virgin olive oil and oregano.",
@@ -538,7 +532,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 7. Japanese Matcha Soufflé Pancakes
         recipeList.add(createRecipe(
                 "Japanese Matcha Soufflé Pancakes",
                 "Ultra tall, airy, pillowy soufflé pancakes infused with premium Uji matcha powder, served with whipped cream and maple syrup.",
@@ -560,7 +553,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 8. Classic French Onion Soup
         recipeList.add(createRecipe(
                 "Classic French Onion Soup",
                 "Deeply caramelized yellow onions simmered in beef broth and wine, topped with toasted baguette slices and melted Gruyère cheese.",
@@ -582,7 +574,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 9. Gourmet Avocado Toast with Poached Egg
         recipeList.add(createRecipe(
                 "Gourmet Avocado Toast with Poached Egg",
                 "Artisan toasted sourdough spread with smashed lemon avocado, topped with a runny poached egg, radishes, and red pepper flakes.",
@@ -605,7 +596,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 10. Crispy Lemon Garlic Roasted Salmon
         recipeList.add(createRecipe(
                 "Crispy Lemon Garlic Roasted Salmon",
                 "Oven-roasted salmon fillets with a golden garlic butter crust, fresh dill, and roasted asparagus spears.",
@@ -627,7 +617,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 11. Authentic Thai Green Chicken Curry
         recipeList.add(createRecipe(
                 "Authentic Thai Green Chicken Curry",
                 "A fragrant coconut milk curry with tender chicken strips, Thai eggplant, bamboo shoots, and fresh sweet Thai basil leaves.",
@@ -650,7 +639,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 12. Classic French Beef Bourguignon
         recipeList.add(createRecipe(
                 "Classic French Beef Bourguignon",
                 "Julia Child's iconic French stew featuring tender beef chuck braised slow in red Burgundy wine with pearl onions, bacon lardons, and mushrooms.",
@@ -672,7 +660,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 13. Berry Acai Smoothie Bowl
         recipeList.add(createRecipe(
                 "Berry Acai Smoothie Bowl",
                 "Thick vibrant frozen acai and wild berry blend topped with chia seeds, sliced bananas, toasted coconut flakes, and crunchy granola.",
@@ -695,7 +682,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 14. Gourmet Double Cheeseburger with Secret Sauce
         recipeList.add(createRecipe(
                 "Gourmet Double Cheeseburger with Secret Sauce",
                 "Two crispy smashed beef patties, melted American cheese, caramelized onions, pickles, and tangy homemade burger sauce on toasted brioche.",
@@ -717,7 +703,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 15. Creamy Wild Mushroom Risotto
         recipeList.add(createRecipe(
                 "Creamy Wild Mushroom Risotto",
                 "Slow-stirred Italian Arborio rice cooked in savory vegetable stock, finished with sautéed porcini mushrooms, butter, and Parmigiano-Reggiano.",
@@ -739,7 +724,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 16. Spanish Seafood Paella
         recipeList.add(createRecipe(
                 "Spanish Seafood Paella",
                 "Traditional Valencian saffron rice studded with jumbo shrimp, mussels, calamari rings, red bell peppers, and peas.",
@@ -762,7 +746,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 17. Decadent Chocolate Molten Lava Cake
         recipeList.add(createRecipe(
                 "Decadent Chocolate Molten Lava Cake",
                 "Rich dark chocolate cakes baked with a warm, gooey liquid chocolate center, dusted with powdered sugar and vanilla ice cream.",
@@ -784,7 +767,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 18. Crispy Falafel Pita Pocket with Tahini
         recipeList.add(createRecipe(
                 "Crispy Falafel Pita Pocket with Tahini",
                 "Golden crispy chickpea falafel stuffed into warm fluffy pita bread with Israeli diced salad, pickles, and rich garlic tahini drizzle.",
@@ -807,7 +789,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 19. Traditional Vietnamese Beef Pho
         recipeList.add(createRecipe(
                 "Traditional Vietnamese Beef Pho",
                 "A aromatic 12-hour spiced beef bone broth poured over rice noodles, thinly sliced raw eye round beef, fresh basil, and bean sprouts.",
@@ -832,7 +813,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 20. Classic Chicken Caesar Salad
         recipeList.add(createRecipe(
                 "Classic Chicken Caesar Salad",
                 "Crisp Romaine lettuce hearts tossed in creamy anchovy-garlic Caesar dressing, crunchy garlic sourdough croutons, shaved Parmesan, and grilled chicken.",
@@ -854,7 +834,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 21. Authentic Indian Butter Chicken (Murgh Makhani)
         recipeList.add(createRecipe(
                 "Authentic Indian Butter Chicken",
                 "Tender spiced yogurt-marinated chicken pieces simmered in a rich tomato, cream, butter, and garam masala sauce with warm naan bread.",
@@ -878,7 +857,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 22. Mediterranean Grilled Chicken Souvlaki
         recipeList.add(createRecipe(
                 "Mediterranean Grilled Chicken Souvlaki",
                 "Skewered tender lemon-herb marinated chicken grilled over flames, served with cool cucumber tzatziki sauce and fluffy pita.",
@@ -902,7 +880,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 23. Authentic Italian Margherita Pizza
         recipeList.add(createRecipe(
                 "Authentic Italian Margherita Pizza",
                 "Classic Neapolitan thin-crust pizza topped with San Marzano tomato sauce, fresh mozzarella di bufala, and fragrant sweet basil leaves.",
@@ -924,7 +901,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 24. Crispy Tofu Buddha Bowl with Peanut Dressing
         recipeList.add(createRecipe(
                 "Crispy Tofu Buddha Bowl with Peanut Dressing",
                 "Pan-crisped sesame tofu cubes served over quinoa with purple cabbage, edamame, shredded carrots, and creamy peanut ginger sauce.",
@@ -949,7 +925,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 25. Savoyard Potato Tartiflette
         recipeList.add(createRecipe(
                 "Savoyard Potato Tartiflette",
                 "A decadent French Alpine casserole of sliced potatoes, smoky bacon lardons, and caramelized onions smothered in melted Reblochon cheese.",
@@ -971,7 +946,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 26. Homemade New York Style Cheesecake
         recipeList.add(createRecipe(
                 "Homemade New York Style Cheesecake",
                 "Dense, ultra-cremy baked cheesecake with a buttery Graham cracker crust, baked slowly and topped with fresh raspberry coulis.",
@@ -995,7 +969,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 27. Authentic Mexican Huevos Rancheros
         recipeList.add(createRecipe(
                 "Authentic Mexican Huevos Rancheros",
                 "Warm corn tortillas topped with fried sunny-side-up eggs, homemade roasted tomato ranchero salsa, refried beans, and avocado.",
@@ -1018,7 +991,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 28. Creamy Tomato Soup & Crispy Grilled Cheese
         recipeList.add(createRecipe(
                 "Creamy Tomato Soup & Crispy Grilled Cheese",
                 "Rich roasted tomato basil soup served alongside a golden, buttery sourdough grilled cheese sandwich oozing with melted cheddar.",
@@ -1041,7 +1013,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 29. Spicy Seared Ahi Tuna Poke Bowl
         recipeList.add(createRecipe(
                 "Spicy Seared Ahi Tuna Poke Bowl",
                 "Sesame-crusted seared Ahi tuna over sushi rice with mango, cucumber, edamame, avocado, and spicy sriracha mayo drizzle.",
@@ -1064,7 +1035,6 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        // 30. Cinnamon Roll French Toast Bake
         recipeList.add(createRecipe(
                 "Cinnamon Roll French Toast Bake",
                 "Fluffy brioche cube casserole soaked in cinnamon egg custard, baked golden, and topped with cream cheese glaze and toasted pecans.",
@@ -1174,11 +1144,9 @@ public class DataSeeder implements CommandLineRunner {
 
         long currentTime = System.currentTimeMillis();
 
-        // 7.2 Main image: cooksync/[userId]/[recipeTittle], name: main_[userId]_[currentTime]
         String mainPublicId = String.format("main_%s_%d", userId, currentTime);
         String uploadedCoverUrl = uploadToCloudinary(primaryCoverUrl, recipeFolder, mainPublicId);
 
-        // 7.3 Description image: cooksync/[userId]/[recipeTittle], name: description_[userId]_[currentTime]
         String descPublicId = String.format("description_%s_%d", userId, currentTime);
         String uploadedDescUrl = uploadToCloudinary(primaryCoverUrl, recipeFolder, descPublicId);
 
@@ -1193,7 +1161,6 @@ public class DataSeeder implements CommandLineRunner {
                 .tags(new LinkedHashSet<>(tags))
                 .build();
 
-        // Wire ingredients
         Set<Ingredient> ingredientSet = new LinkedHashSet<>();
         for (Ingredient ing : ingredients) {
             ing.setRecipe(recipe);
@@ -1201,7 +1168,6 @@ public class DataSeeder implements CommandLineRunner {
         }
         recipe.setIngredients(ingredientSet);
 
-        // Wire instructions (7.4 Instruction image: cooksync/[userId]/[recipeTittle], name: instruction_[stepNumber]_[currentTime])
         List<Ingredient> ingList = new ArrayList<>(ingredients);
         Set<Instruction> instructionSet = new LinkedHashSet<>();
         for (InstructionStepData step : stepDataList) {
@@ -1232,7 +1198,6 @@ public class DataSeeder implements CommandLineRunner {
         }
         recipe.setInstructions(instructionSet);
 
-        // Build description blocks
         List<DescriptionBlock> blocks = new ArrayList<>();
         blocks.add(DescriptionBlock.builder()
                 .recipe(recipe)
@@ -1255,7 +1220,6 @@ public class DataSeeder implements CommandLineRunner {
                 .build());
         recipe.setDescriptionBlocks(blocks);
 
-        // Build recipe images
         Set<RecipeImage> recipeImages = new LinkedHashSet<>();
         recipeImages.add(RecipeImage.builder()
                 .recipe(recipe)
@@ -1361,7 +1325,6 @@ public class DataSeeder implements CommandLineRunner {
             }
         }
 
-        // Add reported test reviews for moderation features
         if (!recipes.isEmpty() && users.size() >= 4) {
             reviews.add(Review.builder()
                     .recipe(recipes.get(0))

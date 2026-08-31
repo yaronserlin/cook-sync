@@ -125,7 +125,6 @@ public class WizardIngredientAdapter extends BaseAdapter<RecipeDraft.DraftIngred
             actvUnit = view.findViewById(R.id.actv_ingredient_unit);
             ivDragHandle = view.findViewById(R.id.iv_ingredient_drag_handle);
             btnRemove = view.findViewById(R.id.btn_remove_ingredient);
-            // Matches the tag-autocomplete popup's card styling instead of the system default.
             actvUnit.setDropDownBackgroundResource(R.drawable.bg_dropdown_popup);
         }
 

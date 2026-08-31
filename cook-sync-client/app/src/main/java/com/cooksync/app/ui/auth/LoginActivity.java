@@ -69,11 +69,8 @@ public class LoginActivity extends BaseActivity {
         setListeners();
 
         if (TokenStore.hasSession()) {
-            // A session exists — silently validate it. The skeleton stays up until the
-            // result arrives.
             viewModel.validateExistingToken();
         } else {
-            // No session — skip straight to showing the form.
             transitionToForm();
         }
     }
@@ -94,19 +91,16 @@ public class LoginActivity extends BaseActivity {
      * Subscribes to all LiveData streams exposed by {@link LoginViewModel}.
      */
     private void observeViewModel() {
-        // ── Silent token validation result (skeleton → navigate or form) ────────
         viewModel.getValidateResult().observe(this, result -> {
             if (!(result instanceof ApiResult.Loading)) {
                 if (result instanceof ApiResult.Success) {
                     navigateToMain();
                 } else {
-                    // Validation failed or network error → show the login form
                     transitionToForm();
                 }
             }
         });
 
-        // ── Explicit login result ────────────────────────────────────────────────
         viewModel.getLoginResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
                 progress.setVisibility(View.VISIBLE);
@@ -120,7 +114,6 @@ public class LoginActivity extends BaseActivity {
             }
         });
 
-        // ── Per-field validation errors ──────────────────────────────────────────
         viewModel.getEmailError().observe(this, e -> showFieldError(tvEmailError, e));
         viewModel.getPasswordError().observe(this, e -> showFieldError(tvPasswordError, e));
     }

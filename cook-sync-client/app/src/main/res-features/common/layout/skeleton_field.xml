@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Reusable skeleton component representing a single form field (label line + input pill).
-  Use <include layout="@layout/skeleton_field" /> wherever a form skeleton needs one field.
-  DRY: extracted here once so Login, Register, and any future form skeletons don't repeat it.
--->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- Field label bone -->
     <View
         android:layout_width="@dimen/dp_90"
         android:layout_height="@dimen/dp_10"
         android:layout_marginBottom="@dimen/dp_8"
         android:background="@drawable/bg_skeleton_bone" />
 
-    <!-- Input pill bone -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_48"

@@ -289,7 +289,6 @@ public interface ApiService {
     @GET("api/cloudinary/base-folder")
     Call<ApiResponse<String>> getCloudinaryBaseFolder();
 
-    // ── Recipe Feed & Discovery ────────────────────────────────────
 
     /**
      * Fetches a paginated list of public recipe previews for the home feed.
@@ -410,7 +409,6 @@ public interface ApiService {
             @Body RecipeVisibilityUpdateRequestDTO request
     );
 
-    // ── Tags ───────────────────────────────────────────────────────
 
     /**
      * Fetches a page of available tags for the horizontal filter bar.
@@ -448,7 +446,6 @@ public interface ApiService {
             @Body TagRequestDTO request
     );
 
-    // ── Units ──────────────────────────────────────────────────────
 
     /**
      * Fetches a page of measurement units available for recipe ingredients.
@@ -481,7 +478,6 @@ public interface ApiService {
     @DELETE("api/units/{id}")
     Call<ApiResponse<Void>> deleteUnit(@Path("id") String id);
 
-    // ── Favorites ──────────────────────────────────────────────────
 
     /**
      * Fetches a page of recipes favorited by the currently authenticated user.
@@ -514,7 +510,6 @@ public interface ApiService {
     @DELETE("api/favorites/{recipeId}")
     Call<ApiResponse<Void>> removeFavorite(@Path("recipeId") String recipeId);
 
-    // ── Personal Notes ─────────────────────────────────────────────
 
     /**
      * Fetches the private personal note attached by the user to a specific recipe.
@@ -564,7 +559,6 @@ public interface ApiService {
     @DELETE("api/notes/{noteId}")
     Call<ApiResponse<Void>> deleteNote(@Path("noteId") String noteId);
 
-    // ── Reviews ───────────────────────────────────────────────────
 
     /**
      * Submits a new rating/review for a recipe.
@@ -601,7 +595,6 @@ public interface ApiService {
             @Body ReportReviewRequestDTO request
     );
 
-    // ── Admin ─────────────────────────────────────────────────────
 
     /**
      * Fetches system-wide moderation/content statistics for the Admin Console header.

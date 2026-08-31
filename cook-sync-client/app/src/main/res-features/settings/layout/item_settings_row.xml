@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Shared icon-circle settings row, one MaterialCardView per row (Favorites, My recipes,
-     Cooking preferences, Account details, Admin console) stacked with spacing
-     in activity_settings.xml, matching the design's independent-card-per-row layout. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

@@ -11,8 +11,6 @@
 
     <style name="CookSync" />
 
-    <!-- Reusable field label, shared across every text-entry field in the app (DRY: see
-         requirement to extract repeated UI into styles rather than duplicating attributes). -->
     <style name="CookSync.FieldLabel">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/color_text</item>
@@ -20,7 +18,6 @@
         <item name="android:layout_marginBottom">5dp</item>
     </style>
 
-    <!-- Reusable text input, matching the design system's pill-shaped ".input" component. -->
     <style name="CookSync.Input" parent="Widget.AppCompat.EditText">
         <item name="android:background">@drawable/bg_input</item>
         <item name="android:minHeight">48dp</item>
@@ -31,9 +28,6 @@
         <item name="android:textColorHint">#73201E1D</item>
     </style>
 
-    <!-- Centered 6-digit numeric code input, shared by the registration OTP screen and the
-         forgot-password reset-code screen: the standard pill input plus code-entry-specific
-         behavior (numeric keypad, 6-char cap, spaced/centered digits). -->
     <style name="CookSync.Input.Code" parent="CookSync.Input">
         <item name="android:inputType">number</item>
         <item name="android:maxLength">6</item>
@@ -41,7 +35,6 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <!-- Reusable primary/filled button, matching the design system's ".btn-primary". -->
     <style name="CookSync.Button.Primary" parent="Widget.MaterialComponents.Button">
         <item name="android:minHeight">54dp</item>
         <item name="android:textSize">16sp</item>
@@ -51,7 +44,6 @@
         <item name="cornerRadius">27dp</item>
     </style>
 
-    <!-- Reusable secondary/outline button, matching the design system's ".btn-secondary". -->
     <style name="CookSync.Button.Secondary" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:minHeight">54dp</item>
         <item name="android:textSize">15sp</item>
@@ -61,16 +53,11 @@
         <item name="cornerRadius">27dp</item>
     </style>
 
-    <!-- Reusable ghost/text button, matching the design system's ".btn-ghost". -->
     <style name="CookSync.Button.Ghost" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:textAllCaps">false</item>
         <item name="android:textColor">@color/color_accent</item>
     </style>
 
-    <!-- Reusable danger/filled button: same shape as CookSync.Button.Primary but with the
-         darkest accent ramp step instead of the base accent, matching the design's danger
-         dialog button (`background: color-accent-800; color: color-bg`) — the
-         Organic design system has no separate red hue for destructive actions. -->
     <style name="CookSync.Button.Danger" parent="CookSync.Button.Primary">
         <item name="backgroundTint">@color/color_accent_800</item>
     </style>
@@ -93,7 +80,6 @@
         <item name="cornerRadius">999dp</item>
     </style>
 
-    <!-- Reusable inline validation error label, matching the design system's ".err". -->
     <style name="CookSync.ErrorText">
         <item name="android:textColor">@color/color_accent_700</item>
         <item name="android:textSize">12sp</item>
@@ -103,15 +89,12 @@
 
     <style name="CookSync.Heading" />
 
-    <!-- Reusable screen-title heading, matching the design system's "h2" (Caprasimo, 30px). -->
     <style name="CookSync.Heading.H2">
         <item name="android:fontFamily">@font/caprasimo</item>
         <item name="android:textColor">@color/color_text</item>
         <item name="android:textSize">30sp</item>
     </style>
 
-    <!-- Reusable profile-avatar chip: circular initials badge, matching the design system's
-         top-right avatar tap target seen on Discover/Home. -->
     <style name="CookSync.AvatarChip">
         <item name="android:layout_width">38dp</item>
         <item name="android:layout_height">38dp</item>
@@ -122,8 +105,6 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <!-- Rounds only the top corners of a modal bottom sheet, matching the design's
-         ".sheetbody { border-radius:32px 32px 0 0 }". -->
     <style name="ShapeAppearance.CookSync.BottomSheet" parent="">
         <item name="cornerSizeTopLeft">32dp</item>
         <item name="cornerSizeTopRight">32dp</item>
@@ -136,20 +117,14 @@
         <item name="backgroundTint">@color/color_bg</item>
     </style>
 
-    <!-- Applied to CookSync's modal bottom sheets (e.g. filters) so they pick up the rounded
-         top corners above instead of Material's default square-cornered modal sheet. -->
     <style name="Theme.CookSync.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/Widget.CookSync.BottomSheet</item>
     </style>
 
-    <!-- Rounds MaterialAlertDialogBuilder's corners to match the design's ".dialog" radius
-         (border-radius: calc(radius-lg * 1.15) ≈ 32dp). -->
     <style name="ShapeAppearance.CookSync.Dialog" parent="">
         <item name="cornerSize">32dp</item>
     </style>
 
-    <!-- Confirm/cancel button pair for CookSync's alert dialogs, matching the design's
-         ".dialog-actions .btn-primary" (filled accent pill) and ".btn-ghost" (text cancel). -->
     <style name="CookSync.Dialog.Button.Positive" parent="Widget.MaterialComponents.Button">
         <item name="android:minHeight">46dp</item>
         <item name="android:textAllCaps">false</item>
@@ -158,18 +133,12 @@
         <item name="cornerRadius">999dp</item>
     </style>
 
-    <!-- Danger variant of the dialog's confirm button, matching the design's danger dialog
-         button (`background: color-accent-800; color: color-bg`). -->
     <style name="CookSync.Dialog.Button.Positive.Danger">
         <item name="backgroundTint">@color/color_accent_800</item>
     </style>
 
     <style name="CookSync.Dialog.Button.Negative" parent="CookSync.Button.Ghost" />
 
-    <!-- Applied to every OrganicConfirmDialog (and, for visual consistency, other
-         MaterialAlertDialogBuilder call sites): rounded corners, the app's cream dialog
-         surface, a ghost cancel button and a filled accent confirm button, matching the
-         design's generic dialog spec. -->
     <style name="ThemeOverlay.CookSync.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.CookSync.Dialog</item>
         <item name="buttonBarPositiveButtonStyle">@style/CookSync.Dialog.Button.Positive</item>
@@ -177,14 +146,10 @@
         <item name="colorSurface">@color/color_surface</item>
     </style>
 
-    <!-- Danger variant: same rounded shape and ghost cancel, but the confirm button uses the
-         design's danger fill for destructive actions (delete, deactivate, etc). -->
     <style name="ThemeOverlay.CookSync.Dialog.Danger" parent="ThemeOverlay.CookSync.Dialog">
         <item name="buttonBarPositiveButtonStyle">@style/CookSync.Dialog.Button.Positive.Danger</item>
     </style>
 
-    <!-- Pill shape for the bottom nav's active-item indicator, matching the design system's
-         ".pill-on" (56x30dp fully-rounded pill behind the selected item's icon). -->
     <style name="ShapeAppearance.CookSync.Pill" parent="">
         <item name="cornerSize">50%</item>
     </style>
@@ -200,11 +165,6 @@
         <item name="shapeAppearance">@style/ShapeAppearance.CookSync.Pill</item>
     </style>
 
-    <!-- Shared bottom navigation bar style, matching the design system's ".bnav"/".bitem"
-         states: inactive items are 52%-opacity color_text, the selected item's icon sits in
-         the accent-200 pill above and its icon+label turn color_accent_800. Applied to every
-         screen hosting the bottom nav (Home, Recipe list, Profile) so the look stays a
-         single-point fix rather than per-screen attributes. -->
     <style name="Widget.CookSync.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconTint">@color/bottom_nav_item_color</item>
         <item name="itemTextColor">@color/bottom_nav_item_color</item>
@@ -212,10 +172,6 @@
         <item name="labelVisibilityMode">labeled</item>
     </style>
 
-    <!-- "Create recipe" floating action button, shown above the bottom nav on Home, My Recipes,
-         and Settings. No FAB exists elsewhere in the app to match, so this is styled from the
-         same accent-fill/pill conventions as the rest of the design system rather than stock
-         Material FAB defaults. -->
     <style name="Widget.CookSync.Fab" parent="Widget.MaterialComponents.FloatingActionButton">
         <item name="backgroundTint">@color/color_accent</item>
         <item name="tint">@color/color_bg</item>

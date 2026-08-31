@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Rate & review" submission form, reached from Cooking Mode's "Done" button and from
-     Recipe Detail's "Write a review" button. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -30,7 +28,6 @@
             android:textColor="@color/color_text"
             android:textSize="@dimen/sp_14" />
 
-        <!-- ── Star rating input ────────────────────────────────────────────────── -->
         <LinearLayout
             android:id="@+id/star_input_row"
             android:layout_width="wrap_content"
@@ -92,7 +89,6 @@
             android:textColor="@color/color_text"
             android:textSize="@dimen/sp_12_5" />
 
-        <!-- ── Title ─────────────────────────────────────────────────────────────── -->
         <TextView
             style="@style/CookSync.FieldLabel"
             android:layout_width="wrap_content"
@@ -108,7 +104,6 @@
             android:hint="@string/review_title_hint"
             android:inputType="textCapSentences" />
 
-        <!-- ── Comment ───────────────────────────────────────────────────────────── -->
         <TextView
             style="@style/CookSync.FieldLabel"
             android:layout_width="wrap_content"

@@ -104,20 +104,16 @@ dependencies {
     // local Maven repository.
     implementation(libs.cooksync.dtos)
 
-    // Networking
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.gson)
 
-    // Security — encrypted storage for JWT access/refresh tokens
     implementation(libs.security.crypto)
 
-    // Lifecycle — MVVM ViewModel + LiveData
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
 
-    // Images
     implementation(libs.glide)
     implementation(libs.cloudinary.android)
     implementation(libs.fresco)

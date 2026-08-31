@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Multiline note-editing input background: a rounded rect (not the pill-shaped bg_input,
-     which reads oddly on a multi-line box) that sits legibly on the accent-2 note card/strip. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@android:color/white" />

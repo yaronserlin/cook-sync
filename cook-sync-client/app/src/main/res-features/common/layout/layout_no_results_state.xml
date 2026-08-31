@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Reusable "no results" state: one dismissible chip per active constraint (search query,
-     difficulty, tags, rating, total time) so the user can pick exactly what to drop, plus a
-     "Clear all" button once there's more than one. Shared by Search, Home, My Recipes, and
-     Favorites so every screen gives the same feedback for a filtered-to-zero result set,
-     populated at runtime via NoResultsStateHelper. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

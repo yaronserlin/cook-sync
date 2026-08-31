@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One block in the Basics step's description editor: either a TEXT block (a plain multi-line
-     field) or an IMAGE block (thumbnail + caption), reorderable via the drag handle so images
-     can be placed wherever the user wants them relative to the text — only one of the two
-     content groups is visible at a time, per the bound block's type. Fields are "bare" (no own
-     border/background) since the whole list sits inside one unified bordered box in
-     fragment_wizard_basics.xml, matching the design's single description "input" containing
-     both text and inline photos. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

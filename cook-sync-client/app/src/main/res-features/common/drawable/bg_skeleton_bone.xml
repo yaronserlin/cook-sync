@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Default skeleton bone: the placeholder fill used by every shimmer target in the app's
-  skeleton screens (text lines, images, input pills) unless a screen opts into the
-  button-shaped @drawable/bg_skeleton_bone_dark variant instead.
--->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/color_neutral_400" />

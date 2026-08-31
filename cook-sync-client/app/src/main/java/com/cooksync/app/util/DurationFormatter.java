@@ -18,7 +18,6 @@ package com.cooksync.app.util;
 public final class DurationFormatter {
 
     private DurationFormatter() {
-        // Utility class
     }
 
     /**

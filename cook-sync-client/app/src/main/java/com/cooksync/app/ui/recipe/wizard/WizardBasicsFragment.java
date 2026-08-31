@@ -308,7 +308,6 @@ public class WizardBasicsFragment extends Fragment {
             renderCoverPreview();
         });
         btnPickCover.setOnClickListener(pickCoverListener);
-        // Tapping the preview itself re-picks, so an already-set cover can be replaced.
         cardCoverPreview.setOnClickListener(pickCoverListener);
 
         view.findViewById(R.id.btn_add_description_photo).setOnClickListener(v -> imagePicker.pick(uri -> {
@@ -333,7 +332,6 @@ public class WizardBasicsFragment extends Fragment {
                 List<String> names = success.getData().stream().map(TagResponse::name).toList();
                 renderPopularTags(names);
             } else if (result instanceof ApiResult.Error<List<TagResponse>>) {
-                // No real popularity data available — show the static fallback list on its own.
                 renderPopularTags(Collections.emptyList());
             }
         });

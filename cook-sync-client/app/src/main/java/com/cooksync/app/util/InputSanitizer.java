@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
  */
 public final class InputSanitizer {
 
-    // ─── Compiled patterns ──────────────────────────────────────────────────────
 
     /** Null-byte and ASCII control characters (except horizontal tab 0x09). */
     private static final Pattern CONTROL_CHARS =
@@ -62,7 +61,6 @@ public final class InputSanitizer {
     private InputSanitizer() {
     }
 
-    // ─── Public API ─────────────────────────────────────────────────────────────
 
     /**
      * Trims whitespace from the input and returns the result, or an empty string if

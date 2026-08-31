@@ -1,8 +1,3 @@
--- Consolidated MySQL schema for CookSync Server.
--- Supersedes and replaces the former V1-V4 migrations now that the database
--- is being recreated from empty; this single file is the full schema as of
--- 2026-08-27.
-
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,

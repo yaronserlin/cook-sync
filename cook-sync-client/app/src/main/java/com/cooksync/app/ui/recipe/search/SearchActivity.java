@@ -173,8 +173,6 @@ public class SearchActivity extends BaseActivity {
                     runSearch(null);
                 } else {
                     updateMatchingTags(newText);
-                    // Live search-as-you-type, debounced so every keystroke doesn't fire a
-                    // network call — only the pause after the user stops typing does.
                     pendingSearch = () -> runSearch(newText);
                     searchHandler.postDelayed(pendingSearch, UiTimingConstants.SEARCH_DEBOUNCE_MS);
                 }

@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Reusable single row of the rating breakdown bars shown in the Recipe Detail reviews
-     summary card (one row per star value, 5..1). Included 5x from activity_recipe_detail.xml
-     rather than duplicated, per the DRY requirement for repeated UI. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

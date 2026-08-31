@@ -348,7 +348,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
             if (date == null) return "";
             return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
         }
-        return isoTimestamp.substring(0, 10); // Fallback for older APIs
+        return isoTimestamp.substring(0, 10);
     }
 
     /**

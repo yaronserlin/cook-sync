@@ -63,7 +63,6 @@ public final class RecipeDraftMediaHelper {
     }
 
     private RecipeDraftMediaHelper() {
-        // Utility
     }
 
     /**

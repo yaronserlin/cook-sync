@@ -315,7 +315,6 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
                 .tags(new LinkedHashSet<>(tags))
                 .build();
 
-        // Wire ingredients
         Set<Ingredient> ingredientSet = new LinkedHashSet<>();
         for (Ingredient ing : ingredients) {
             ing.setRecipe(recipe);
@@ -361,7 +360,6 @@ public class SkillRecipeDataSeeder implements CommandLineRunner {
         }
         recipe.setDescriptionBlocks(blocks);
 
-        // Primary cover image, if any (real Cloudinary URL, used as-is)
         Set<RecipeImage> images = new LinkedHashSet<>();
         if (primaryImageUrl != null && !primaryImageUrl.isBlank()) {
             images.add(RecipeImage.builder()

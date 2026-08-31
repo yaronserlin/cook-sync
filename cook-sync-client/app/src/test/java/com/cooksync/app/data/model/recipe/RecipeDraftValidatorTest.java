@@ -42,7 +42,6 @@ public class RecipeDraftValidatorTest {
         return instruction;
     }
 
-    // ── isStepValid(STEP_BASICS) ─────────────────────────────────────
 
     @Test
     public void isStepValid_basics_true_whenEveryRequiredFieldSet() {
@@ -79,7 +78,6 @@ public class RecipeDraftValidatorTest {
         assertFalse(RecipeDraftValidator.isTitleValid(draft));
     }
 
-    // ── isStepValid(STEP_INGREDIENTS) ────────────────────────────────
 
     @Test
     public void isStepValid_ingredients_true_withOneValidRow() {
@@ -116,7 +114,6 @@ public class RecipeDraftValidatorTest {
         assertFalse(RecipeDraftValidator.isIngredientBlank(ingredient));
     }
 
-    // ── parsePositiveQuantity ─────────────────────────────────────────
 
     @Test
     public void parsePositiveQuantity_parsesValidPositiveNumber() {
@@ -136,7 +133,6 @@ public class RecipeDraftValidatorTest {
         assertNull(RecipeDraftValidator.parsePositiveQuantity(null));
     }
 
-    // ── isStepValid(STEP_INSTRUCTIONS) ───────────────────────────────
 
     @Test
     public void isStepValid_instructions_true_withOneValidRow() {
@@ -171,7 +167,6 @@ public class RecipeDraftValidatorTest {
         assertEquals(1, RecipeDraftValidator.countInstructionsWithTimer(draft));
     }
 
-    // ── isStepValid(STEP_REVIEW) ──────────────────────────────────────
 
     @Test
     public void isStepValid_review_true_onlyWhenEveryPriorStepValid() {
@@ -185,7 +180,6 @@ public class RecipeDraftValidatorTest {
     public void isStepValid_review_false_whenInstructionsStepIncomplete() {
         RecipeDraft draft = validBasics();
         draft.ingredients.add(validIngredient());
-        // No instructions added.
         assertFalse(RecipeDraftValidator.isStepValid(draft, RecipeDraftValidator.STEP_REVIEW));
     }
 

@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Body for OrganicConfirmDialog#showWithTextConfirm: a danger confirm message followed by a
-     free-text field the user must type an exact phrase into before the confirm button enables,
-     used for irreversible actions that warrant more friction than a plain confirm/cancel. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

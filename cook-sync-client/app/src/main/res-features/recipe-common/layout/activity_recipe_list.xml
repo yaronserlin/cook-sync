@@ -82,15 +82,10 @@
 
     </HorizontalScrollView>
 
-    <!-- Live background publish progress feedback card -->
     <include
         android:id="@+id/card_publish_progress"
         layout="@layout/layout_publish_progress_card" />
 
-    <!-- Resumable local drafts (any number), pinned above the published/private list — My
-         Recipes only (see RecipeListActivity/MyRecipesActivity, which populate this by
-         inflating item_recipe_draft_card.xml once per draft; this layout is shared with
-         Favorites, which never has a draft to show and leaves this container empty). -->
     <LinearLayout
         android:id="@+id/drafts_container"
         android:layout_width="match_parent"
@@ -158,8 +153,6 @@
 
         <include layout="@layout/layout_no_results_state" />
 
-        <!-- "Create recipe" entry point — My Recipes only (see RecipeListActivity, which hides
-             this on Favorites since this layout is shared by both screens). -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add_recipe"
             style="@style/Widget.CookSync.Fab"

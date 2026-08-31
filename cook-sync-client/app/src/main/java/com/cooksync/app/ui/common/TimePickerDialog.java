@@ -45,7 +45,6 @@ public final class TimePickerDialog {
     }
 
     private TimePickerDialog() {
-        // Utility class
     }
 
     /**

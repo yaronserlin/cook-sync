@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 public final class UserNameFormatter {
 
     private UserNameFormatter() {
-        // Utility class
     }
 
     /**

@@ -76,7 +76,6 @@ public class RegisterViewModel extends BaseViewModel {
         }
         lastSubmitTimestamp = now;
 
-        // ── Sanitise (trim) ─────────────────────────────────────────────────────
         String firstName = InputSanitizer.trim(rawFirstName);
         String lastName = InputSanitizer.trim(rawLastName);
         String email = InputSanitizer.trim(rawEmail);
@@ -85,7 +84,6 @@ public class RegisterViewModel extends BaseViewModel {
         String password = rawPassword == null ? "" : rawPassword;
         String repeatPassword = rawRepeatPassword == null ? "" : rawRepeatPassword;
 
-        // ── Validate all fields simultaneously ──────────────────────────────────
         InputValidator.ValidationResult fnResult = InputValidator.validateName(firstName, "First name");
         InputValidator.ValidationResult lnResult = InputValidator.validateName(lastName, "Last name");
         InputValidator.ValidationResult emResult = InputValidator.validateEmail(email);

@@ -80,8 +80,6 @@ public final class TagAutocompleteController {
         this.input = input;
         this.chipGroup = chipGroup;
         this.listener = listener;
-        // Matches the design's card-style suggestion popup instead of the system default plain
-        // white dropdown.
         input.setDropDownBackgroundResource(R.drawable.bg_dropdown_popup);
         input.setOnItemClickListener((parent, view, position, id) -> {
             String selectedName = (String) parent.getItemAtPosition(position);

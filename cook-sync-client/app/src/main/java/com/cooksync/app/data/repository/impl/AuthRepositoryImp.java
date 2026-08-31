@@ -273,7 +273,6 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
     public void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            // ── Phase 1: attempt validation directly (TokenAuthenticator transparently retries on 401) ──
             ApiResult<AuthResponse> validateResult = executeCall(apiService.validateToken());
 
             if (validateResult instanceof ApiResult.Success) {
@@ -284,7 +283,6 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
 
             ApiResult<AuthResponse> terminalResult;
 
-            // ── Phase 2: validation still failed, so explicitly attempt a token refresh ──
             String refreshToken = TokenStore.getRefreshToken();
             if (refreshToken != null && !refreshToken.isEmpty()) {
                 // The bare (unauthenticated) service is used here to avoid a recursive authenticator loop.
@@ -304,7 +302,6 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
                 terminalResult = validateResult;
             }
 
-            // ── Phase 3: both validation and refresh failed (expired refresh token or no session at all) ──
             SessionManager.getInstance().forceLogout();
             resultTarget.postValue(terminalResult);
         });

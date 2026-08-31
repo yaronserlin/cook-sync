@@ -11,7 +11,6 @@ package com.cooksync.app.util.constants;
  */
 public final class DomainValues {
 
-    // ── Recipe visibility ─────────────────────────────────────────────
 
     /** A recipe visible to every user. */
     public static final String VISIBILITY_PUBLIC = "PUBLIC";
@@ -22,7 +21,6 @@ public final class DomainValues {
     /** Client-side filter value meaning "no visibility filter". */
     public static final String VISIBILITY_ALL = "ALL";
 
-    // ── Review report reasons ─────────────────────────────────────────
 
     /** Report reason: unsolicited/promotional content. */
     public static final String REPORT_REASON_SPAM = "SPAM";
@@ -33,7 +31,6 @@ public final class DomainValues {
     /** Report reason: content unrelated to the recipe it's attached to. */
     public static final String REPORT_REASON_OFF_TOPIC = "OFF_TOPIC";
 
-    // ── Recipe difficulty ──────────────────────────────────────────────
 
     /** Difficulty level: easy. */
     public static final String DIFFICULTY_EASY = "EASY";

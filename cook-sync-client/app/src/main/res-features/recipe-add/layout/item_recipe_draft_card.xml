@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pinned "resumable draft" card on My Recipes, distinct from item_recipe_row_card since a
-     local draft's data shape (title only, no reviews/rating/views) and behavior (tap resumes
-     the wizard rather than opening recipe detail) are genuinely different from a server-backed
-     RecipePreviewResponse row. Uses a plain View (not MaterialCardView) since MaterialCardView's
-     stroke can't be dashed — the dashed look comes from bg_dashed_draft_card.xml instead. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

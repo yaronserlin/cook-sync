@@ -19,7 +19,6 @@ import java.util.List;
  */
 public class InstructionTextFormatterTest {
 
-    // ── splitIntoSentences ────────────────────────────────────────────
 
     @Test
     public void splitIntoSentences_empty_forNullOrBlank() {
@@ -54,7 +53,6 @@ public class InstructionTextFormatterTest {
         assertTrue(sentences.get(1).parenthetical());
     }
 
-    // ── findIngredientMentions ────────────────────────────────────────
 
     @Test
     public void findIngredientMentions_empty_whenTextOrNamesNull() {
@@ -88,7 +86,6 @@ public class InstructionTextFormatterTest {
         assertTrue(InstructionTextFormatter.findIngredientMentions("Add salt.", java.util.Arrays.asList(null, "  ")).isEmpty());
     }
 
-    // ── stepTextSizeSp ────────────────────────────────────────────────
 
     @Test
     public void stepTextSizeSp_largestSize_forShortOrNullDescription() {

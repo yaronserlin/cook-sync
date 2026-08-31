@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
  */
 public final class InputValidator {
 
-    // ─── Constraints mirroring RegisterRequestDTO / LoginRequestDTO ─────────────
 
     /** Minimum acceptable password length (mirrors {@code @Size(min=6)} on both DTOs). */
     public static final int PASSWORD_MIN = 6;
@@ -61,7 +60,6 @@ public final class InputValidator {
      */
     private static final Pattern OTP_CODE_FORMAT = Pattern.compile("^\\d{6}$");
 
-    // ─── Inner result type ───────────────────────────────────────────────────────
 
     /**
      * Immutable result of a single field validation check, carrying a success flag and,
@@ -104,7 +102,6 @@ public final class InputValidator {
     private InputValidator() {
     }
 
-    // ─── Field validators ────────────────────────────────────────────────────────
 
     /**
      * Validates an email address.

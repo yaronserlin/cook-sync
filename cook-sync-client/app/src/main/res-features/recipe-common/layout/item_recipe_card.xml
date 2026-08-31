@@ -40,7 +40,6 @@
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/dp_4">
 
-            <!-- Kicker: author name, matching the design's ".card-kicker". -->
             <TextView
                 android:id="@+id/author_name"
                 android:layout_width="match_parent"
@@ -64,7 +63,6 @@
                 android:textStyle="bold"
                 tools:text="Creamy Avocado Pasta" />
 
-            <!-- Blurb: short description, matching the design's ".card-body". -->
             <TextView
                 android:id="@+id/recipe_blurb"
                 android:layout_width="match_parent"

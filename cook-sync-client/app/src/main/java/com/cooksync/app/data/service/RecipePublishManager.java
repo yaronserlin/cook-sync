@@ -142,7 +142,6 @@ public class RecipePublishManager {
     private final MutableLiveData<Event<RecipeResponse>> recipePublishedEvent = new MutableLiveData<>();
 
     private RecipePublishManager() {
-        // Singleton
     }
 
     /** @return process-wide singleton instance */
@@ -187,7 +186,6 @@ public class RecipePublishManager {
 
         executor.execute(() -> {
             try {
-                // 1. Upload pending media to Cloudinary
                 List<RecipeDraftMediaHelper.PendingImageUpload> pending =
                         RecipeDraftMediaHelper.collectPendingImageUploads(draft);
                 int totalImages = pending.size();
@@ -231,7 +229,6 @@ public class RecipePublishManager {
                             publicId = "instruction_" + stepNum + "_" + currentTime;
                         }
 
-                        // Fetch signature synchronously
                         CloudinarySignatureResponse sig = fetchSignatureSync(folder, publicId);
                         if (sig == null) {
                             mediaFailed = true;
@@ -241,7 +238,6 @@ public class RecipePublishManager {
                             break;
                         }
 
-                        // Perform Cloudinary upload
                         String uploadedUrl = uploadImageSync(item.getLocalUri(), folder, publicId, sig);
                         if (uploadedUrl == null) {
                             mediaFailed = true;
@@ -259,7 +255,6 @@ public class RecipePublishManager {
                     draft.visibility = DomainValues.VISIBILITY_PRIVATE;
                 }
 
-                // 2. Create custom tags if any
                 publishState.postValue(PublishState.publishing("Processing recipe tags..."));
                 for (String tag : draft.pendingNewTagNames) {
                     TagResponse createdTag = createTagSync(tag);
@@ -268,7 +263,6 @@ public class RecipePublishManager {
                     }
                 }
 
-                // 3. Post recipe creation or update DTO to server
                 publishState.postValue(PublishState.publishing(isEditing ? "Updating recipe..." : "Publishing recipe..."));
                 RecipeCreateRequestDTO dto = RecipeDraftMapper.toDto(draft);
                 RecipeResponse response = isEditing
