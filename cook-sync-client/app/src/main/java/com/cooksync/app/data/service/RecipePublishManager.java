@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import com.cooksync.app.CookSyncApplication;
+import com.cooksync.app.R;
 import com.cooksync.app.data.datasource.local.RecipeDraftStore;
 import com.cooksync.app.data.repository.MediaRepository;
 import com.cooksync.app.data.repository.impl.MediaRepositoryImp;
@@ -25,6 +26,7 @@ import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 import com.cooksync.app.ui.recipe.wizard.RecipeImagePicker;
 import com.cooksync.app.util.CloudinaryUploader;
 import com.cooksync.app.util.SessionManager;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -59,6 +61,7 @@ public class RecipePublishManager {
         public final String message;
         public final RecipeResponse recipe;
         public final String error;
+        public final String warning;
 
         /**
          * @param status the publish job's current stage
@@ -66,18 +69,22 @@ public class RecipePublishManager {
          * @param message a short status line for the current stage, or {@code null} if not applicable
          * @param recipe the published recipe, set only once {@code status} is {@code SUCCESS}
          * @param error a user-facing error description, set only once {@code status} is {@code ERROR}
+         * @param warning a user-facing caveat about an otherwise-successful publish (e.g. images
+         *        couldn't all be uploaded), set only when {@code status} is {@code SUCCESS} and
+         *        something degraded; {@code null} otherwise
          */
-        public PublishState(Status status, int progress, String message, RecipeResponse recipe, String error) {
+        public PublishState(Status status, int progress, String message, RecipeResponse recipe, String error, String warning) {
             this.status = status;
             this.progress = progress;
             this.message = message;
             this.recipe = recipe;
             this.error = error;
+            this.warning = warning;
         }
 
         /** @return the initial, no-job-running state */
         public static PublishState idle() {
-            return new PublishState(Status.IDLE, 0, null, null, null);
+            return new PublishState(Status.IDLE, 0, null, null, null, null);
         }
 
         /**
@@ -86,7 +93,7 @@ public class RecipePublishManager {
          * @return an {@code UPLOADING}-stage state
          */
         public static PublishState uploading(int progress, String message) {
-            return new PublishState(Status.UPLOADING, progress, message, null, null);
+            return new PublishState(Status.UPLOADING, progress, message, null, null, null);
         }
 
         /**
@@ -94,7 +101,7 @@ public class RecipePublishManager {
          * @return a {@code PUBLISHING}-stage state, fixed at 90% complete
          */
         public static PublishState publishing(String message) {
-            return new PublishState(Status.PUBLISHING, 90, message, null, null);
+            return new PublishState(Status.PUBLISHING, 90, message, null, null, null);
         }
 
         /**
@@ -102,7 +109,17 @@ public class RecipePublishManager {
          * @return a terminal {@code SUCCESS} state at 100% complete
          */
         public static PublishState success(RecipeResponse recipe) {
-            return new PublishState(Status.SUCCESS, 100, "Published successfully", recipe, null);
+            return new PublishState(Status.SUCCESS, 100, "Published successfully", recipe, null, null);
+        }
+
+        /**
+         * @param recipe the successfully published recipe
+         * @param warning a user-facing caveat explaining what was skipped (e.g. some images
+         *        couldn't be uploaded, so the recipe was published privately)
+         * @return a terminal {@code SUCCESS} state at 100% complete, carrying a caveat
+         */
+        public static PublishState successWithWarning(RecipeResponse recipe, String warning) {
+            return new PublishState(Status.SUCCESS, 100, "Published successfully", recipe, null, warning);
         }
 
         /**
@@ -110,7 +127,7 @@ public class RecipePublishManager {
          * @return a terminal {@code ERROR} state
          */
         public static PublishState error(String error) {
-            return new PublishState(Status.ERROR, 0, null, null, error);
+            return new PublishState(Status.ERROR, 0, null, null, error, null);
         }
     }
 
@@ -178,47 +195,68 @@ public class RecipePublishManager {
                 String userId = SessionManager.getInstance().getUserId();
                 String userEmail = SessionManager.getInstance().getEmail();
                 String recipeTitle = (draft.title == null || draft.title.isBlank()) ? "recipe" : draft.title.trim().replaceAll("[^a-zA-Z0-9_]", "_");
+                // Both new recipes and edits degrade gracefully on media failure: whatever images
+                // already uploaded are kept, the failed/not-yet-attempted ones are cleared, and the
+                // recipe is force-published privately rather than blocking the whole save.
+                boolean isEditing = draft.editingRecipeId != null;
+                boolean mediaFailed = false;
+
                 String baseFolder = fetchBaseFolderSync();
                 if (baseFolder == null) {
-                    publishState.postValue(PublishState.error("Failed to resolve upload folder"));
-                    return;
+                    mediaFailed = true;
+                    for (RecipeDraftMediaHelper.PendingImageUpload item : pending) {
+                        RecipeDraftMediaHelper.clearPendingImage(draft, item);
+                    }
                 }
-                String folder = CloudinaryUploader.buildUserFolder(baseFolder, userEmail, recipeTitle);
 
-                for (int i = 0; i < totalImages; i++) {
-                    RecipeDraftMediaHelper.PendingImageUpload item = pending.get(i);
-                    int itemNum = i + 1;
-                    int percent = (int) (((double) i / totalImages) * 70) + 5;
-                    publishState.postValue(PublishState.uploading(percent,
-                            "Uploading image " + itemNum + " of " + totalImages + "..."));
+                if (!mediaFailed) {
+                    String folder = CloudinaryUploader.buildUserFolder(baseFolder, userEmail, recipeTitle);
 
-                    long currentTime = System.currentTimeMillis();
-                    String publicId;
-                    if (item.getKind() == RecipeDraftMediaHelper.PendingImageUpload.Kind.COVER) {
-                        publicId = "main_" + userId + "_" + currentTime;
-                    } else if (item.getKind() == RecipeDraftMediaHelper.PendingImageUpload.Kind.DESCRIPTION_BLOCK) {
-                        publicId = "description_" + userId + "_" + currentTime;
-                    } else {
-                        int stepNum = (item.getInstruction() != null && draft.instructions != null) ? (draft.instructions.indexOf(item.getInstruction()) + 1) : 1;
-                        if (stepNum <= 0) stepNum = 1;
-                        publicId = "instruction_" + stepNum + "_" + currentTime;
+                    for (int i = 0; i < totalImages; i++) {
+                        RecipeDraftMediaHelper.PendingImageUpload item = pending.get(i);
+                        int itemNum = i + 1;
+                        int percent = (int) (((double) i / totalImages) * 70) + 5;
+                        publishState.postValue(PublishState.uploading(percent,
+                                "Uploading image " + itemNum + " of " + totalImages + "..."));
+
+                        long currentTime = System.currentTimeMillis();
+                        String publicId;
+                        if (item.getKind() == RecipeDraftMediaHelper.PendingImageUpload.Kind.COVER) {
+                            publicId = "main_" + userId + "_" + currentTime;
+                        } else if (item.getKind() == RecipeDraftMediaHelper.PendingImageUpload.Kind.DESCRIPTION_BLOCK) {
+                            publicId = "description_" + userId + "_" + currentTime;
+                        } else {
+                            int stepNum = (item.getInstruction() != null && draft.instructions != null) ? (draft.instructions.indexOf(item.getInstruction()) + 1) : 1;
+                            if (stepNum <= 0) stepNum = 1;
+                            publicId = "instruction_" + stepNum + "_" + currentTime;
+                        }
+
+                        // Fetch signature synchronously
+                        CloudinarySignatureResponse sig = fetchSignatureSync(folder, publicId);
+                        if (sig == null) {
+                            mediaFailed = true;
+                            for (int j = i; j < totalImages; j++) {
+                                RecipeDraftMediaHelper.clearPendingImage(draft, pending.get(j));
+                            }
+                            break;
+                        }
+
+                        // Perform Cloudinary upload
+                        String uploadedUrl = uploadImageSync(item.getLocalUri(), folder, publicId, sig);
+                        if (uploadedUrl == null) {
+                            mediaFailed = true;
+                            for (int j = i; j < totalImages; j++) {
+                                RecipeDraftMediaHelper.clearPendingImage(draft, pending.get(j));
+                            }
+                            break;
+                        }
+
+                        RecipeDraftMediaHelper.resolvePendingImageUpload(draft, item, uploadedUrl);
                     }
+                }
 
-                    // Fetch signature synchronously
-                    CloudinarySignatureResponse sig = fetchSignatureSync(folder, publicId);
-                    if (sig == null) {
-                        publishState.postValue(PublishState.error("Failed to acquire upload signature"));
-                        return;
-                    }
-
-                    // Perform Cloudinary upload
-                    String uploadedUrl = uploadImageSync(item.getLocalUri(), folder, publicId, sig);
-                    if (uploadedUrl == null) {
-                        publishState.postValue(PublishState.error("Failed to upload image " + itemNum));
-                        return;
-                    }
-
-                    RecipeDraftMediaHelper.resolvePendingImageUpload(draft, item, uploadedUrl);
+                if (mediaFailed) {
+                    draft.visibility = DomainValues.VISIBILITY_PRIVATE;
                 }
 
                 // 2. Create custom tags if any
@@ -231,7 +269,6 @@ public class RecipePublishManager {
                 }
 
                 // 3. Post recipe creation or update DTO to server
-                boolean isEditing = draft.editingRecipeId != null;
                 publishState.postValue(PublishState.publishing(isEditing ? "Updating recipe..." : "Publishing recipe..."));
                 RecipeCreateRequestDTO dto = RecipeDraftMapper.toDto(draft);
                 RecipeResponse response = isEditing
@@ -244,7 +281,12 @@ public class RecipePublishManager {
                     // the catch block, it stays put so the user's work is never lost.
                     RecipeDraftStore.remove(draft.draftId);
                     RecipeImagePicker.clearCache(CookSyncApplication.getAppContext());
-                    publishState.postValue(PublishState.success(response));
+                    if (mediaFailed) {
+                        String warning = CookSyncApplication.getAppContext().getString(R.string.wizard_publish_partial_warning);
+                        publishState.postValue(PublishState.successWithWarning(response, warning));
+                    } else {
+                        publishState.postValue(PublishState.success(response));
+                    }
                     recipePublishedEvent.postValue(new Event<>(response));
                 } else {
                     publishState.postValue(PublishState.error(isEditing ? "Failed to update recipe on server" : "Failed to publish recipe to server"));
@@ -286,6 +328,7 @@ public class RecipePublishManager {
 
                     @Override
                     public void onError(String message) {
+                        android.util.Log.w("RecipePublishManager", "Cloudinary upload failed: " + message);
                         latch.countDown();
                     }
                 }

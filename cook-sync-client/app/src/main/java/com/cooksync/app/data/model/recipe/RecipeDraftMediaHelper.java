@@ -127,6 +127,35 @@ public final class RecipeDraftMediaHelper {
     }
 
     /**
+     * Clears a not-yet-uploaded (or failed-to-upload) local image reference from the draft,
+     * leaving the corresponding slot empty rather than pointing at a dead local URI. Used as a
+     * publish fallback when Cloudinary upload fails partway through: images already resolved via
+     * {@link #resolvePendingImageUpload} are left untouched, only the remaining pending ones are cleared.
+     *
+     * @param draft target recipe draft
+     * @param pending pending image descriptor to clear
+     */
+    public static void clearPendingImage(RecipeDraft draft, PendingImageUpload pending) {
+        switch (pending.kind) {
+            case COVER -> {
+                if (Objects.equals(draft.primaryImageUrl, pending.localUri)) {
+                    draft.primaryImageUrl = null;
+                }
+            }
+            case DESCRIPTION_BLOCK -> {
+                if (draft.descriptionBlocks != null) {
+                    draft.descriptionBlocks.remove(pending.descriptionBlock);
+                }
+            }
+            case INSTRUCTION -> {
+                if (pending.instruction != null) {
+                    pending.instruction.imageUrl = null;
+                }
+            }
+        }
+    }
+
+    /**
      * Reports whether {@code value} is a local URI (picked but not yet uploaded), as opposed to
      * an already-uploaded {@code https://} Cloudinary URL.
      *

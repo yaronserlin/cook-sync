@@ -484,6 +484,7 @@
     <string name="wizard_publish_failed_title">Publishing failed</string>
     <string name="wizard_publish_failed_default_reason">Failed to publish recipe</string>
     <string name="wizard_publish_failed_subtitle_format">%1$s — your recipe was saved as a draft, nothing was lost.</string>
+    <string name="wizard_publish_partial_warning">We couldn\'t upload all your photos, so this recipe was saved privately with only the images that made it. You can add the rest and make it public later.</string>
 
     <string name="wizard_basics_title_label">Recipe title</string>
     <string name="wizard_basics_title_hint">e.g. Shakshuka with feta</string>

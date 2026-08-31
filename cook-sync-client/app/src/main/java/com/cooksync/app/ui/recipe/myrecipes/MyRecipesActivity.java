@@ -297,6 +297,9 @@ public class MyRecipesActivity extends RecipeListActivity {
                     // RecipeDraftStore, but the drafts row rendered by onResume() before this
                     // background publish finished is stale until re-populated here.
                     showResumableDraftIfAny();
+                    if (state.warning != null) {
+                        showError(state.warning, bottomNav);
+                    }
                     new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                         card.setVisibility(View.GONE);
                         com.cooksync.app.data.service.RecipePublishManager.getInstance().resetState();
