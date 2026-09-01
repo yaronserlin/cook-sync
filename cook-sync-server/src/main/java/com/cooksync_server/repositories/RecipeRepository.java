@@ -33,6 +33,15 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
     long countByTagId(@Param("tagId") String tagId);
 
     /**
+     * Checks whether a recipe with the given title already exists, used by
+     * {@link com.cooksync_server.config.ProductionSeeder} to skip recipes it has already seeded.
+     *
+     * @param title exact recipe title to check
+     * @return {@code true} if a recipe with that title exists
+     */
+    boolean existsByTitle(String title);
+
+    /**
      * Retrieves all recipes authored by a specific user account ID.
      *
      * @param userId unique user identifier

@@ -24,7 +24,7 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: ${DB_PASSWORD:-root}
       DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-cooksync_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
     ports:
       - "${PORT:-8080}:8080"
     depends_on:
