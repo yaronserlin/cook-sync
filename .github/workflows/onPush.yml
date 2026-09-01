@@ -1,0 +1,107 @@
+name: onPush
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  server:
+    name: Server tests (Maven)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # cook-sync-server depends on the DTOs jar being present in the local Maven repo -
+      # same as the Dockerfile and the local dev setup in the READMEs.
+      - name: Install shared DTOs module
+        run: mvn -f cooksync-DTOs/pom.xml -B install -DskipTests
+
+      - name: Run server tests
+        run: mvn -f cook-sync-server/pom.xml -B test
+
+  client:
+    name: Client unit tests (Gradle)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      # cook-sync-client resolves the same DTOs jar via mavenLocal() (see settings.gradle.kts).
+      - name: Install shared DTOs module
+        run: mvn -f cooksync-DTOs/pom.xml -B install -DskipTests
+
+      - name: Run client unit tests
+        working-directory: cook-sync-client
+        run: |
+          chmod +x gradlew
+          ./gradlew testDebugUnitTest --console=plain
+
+  release:
+    name: Build & publish release APK
+    needs: [server, client]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      # cook-sync-client resolves the same DTOs jar via mavenLocal() (see settings.gradle.kts).
+      - name: Install shared DTOs module
+        run: mvn -f cooksync-DTOs/pom.xml -B install -DskipTests
+
+      # keystore.properties and the .jks it points at are gitignored (never committed);
+      # reconstitute both from repo secrets so assembleRelease produces a properly signed APK.
+      - name: Restore release keystore
+        working-directory: cook-sync-client
+        run: |
+          mkdir -p keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > keystore/cooksync-release.jks
+          cat > keystore.properties <<EOF
+          storeFile=keystore/cooksync-release.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+
+      - name: Build release APK
+        working-directory: cook-sync-client
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --console=plain
+
+      # Rolling release: delete-and-recreate the "latest-apk" tag/release on every push to
+      # main, so there's always exactly one release carrying the newest signed build.
+      - name: Publish rolling GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="latest-apk"
+          APK="cook-sync-client/app/build/outputs/apk/release/app-release.apk"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" "$APK" \
+            --title "CookSync (latest build)" \
+            --notes "Automated build from commit ${GITHUB_SHA::7}, built $(date -u +'%Y-%m-%d %H:%M UTC')." \
+            --target "$GITHUB_SHA"
