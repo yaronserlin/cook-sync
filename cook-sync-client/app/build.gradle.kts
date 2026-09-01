@@ -77,7 +77,7 @@ android {
         }
         release {
             // Production API, deployed on Render.
-            buildConfigField("String", "BASE_URL", "\"https://cooksyncapp-server.on-render.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://cooksyncapp-server.onrender.com/\"")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
