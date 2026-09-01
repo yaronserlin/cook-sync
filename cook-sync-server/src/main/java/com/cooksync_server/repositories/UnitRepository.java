@@ -4,6 +4,8 @@ import com.cooksync_server.entities.Unit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Spring Data JPA Repository interface for Unit entity operations.
  *
@@ -29,6 +31,14 @@ public interface UnitRepository extends JpaRepository<Unit, String> {
      * @return true if a matching unit exists
      */
     boolean existsByCodeIgnoreCase(String code);
+
+    /**
+     * Finds a unit by its code, ignoring case.
+     *
+     * @param code unit symbol code
+     * @return optional containing the matching Unit, or empty if none has that code
+     */
+    Optional<Unit> findByCodeIgnoreCase(String code);
 
     /**
      * Retrieves all measurement units with pagination.

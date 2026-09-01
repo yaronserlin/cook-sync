@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -6,6 +9,19 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+}
+
+// Release signing credentials, read from keystore.properties (gitignored - never committed).
+// Both the properties file and the .jks it points at are missing on a fresh clone until you
+// generate a release keystore; guarded below so assembleRelease still produces an unsigned
+// APK without them instead of failing.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+var hasReleaseKeystore = false
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    val storeFilePath = keystoreProperties.getProperty("storeFile")
+    hasReleaseKeystore = storeFilePath != null && rootProject.file(storeFilePath).exists()
 }
 
 android {
@@ -24,8 +40,6 @@ android {
         versionName = "1.0"
 
         resValue("string", "app_name", "CookSync")
-        // Local dev server address. Update to your machine's LAN IP when testing on a device.
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -33,6 +47,17 @@ android {
             // Ensure the APK contains libraries for all common architectures.
             // This fixes "0 split apks compatible" errors during deployment.
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
+        }
+    }
+
+    if (hasReleaseKeystore) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
         }
     }
 
@@ -45,12 +70,22 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Local dev server address. Update to your machine's LAN IP when testing on a
+            // physical device instead of the emulator.
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
+        }
         release {
-            isMinifyEnabled = false
+            // Production API, deployed on Render.
+            buildConfigField("String", "BASE_URL", "\"https://cooksyncapp-server.on-render.com/\"")
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

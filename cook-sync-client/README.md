@@ -2,7 +2,7 @@
 
 The CookSync Android app (**Java 17**, MVVM, `minSdk 24` / `targetSdk` & `compileSdk 36`). It talks to [`cook-sync-server`](../cook-sync-server) over REST and shares its request/response payload shapes with it via the [`cooksync-DTOs`](../cooksync-DTOs) module.
 
-This file is self-contained: it covers everything needed to configure and run this module on its own. For the full user-facing feature walkthrough and screenshots, see [`../doc/להגשה/מסמך תיאור פונקציונלי.docx`](../doc).
+This file is self-contained: it covers everything needed to configure and run this module on its own.
 
 ## Tech stack
 
@@ -34,10 +34,24 @@ Resources are split by feature under `src/main/res` and `src/main/res-features/{
 
 ## Configuration
 
-`BASE_URL` is a `buildConfigField` in `app/build.gradle.kts` (defaults to `http://10.0.2.2:8080/`, the Android emulator's alias for the host machine's `localhost`). Point it at your server:
+`BASE_URL` is a per-build-type `buildConfigField` in `app/build.gradle.kts` — there's no separate "dev"/"prod" flavor; `debug`/`release` already serve that role:
 
-- **Emulator:** leave as `http://10.0.2.2:8080/`
-- **Physical device:** set it to your machine's LAN IP, e.g. `http://192.168.1.x:8080/` (device and machine must be on the same Wi-Fi network)
+- **`debug`** — `http://10.0.2.2:8080/`, the Android emulator's alias for the host machine's `localhost`. For a physical device on the same Wi-Fi network, change this to your machine's LAN IP, e.g. `http://192.168.1.x:8080/`.
+- **`release`** — `https://cooksyncapp-server.on-render.com/`, the production API.
+
+### Release signing
+
+`app/build.gradle.kts` reads signing credentials from `keystore.properties` (repo root of this module, gitignored — never committed) if present, and only wires up `signingConfig` on the `release` build type when both that file and the `.jks` it points at actually exist; otherwise `assembleRelease` still succeeds but produces an unsigned APK. To build a real signed release:
+
+1. Generate a keystore if you don't have one yet: `keytool -genkeypair -v -keystore keystore/cooksync-release.jks -alias <your-key-alias> -keyalg RSA -keysize 2048 -validity 10000` (run from this directory; `keystore/` and `*.jks` are gitignored).
+2. Create `keystore.properties` in this directory:
+   ```properties
+   storeFile=keystore/cooksync-release.jks
+   storePassword=<your store password>
+   keyAlias=<your-key-alias>
+   keyPassword=<your key password>
+   ```
+3. `./gradlew :app:assembleRelease` now produces a signed, minified (R8) APK.
 
 ## Running locally
 
@@ -46,9 +60,9 @@ Resources are split by feature under `src/main/res` and `src/main/res-features/{
    ```bash
    cd ../cooksync-DTOs && mvn install
    ```
-3. Open this directory in Android Studio, confirm `BASE_URL` points at your server, and run the app on an emulator or device.
+3. Open this directory in Android Studio, confirm the `debug` build type's `BASE_URL` points at your server, and run the app on an emulator or device.
 
-Verified working: `./gradlew :app:assembleDebug` builds successfully against a freshly-installed `cooksync-DTOs` artifact.
+Verified working: `./gradlew :app:assembleDebug` and `./gradlew :app:assembleRelease` (R8 minification on, unsigned without a keystore) both build successfully against a freshly-installed `cooksync-DTOs` artifact.
 
 ## Tests
 

@@ -3,12 +3,12 @@ package com.cooksync_server.config;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Shared table-truncation routine used by every {@code @Profile}-gated seeder
- * ({@link DataSeeder}, {@link SkillRecipeDataSeeder}) to wipe the schema before
- * reseeding it from scratch.
+ * Table-truncation routine used by the {@code @Profile("seed")}-gated
+ * {@link DataSeeder} to wipe the schema before reseeding it from scratch.
+ * Not used by {@link ProductionSeeder}, which is non-destructive by design.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 24/08/2026
  */
 final class SeedDatabaseReset {

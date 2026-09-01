@@ -24,4 +24,13 @@ COPY --from=build /workspace/cook-sync-server/target/*.jar app.jar
 USER cooksync:cooksync
 
 EXPOSE 8080
+
+# wget comes from busybox, already in this alpine base - no extra package needed. --start-period
+# gives Flyway migrations + JVM startup time to finish before a slow first check counts as a
+# failure. A service/compose file with no healthcheck of its own (see docker-compose.yml) picks
+# this one up automatically; Render's own "Health Check Path" dashboard setting is separate and
+# still needs to be pointed at /actuator/health there.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

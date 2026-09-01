@@ -2,7 +2,7 @@
 
 The REST backend for CookSync — a recipe-sharing and discovery platform. Built with **Spring Boot 3.4.2** on **Java 21**, it exposes the API the [`cook-sync-client`](../cook-sync-client) Android app talks to, backed by **MySQL** and stateless **JWT** authentication.
 
-This file is self-contained: it covers everything needed to configure, run, and understand this module on its own. For the full user-facing feature walkthrough and a deeper architecture/database write-up (with diagrams), see [`../doc/להגשה/מסמך תיאור פונקציונלי.docx`](../doc); for the request/response payload shapes shared with the client, see [`../cooksync-DTOs`](../cooksync-DTOs).
+This file is self-contained: it covers everything needed to configure, run, and understand this module on its own. For the request/response payload shapes shared with the client, see [`../cooksync-DTOs`](../cooksync-DTOs).
 
 ## Tech stack
 
@@ -24,7 +24,7 @@ This file is self-contained: it covers everything needed to configure, run, and 
 | `entities` | JPA entities — `User`, `Recipe`, `Ingredient`, `Instruction`, `DescriptionBlock`, `RecipeImage`, `Tag`, `Review`, `ReviewReport`, `FavoriteRecipe`, `PersonalInstructionNote`, `Unit`, and the token/pending-registration entities (`RefreshToken`, `PasswordResetToken`, `EmailChangeToken`, `PendingRegistration`) |
 | `repositories` | Spring Data JPA repositories, plus `RecipeSpecifications` for dynamic search/filter queries |
 | `mappers` | Entity ↔ DTO conversion — `RecipeMapper`, `UserMapper`, `AdminMapper`, `IngredientMapper`, `InstructionMapper`, `ReviewMapper`, `TagMapper`, `UnitMapper` |
-| `config` | `SecurityConfig` (stateless, no CSRF, public-path allowlist, `@EnableMethodSecurity`), `JwtUtil`/`JwtAuthenticationFilter`/`JwtAuthenticationEntryPoint`, `WebConfig` (CORS), `FlywayConfig` (auto-repairs a failed migration before retrying), `CloudinaryConfig`, `RequestAndResponseLoggingFilter`, `FaintDebugMessageConverter` (dims DEBUG/TRACE console output), and the `@Profile`-gated dev-only seeders `DataSeeder` / `SkillRecipeDataSeeder` |
+| `config` | `SecurityConfig` (stateless, no CSRF, public-path allowlist, `@EnableMethodSecurity`), `JwtUtil`/`JwtAuthenticationFilter`/`JwtAuthenticationEntryPoint`, `WebConfig` (CORS), `FlywayConfig` (auto-repairs a failed migration before retrying), `CloudinaryConfig`, `RequestAndResponseLoggingFilter`, `RateLimitFilter` (per-IP, per-endpoint fixed-window throttle on the public auth endpoints — login/registration brute-forcing and forgot-password/resend-OTP email-bombing), `FaintDebugMessageConverter` (dims DEBUG/TRACE console output), the `@Profile("seed")`-gated dev-only seeder `DataSeeder`, and `ProductionSeeder` (idempotent, non-destructive; runs whenever either the `--prodSeeder` CLI flag or the `prodSeeder` Spring profile is present) |
 | `exceptions` | `GlobalExceptionHandler` (single `@RestControllerAdvice` turning every exception — custom or framework — into one uniform JSON error shape) plus the domain exceptions it handles: `ResourceNotFoundException`, `ResourceAlreadyExistsException`, `ResourceInUseException`, `UnauthorizedActionException`, `InvalidCredentialsException`, `UserAlreadyExistsException`, `InvalidOtpException`, `OtpExpiredException`, `TooManyOtpAttemptsException` |
 | `constants` | Shared literals — `ApiRoutes` (path constants used by both controllers and `SecurityConfig`'s public-path allowlist) |
 
@@ -62,10 +62,28 @@ Environment variables are read via `application.properties`, which also auto-loa
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | No at startup (all default to blank) — needed in practice for image uploads to work | Cloudinary account credentials |
 | `MAIL_USERNAME`, `MAIL_PASSWORD` | No | Gmail SMTP address + [App Password](https://myaccount.google.com/apppasswords) (not the regular account password). If unset, OTP/reset codes are logged instead of emailed |
 | `MAIL_HOST`, `MAIL_PORT` | No | Default to `smtp.gmail.com:587` |
-| `CORS_ALLOWED_ORIGINS` | No (defaults to `*`) | Comma-separated allowed origins |
+| `CORS_ALLOWED_ORIGINS` | No (defaults to `*` in `dev`, closed in `prod`) | Comma-separated allowed origins. Irrelevant to the Android client — CORS is a browser-only mechanism, not enforced by Retrofit/OkHttp — so this only matters if a browser-based client is ever added |
 | `PORT` | No (defaults to `8080`) | Port the server listens on |
+| `SPRING_PROFILES_ACTIVE` | No (defaults to `dev`) | `dev` or `prod` (see below); combine with `prodSeeder` (e.g. `prod,prodSeeder`) to also run `ProductionSeeder` on that boot |
 
-Schema is managed entirely by Flyway (`src/main/resources/db/migration/V1__init_schema.sql`) — `spring.jpa.hibernate.ddl-auto=update` is set only as a safety net alongside it, not as the source of truth.
+Schema is managed entirely by Flyway (`src/main/resources/db/migration/V1__init_schema.sql`).
+
+### `dev` / `prod` profiles
+
+`application.properties` holds settings shared by both profiles and defaults `spring.profiles.active=dev`, so a plain `./mvnw spring-boot:run` needs no extra flags. `application-dev.properties` and `application-prod.properties` hold the settings that differ:
+
+| Setting | `dev` | `prod` |
+|---|---|---|
+| `logging.level.com.cooksync_server` | `DEBUG` (incl. redacted request/response bodies) | `INFO` |
+| `spring.jpa.hibernate.ddl-auto` | `update` (Hibernate may auto-adjust the schema while iterating locally) | `validate` (schema changes only ever happen through reviewed Flyway migrations) |
+| `cors.allowed-origins` | `*` (open, for local browser-based tooling) | empty (closed — there's no browser client; set `CORS_ALLOWED_ORIGINS` if one is ever added) |
+| `cloudinary.upload.base-folder` | `cooksync-dev` | `cooksync-prod` |
+
+Deploying to Render: set `SPRING_PROFILES_ACTIVE=prod` as an environment variable on the service (this overrides the `dev` default, since OS environment variables take precedence over `application.properties`), alongside `JWT_SECRET`, `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`, and `MAIL_*`/`CLOUDINARY_*` if those features are needed in production. Also set Render's own **Health Check Path** dashboard setting to `/actuator/health` — separate from anything in this repo, and needed so Render can tell a bad deploy apart from a good one before routing traffic to it.
+
+### Health check
+
+Spring Boot Actuator exposes `GET /actuator/health` (only that one endpoint — `management.endpoints.web.exposure.include=health` — everything else Actuator can expose, e.g. `/env`, `/beans`, stays off since it'd leak internal config), permitted unauthenticated in `SecurityConfig` since neither Docker's nor Render's prober sends a JWT. `management.endpoint.health.show-details=never` keeps the response to a bare `{"status": "UP"}`/`{"status": "DOWN"}` — the DB-connectivity check backing it still runs and still flips the status, just without exposing *why* to an anonymous caller. The Dockerfile's own `HEALTHCHECK` instruction polls it every 30s (`docker compose ps` / `docker inspect` show the result); `docker-compose.yml` doesn't redeclare one since Compose picks up an image's built-in `HEALTHCHECK` automatically when a service doesn't specify its own.
 
 ## Running locally
 
@@ -96,7 +114,7 @@ cp .env.example .env   # fill in JWT_SECRET at minimum; see the file's own comme
 
 This still requires `mvn install` to have been run once in `cooksync-DTOs` on the host machine first — Gradle (for the client) resolves that dependency via `mavenLocal()` on the host, not inside the container, but the server container's own image build handles its own `mvn install`/`mvn package` internally. Add `--seed` to wipe and repopulate the database with the demo dataset (`DataSeeder`: units, tags, ~15 users, ~30 recipes) on startup; without it the server starts with whatever is already in the database. `docker compose down -v` tears down the containers and deletes the `mysql_data` volume (full, irreversible reset).
 
-There's also a second, lighter dev-only seeder, `SkillRecipeDataSeeder`, behind the `seed-skill` profile (not wired into `docker-up.sh` — run it manually with `./mvnw spring-boot:run -Dspring-boot.run.profiles=seed-skill` against the manual setup). It seeds a small, hand-picked recipe set with real pre-existing Cloudinary image URLs instead of the full demo dataset. The two seed profiles are mutually exclusive.
+There's also `ProductionSeeder`, a small, hand-picked recipe set with real pre-existing Cloudinary image URLs, meant for production use rather than local dev: unlike `DataSeeder`, it never truncates the database and is idempotent (units, tags, the creator account, and each recipe are only inserted if not already present, so running it repeatedly is safe). It's always registered as a bean, but does nothing unless *either* the literal `--prodSeeder` CLI argument is passed (e.g. `./mvnw spring-boot:run -Dspring-boot.run.arguments=--prodSeeder`) *or* the `prodSeeder` Spring profile is active (e.g. `SPRING_PROFILES_ACTIVE=prod,prodSeeder` — the practical option on Render, where toggling an environment variable is easier than editing the container's start command). Not wired into `docker-up.sh`.
 
 Verified working end-to-end: `docker compose up --build` brings up a healthy MySQL 8.4 container and a server container that applies all Flyway migrations and starts Tomcat on port 8080, correctly enforcing JWT authentication on protected endpoints.
 

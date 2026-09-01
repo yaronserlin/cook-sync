@@ -2,7 +2,7 @@
 
 A mobile (Android) app for sharing and discovering cooking recipes. Users browse and search recipes, save favorites, write personal notes on preparation steps, follow a guided step-by-step "Cooking Mode" with timers, rate and review recipes, and create/publish their own recipes through a guided 4-step wizard. Admin users get a moderation console for managing users, tags, measurement units, and reported reviews.
 
-For the full documentation — a comprehensive user guide plus a technical implementation description (architecture, database, API) — see [`COOKSYNC_USER_GUIDE.md`](doc/COOKSYNC_USER_GUIDE.md) (Hebrew).
+This file is self-contained: it covers everything needed to build, run, and understand the project as a whole. Each module below also has its own standalone README with module-specific detail.
 
 ## Repository layout
 
@@ -22,7 +22,7 @@ For the full documentation — a comprehensive user guide plus a technical imple
 
 ## Running locally — quick start
 
-Full, detailed instructions are in the "Installation and Setup" appendix of [`COOKSYNC_USER_GUIDE.md`](doc/COOKSYNC_USER_GUIDE.md). In short:
+The project has three modules that must be built/run in order: the shared DTOs library first, then the server, then the client.
 
 ```bash
 # 1. Create an empty MySQL database
@@ -31,7 +31,7 @@ mysql -u root -p -e "CREATE DATABASE cooksync_db;"
 # 2. Build the shared DTOs library and install it locally
 cd cooksync-DTOs && mvn install && cd ..
 
-# 3. Create a .env file in cook-sync-server (see the variable table in the full guide)
+# 3. Create a .env file in cook-sync-server (see cook-sync-server/README.md for the full variable table)
 #    JWT_SECRET is required; DB_URL/DB_USERNAME/DB_PASSWORD, MAIL_*
 #    and CLOUDINARY_* can be tuned for your local environment.
 
@@ -53,8 +53,3 @@ cp .env.example .env   # fill in JWT_SECRET and CLOUDINARY_* at minimum
 This builds `cooksync-DTOs` and `cook-sync-server` inside the image and starts MySQL alongside it (Flyway still applies schema migrations automatically on startup). The API is reachable at `http://localhost:8080` (or `http://10.0.2.2:8080/` from the Android emulator). See `.env.example` for the full list of variables.
 
 Add `--seed` to wipe and repopulate the database with the demo dataset (30 recipes, 15 users) on startup — `./docker-up.sh --seed`. Without it, the server starts normally with whatever data is already in the database.
-
-## Further documentation
-
-- [`COOKSYNC_USER_GUIDE.md`](doc/COOKSYNC_USER_GUIDE.md) — full user guide + implementation description (architecture, API, database, diagrams) + detailed installation appendix.
-- [`cooksync-DTOs/README.md`](cooksync-DTOs/README.md) — dedicated documentation for the shared DTOs library.
