@@ -10,7 +10,7 @@ This file is self-contained: it covers everything needed to configure, run, and 
 - **Spring Data JPA** + **MySQL** (`mysql-connector-j`) — persistence
 - **Flyway** — versioned schema migrations (`src/main/resources/db/migration/V1__init_schema.sql`)
 - **Spring Security** + **JJWT** — stateless JWT authentication/authorization (no server-side session state)
-- **Spring Mail** (Gmail SMTP) — OTP, registration, and password-reset emails
+- **Gmail API** (OAuth2, HTTPS) — OTP, registration, and password-reset emails, sent as CookSync's Gmail account (`cooksyncapplication@gmail.com`) (Gmail SMTP is unreachable from Render's network, so mail is sent via a plain HTTPS call instead of `spring-boot-starter-mail`/SMTP)
 - **Cloudinary SDK** — signed, direct-to-cloud image uploads for recipe/avatar photos (the server never touches the image bytes)
 - **Lombok** — boilerplate reduction
 - **cooksync-DTOs** — shared request/response classes, resolved from the local Maven repository (`mavenLocal()`/`~/.m2`)
@@ -60,26 +60,26 @@ Environment variables are read via `application.properties`, which also auto-loa
 | `JWT_REFRESH_EXPIRATION_MS` | No (defaults to `604800000`, i.e. 7 days) | How long a refresh token stays valid; each successful refresh rotates it, so this is the max time a device can stay logged out before needing to sign in again |
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | No (default to `jdbc:mysql://localhost:3306/cooksync_db`, `root`/`root`) | MySQL connection |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | No at startup (all default to blank) — needed in practice for image uploads to work | Cloudinary account credentials |
-| `MAIL_USERNAME`, `MAIL_PASSWORD` | No | Gmail SMTP address + [App Password](https://myaccount.google.com/apppasswords) (not the regular account password). If unset, OTP/reset codes are logged instead of emailed |
-| `MAIL_HOST`, `MAIL_PORT` | No | Default to `smtp.gmail.com:587` |
+| `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN` | No (all three required together) | Gmail API OAuth2 credentials for sending as CookSync's Gmail account (`cooksyncapplication@gmail.com`). If unset, OTP/reset codes are logged instead of emailed. Obtain by: creating a Google Cloud project, enabling the Gmail API, configuring an OAuth consent screen (External, scope `gmail.send` only, with `cooksyncapplication@gmail.com` added as a test user), creating a "Desktop app" OAuth client, then running the one-time authorization flow (`https://accounts.google.com/o/oauth2/v2/auth?...&access_type=offline&prompt=consent`, completed while signed in as `cooksyncapplication@gmail.com`) and exchanging the resulting code at `https://oauth2.googleapis.com/token` for a refresh token. **Caveat:** a consent screen left in "Testing" status (the default, zero-review-required option) issues refresh tokens that expire after about a week — fine for local dev, but an unattended production deployment needs the consent screen moved to "Production" via Google's app-verification review (requires a public privacy-policy URL) to avoid the token expiring on its own |
 | `CORS_ALLOWED_ORIGINS` | No (defaults to `*` in `dev`, closed in `prod`) | Comma-separated allowed origins. Irrelevant to the Android client — CORS is a browser-only mechanism, not enforced by Retrofit/OkHttp — so this only matters if a browser-based client is ever added |
 | `PORT` | No (defaults to `8080`) | Port the server listens on |
-| `SPRING_PROFILES_ACTIVE` | No (defaults to `dev`) | `dev` or `prod` (see below); combine with `prodSeeder` (e.g. `prod,prodSeeder`) to also run `ProductionSeeder` on that boot |
+| `SPRING_PROFILES_ACTIVE` | No (no default — see below) | `dev` or `prod` (see below); combine with `prodSeeder` (e.g. `prod,prodSeeder`) to also run `ProductionSeeder` on that boot |
 
 Schema is managed entirely by Flyway (`src/main/resources/db/migration/V1__init_schema.sql`).
 
 ### `dev` / `prod` profiles
 
-`application.properties` holds settings shared by both profiles and defaults `spring.profiles.active=dev`, so a plain `./mvnw spring-boot:run` needs no extra flags. `application-dev.properties` and `application-prod.properties` hold the settings that differ:
+`application.properties` sets no default active profile, and its own settings are already the safe, production-appropriate values — so an environment that never sets `SPRING_PROFILES_ACTIVE` (a misconfigured deploy, a future deploy target) fails safe instead of silently getting noisier/more permissive behavior. `application-dev.properties` (loaded only when `dev` is explicitly active) relaxes these for local convenience; `application-prod.properties` re-states the same values as explicit documentation, plus one prod-only setting. Activate `dev` locally with `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev`, or a real `SPRING_PROFILES_ACTIVE=dev` environment variable (shell profile or IDE run config) — **not** by adding `spring.profiles.active=dev` to your local `.env`, which does not work (properties from a `spring.config.import`-ed file aren't honored for profile activation, only for later placeholder resolution — verified empirically, it silently falls back to Spring's own "default" profile instead).
 
-| Setting | `dev` | `prod` |
-|---|---|---|
-| `logging.level.com.cooksync_server` | `DEBUG` (incl. redacted request/response bodies) | `INFO` |
-| `spring.jpa.hibernate.ddl-auto` | `update` (Hibernate may auto-adjust the schema while iterating locally) | `validate` (schema changes only ever happen through reviewed Flyway migrations) |
-| `cors.allowed-origins` | `*` (open, for local browser-based tooling) | empty (closed — there's no browser client; set `CORS_ALLOWED_ORIGINS` if one is ever added) |
-| `cloudinary.upload.base-folder` | `cooksync-dev` | `cooksync-prod` |
+| Setting | base (no profile / any unlisted profile) | `dev` | `prod` (redundant with base — see above) |
+|---|---|---|---|
+| `logging.level.com.cooksync_server` | `INFO` | `DEBUG` (incl. redacted request/response bodies) | `INFO` |
+| `logging.level.org.springframework` | `INFO` | `INFO` | `WARN` |
+| `spring.jpa.hibernate.ddl-auto` | `validate` (schema changes only ever happen through reviewed Flyway migrations) | `update` (Hibernate may auto-adjust the schema while iterating locally) | `validate` |
+| `cors.allowed-origins` | empty (closed — there's no browser client; set `CORS_ALLOWED_ORIGINS` if one is ever added) | `*` (open, for local browser-based tooling) | empty |
+| `cloudinary.upload.base-folder` | `cooksync-prod` | `cooksync-dev` | `cooksync-prod` |
 
-Deploying to Render: set `SPRING_PROFILES_ACTIVE=prod` as an environment variable on the service (this overrides the `dev` default, since OS environment variables take precedence over `application.properties`), alongside `JWT_SECRET`, `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`, and `MAIL_*`/`CLOUDINARY_*` if those features are needed in production. Also set Render's own **Health Check Path** dashboard setting to `/actuator/health` — separate from anything in this repo, and needed so Render can tell a bad deploy apart from a good one before routing traffic to it.
+Deploying to Render: set `SPRING_PROFILES_ACTIVE=prod` as an environment variable on the service — this isn't strictly required for safety anymore (the base defaults already are prod's values), but it's still what enables the `org.springframework=WARN` logging and `server.forward-headers-strategy=native` (needed so `RateLimitFilter`/request-IP-logging see the real client IP instead of Render's edge proxy). Set it alongside `JWT_SECRET`, `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`, and `GOOGLE_OAUTH_*`/`CLOUDINARY_*` if those features are needed in production. Also set Render's own **Health Check Path** dashboard setting to `/actuator/health` — separate from anything in this repo, and needed so Render can tell a bad deploy apart from a good one before routing traffic to it.
 
 ### Health check
 

@@ -16,7 +16,7 @@ This file is self-contained: it covers everything needed to build, run, and unde
 
 **Client (Android, Java 17):** Retrofit + OkHttp + Gson, MVVM with `ViewModel`/`LiveData`, Glide / Cloudinary Android SDK / Fresco / PhotoView for images, `androidx.security` for encrypted local session storage.
 
-**Server (Java 21, Spring Boot 3.4.2):** Spring Web, Spring Data JPA + MySQL, Spring Security + JJWT (stateless JWT auth), Flyway for schema migrations, Cloudinary SDK, Spring Mail (Gmail SMTP), Lombok.
+**Server (Java 21, Spring Boot 3.4.2):** Spring Web, Spring Data JPA + MySQL, Spring Security + JJWT (stateless JWT auth), Flyway for schema migrations, Cloudinary SDK, Gmail API (OAuth2, HTTPS) for transactional email, Lombok.
 
 **Shared:** `cooksync-DTOs` — a small Maven module holding every request/response class, installed locally (`mavenLocal()`) and consumed identically by both sides.
 
@@ -32,7 +32,7 @@ mysql -u root -p -e "CREATE DATABASE cooksync_db;"
 cd cooksync-DTOs && mvn install && cd ..
 
 # 3. Create a .env file in cook-sync-server (see cook-sync-server/README.md for the full variable table)
-#    JWT_SECRET is required; DB_URL/DB_USERNAME/DB_PASSWORD, MAIL_*
+#    JWT_SECRET is required; DB_URL/DB_USERNAME/DB_PASSWORD, GOOGLE_OAUTH_*
 #    and CLOUDINARY_* can be tuned for your local environment.
 
 # 4. Run the server (Flyway applies the schema migrations automatically)
