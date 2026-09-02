@@ -256,7 +256,7 @@ public class MyRecipesViewModel extends AbstractFilterableListViewModel {
         return new RecipePreviewResponse(recipe.id(), recipe.authorName(), recipe.title(), recipe.description(),
                 recipe.difficulty(), visibility, recipe.prepTimeMinutes(), recipe.cookTimeMinutes(),
                 recipe.reviewCount(), recipe.averageRating(), recipe.createdAt(), recipe.tags(),
-                recipe.primaryImageUrl(), recipe.hasPersonalNote(), recipe.personalNoteText());
+                recipe.primaryImageUrl(), recipe.hasPersonalNote(), recipe.personalNoteText(), recipe.isMachineTranslated());
     }
 
     /**

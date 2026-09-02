@@ -53,7 +53,7 @@ public class UserProfileViewModelTest {
                 "user-2", "Jane", "Smith", null, "Tel Aviv", "Home cook.", true, true);
         doAnswer(ApiResultAnswers.success(profile)).when(authRepository).getUserProfile(eq("user-2"), any());
         RecipePreviewResponse recipe = new RecipePreviewResponse("recipe-1", "Jane", "Soup",
-                "desc", "EASY", "PUBLIC", 10, 20, 0, null, "2026-01-01", List.of(), null, false, null);
+                "desc", "EASY", "PUBLIC", 10, 20, 0, null, "2026-01-01", List.of(), null, false, null, false);
         doAnswer(ApiResultAnswers.success(List.of(recipe))).when(recipeRepository).getPublicRecipesForUser(eq("user-2"), any());
         doAnswer(ApiResultAnswers.success(List.of(recipe))).when(recipeRepository).getPublicFavoritesForUser(eq("user-2"), any());
 

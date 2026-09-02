@@ -31,8 +31,12 @@ import com.dtos.response.user.UserResponse;
  * @param instructions list of step-by-step instruction DTOs
  * @param primaryImageUrl main cover image web URL
  * @param descriptionBlocks ordered list of structured content blocks composing the recipe description
+ * @param isMachineTranslated whether the title or any description block shown here was produced
+ *                            by on-demand machine translation rather than the recipe's own
+ *                            authored text or a human-reviewed translation — surfaced so the
+ *                            client can show an "auto-translated" indicator
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record RecipeResponse(
@@ -53,6 +57,7 @@ public record RecipeResponse(
         Set<IngredientResponse> ingredients,
         List<InstructionResponse> instructions,
         String primaryImageUrl,
-        List<DescriptionBlockDTO> descriptionBlocks
+        List<DescriptionBlockDTO> descriptionBlocks,
+        boolean isMachineTranslated
 ) {
 }

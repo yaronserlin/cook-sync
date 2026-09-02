@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.cooksync_server.entities.ContentTranslation;
+import com.cooksync_server.entities.DescriptionBlock;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.RecipeImage;
+import com.cooksync_server.services.TranslationService;
 import com.dtos.response.ingredient.IngredientResponse;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
@@ -42,10 +45,16 @@ public final class RecipeMapper {
         String primaryImageUrl = resolvePrimaryImageUrl(recipe);
         List<ReviewResponse> visibleReviews = mapReviews(recipe);
 
+        TranslationService.TranslatedText title = TranslationAccess.resolve(
+                ContentTranslation.EntityType.RECIPE_TITLE, recipe.getId(), recipe.getTitle(), recipe.getSourceLocale());
+        List<DescriptionBlockDTO> blocks = mapDescriptionBlocks(recipe);
+        boolean isMachineTranslated = title.isMachineTranslated()
+                || blocks.stream().anyMatch(DescriptionBlockDTO::isMachineTranslated);
+
         return new RecipeResponse(
                 recipe.getId(),
                 UserMapper.toResponse(recipe.getCreatedBy()),
-                recipe.getTitle(),
+                title.value(),
                 recipe.getDifficulty() == null ? null : recipe.getDifficulty().name(),
                 recipe.getVisibility() == null ? null : recipe.getVisibility().name(),
                 recipe.getPrepTimeMinutes(),
@@ -60,7 +69,8 @@ public final class RecipeMapper {
                 mapIngredients(recipe),
                 mapInstructions(recipe),
                 primaryImageUrl,
-                mapDescriptionBlocks(recipe)
+                blocks,
+                isMachineTranslated
         );
     }
 
@@ -87,12 +97,16 @@ public final class RecipeMapper {
             return null;
         }
         String authorName = recipe.getCreatedBy() == null ? null : recipe.getCreatedBy().getFullName();
+        TranslationService.TranslatedText title = TranslationAccess.resolve(
+                ContentTranslation.EntityType.RECIPE_TITLE, recipe.getId(), recipe.getTitle(), recipe.getSourceLocale());
+        TranslationService.TranslatedText description = TranslationAccess.resolve(
+                ContentTranslation.EntityType.RECIPE_DESCRIPTION, recipe.getId(), recipe.getDescription(), recipe.getSourceLocale());
 
         return new RecipePreviewResponse(
                 recipe.getId(),
                 authorName,
-                recipe.getTitle(),
-                recipe.getDescription(),
+                title.value(),
+                description.value(),
                 recipe.getDifficulty() == null ? null : recipe.getDifficulty().name(),
                 recipe.getVisibility() == null ? null : recipe.getVisibility().name(),
                 recipe.getPrepTimeMinutes(),
@@ -103,7 +117,8 @@ public final class RecipeMapper {
                 mapTags(recipe),
                 resolvePrimaryImageUrl(recipe),
                 hasPersonalNote,
-                personalNoteText
+                personalNoteText,
+                title.isMachineTranslated() || description.isMachineTranslated()
         );
     }
 
@@ -118,23 +133,27 @@ public final class RecipeMapper {
     private static List<DescriptionBlockDTO> mapDescriptionBlocks(Recipe recipe) {
         if (recipe.getDescriptionBlocks() != null && !recipe.getDescriptionBlocks().isEmpty()) {
             return recipe.getDescriptionBlocks().stream()
-                    .map(block -> new DescriptionBlockDTO(
-                            block.getType().name(),
-                            block.getText(),
-                            block.getImageUrl(),
-                            block.getCaption()
-                    ))
+                    .map(block -> {
+                        if (block.getType() != DescriptionBlock.BlockType.TEXT) {
+                            return new DescriptionBlockDTO(block.getType().name(), null, block.getImageUrl(), block.getCaption(), false);
+                        }
+                        TranslationService.TranslatedText text = TranslationAccess.resolve(
+                                ContentTranslation.EntityType.RECIPE_DESCRIPTION_BLOCK, block.getId(),
+                                block.getText(), recipe.getSourceLocale());
+                        return new DescriptionBlockDTO(block.getType().name(), text.value(), block.getImageUrl(),
+                                block.getCaption(), text.isMachineTranslated());
+                    })
                     .collect(Collectors.toList());
         }
         // Fallback: synthesize from legacy flat description + non-primary images
         List<DescriptionBlockDTO> blocks = new ArrayList<>();
         if (recipe.getDescription() != null && !recipe.getDescription().isBlank()) {
-            blocks.add(new DescriptionBlockDTO("TEXT", recipe.getDescription(), null, null));
+            blocks.add(new DescriptionBlockDTO("TEXT", recipe.getDescription(), null, null, false));
         }
         if (recipe.getImages() != null) {
             recipe.getImages().stream()
                     .filter(img -> img != null && !img.isPrimary())
-                    .forEach(img -> blocks.add(new DescriptionBlockDTO("IMAGE", null, img.getImageUrl(), null)));
+                    .forEach(img -> blocks.add(new DescriptionBlockDTO("IMAGE", null, img.getImageUrl(), null, false)));
         }
         return blocks;
     }

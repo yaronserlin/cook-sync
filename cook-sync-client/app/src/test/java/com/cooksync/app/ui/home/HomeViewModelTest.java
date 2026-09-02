@@ -57,10 +57,10 @@ public class HomeViewModelTest {
     private HomeViewModel viewModel;
 
     private final RecipePreviewResponse recipeOne = new RecipePreviewResponse("recipe-1", "Gordon", "Beef Wellington",
-            "A classic", "HARD", "PUBLIC", 30, 60, 4, 4.5, "2026-01-01", List.of(), null, false, null);
+            "A classic", "HARD", "PUBLIC", 30, 60, 4, 4.5, "2026-01-01", List.of(), null, false, null, false);
 
     private final RecipePreviewResponse recipeTwo = new RecipePreviewResponse("recipe-2", "Julia", "Boeuf Bourguignon",
-            "Also classic", "MEDIUM", "PUBLIC", 20, 90, 2, 4.0, "2026-01-02", List.of(), null, false, null);
+            "Also classic", "MEDIUM", "PUBLIC", 20, 90, 2, 4.0, "2026-01-02", List.of(), null, false, null, false);
 
     @Before
     public void setUp() {
@@ -255,7 +255,7 @@ public class HomeViewModelTest {
         stubPublicFeed(0, page(List.of(recipeOne), true));
 
         recipePublishedEvent.setValue(new Event<>(
-                new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null)));
+                new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false)));
 
         verify(recipeRepository).getPublicFeed(eq(0), eq(10), any());
     }

@@ -41,10 +41,10 @@ public class FavoritesViewModelTest {
     private FavoritesViewModel viewModel;
 
     private final RecipePreviewResponse annotatedRecipe = new RecipePreviewResponse("recipe-1", "Gordon", "Beef Wellington",
-            "A classic", "HARD", "PUBLIC", 30, 60, 4, 4.5, "2026-01-01", List.of(), null, true, "Use less salt");
+            "A classic", "HARD", "PUBLIC", 30, 60, 4, 4.5, "2026-01-01", List.of(), null, true, "Use less salt", false);
 
     private final RecipePreviewResponse plainRecipe = new RecipePreviewResponse("recipe-2", "Julia", "Boeuf Bourguignon",
-            "Also classic", "MEDIUM", "PUBLIC", 20, 90, 2, 4.0, "2026-01-02", List.of(), null, false, null);
+            "Also classic", "MEDIUM", "PUBLIC", 20, 90, 2, 4.0, "2026-01-02", List.of(), null, false, null, false);
 
     @Before
     public void setUp() {

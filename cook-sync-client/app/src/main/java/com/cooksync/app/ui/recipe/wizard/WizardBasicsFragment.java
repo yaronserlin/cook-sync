@@ -111,7 +111,7 @@ public class WizardBasicsFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AddRecipeViewModel.class);
 
         if (viewModel.getDescriptionBlocks().isEmpty()) {
-            viewModel.getDescriptionBlocks().add(new DescriptionBlockDTO("TEXT", "", null, null));
+            viewModel.getDescriptionBlocks().add(new DescriptionBlockDTO("TEXT", "", null, null, false));
         }
 
         bindViews(view);

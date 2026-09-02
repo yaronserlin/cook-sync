@@ -123,12 +123,26 @@ android {
 
 configurations.all {
     // Several AndroidX libraries (appcompat, constraintlayout, work, ...) pull in
-    // profileinstaller transitively, which makes AGP embed a baseline profile
-    // (assets/dexopt/baseline.prof) in release builds. Installing that profile fails
-    // with INSTALL_BASELINE_PROFILE_FAILED on this machine's x86_64 "Page Size 16KB"
-    // emulator image, aborting the whole install. Excluding it stops AGP from
-    // embedding a profile at all, since nothing on the classpath would use it anyway.
+    // profileinstaller transitively. Excluded so the app doesn't carry the runtime
+    // library that would otherwise install/compile a baseline profile in the
+    // background - see the task-disabling block below for why a profile still
+    // ends up embedded regardless of this exclusion.
     exclude(group = "androidx.profileinstaller", module = "profileinstaller")
+}
+
+tasks.configureEach {
+    // AGP merges "baseline-prof.txt" files bundled inside AndroidX AARs (appcompat,
+    // work, lifecycle, ...) into assets/dexopt/baseline.prof on its own, regardless of
+    // whether androidx.profileinstaller (excluded above) is even on the classpath to
+    // read it - that exclusion alone does not stop the embedding. Android Studio's
+    // deployer then tries to install that embedded profile via a companion .dm file
+    // at install time, which fails with INSTALL_BASELINE_PROFILE_FAILED
+    // (run-from-apk, reason=unknown) on this machine's x86_64 emulator and aborts the
+    // whole install. Disabling the tasks that produce/merge the profile stops one
+    // from being embedded in the first place.
+    if (name.contains("ArtProfile") || name.contains("StartupProfile")) {
+        enabled = false
+    }
 }
 
 dependencies {

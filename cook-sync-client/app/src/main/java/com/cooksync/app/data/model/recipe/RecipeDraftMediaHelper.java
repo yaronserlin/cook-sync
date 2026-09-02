@@ -112,7 +112,8 @@ public final class RecipeDraftMediaHelper {
                     int index = draft.descriptionBlocks.indexOf(pending.descriptionBlock);
                     if (index >= 0) {
                         draft.descriptionBlocks.set(index, new DescriptionBlockDTO(
-                                pending.descriptionBlock.type(), pending.descriptionBlock.text(), uploadedUrl, pending.descriptionBlock.caption()));
+                                pending.descriptionBlock.type(), pending.descriptionBlock.text(), uploadedUrl,
+                                pending.descriptionBlock.caption(), pending.descriptionBlock.isMachineTranslated()));
                     }
                 }
             }

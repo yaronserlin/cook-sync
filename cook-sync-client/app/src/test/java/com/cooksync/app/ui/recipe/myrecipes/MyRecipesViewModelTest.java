@@ -49,10 +49,10 @@ public class MyRecipesViewModelTest {
     private MyRecipesViewModel viewModel;
 
     private final RecipePreviewResponse recipeOne = new RecipePreviewResponse("recipe-1", "Gordon", "Beef Wellington",
-            "A classic", "HARD", "PUBLIC", 30, 60, 4, 4.5, "2026-01-01", List.of(), null, false, null);
+            "A classic", "HARD", "PUBLIC", 30, 60, 4, 4.5, "2026-01-01", List.of(), null, false, null, false);
 
     private final RecipePreviewResponse recipeTwo = new RecipePreviewResponse("recipe-2", "Gordon", "Boeuf Bourguignon",
-            "Also classic", "MEDIUM", "PRIVATE", 20, 90, 2, 4.0, "2026-01-02", List.of(), null, false, null);
+            "Also classic", "MEDIUM", "PRIVATE", 20, 90, 2, 4.0, "2026-01-02", List.of(), null, false, null, false);
 
     @Before
     public void setUp() {
@@ -102,7 +102,7 @@ public class MyRecipesViewModelTest {
     @Test
     public void getTotalCount_andGetWithPrivateNotesCount_reflectWholeLibrary_ignoringActiveFilter() {
         RecipePreviewResponse withNote = new RecipePreviewResponse("recipe-3", "Gordon", "Coq au Vin",
-                "Classic too", "HARD", "PUBLIC", 25, 45, 1, 5.0, "2026-01-03", List.of(), null, true, "Double the wine");
+                "Classic too", "HARD", "PUBLIC", 25, 45, 1, 5.0, "2026-01-03", List.of(), null, true, "Double the wine", false);
         stubMyRecipes(List.of(recipeOne, recipeTwo, withNote));
         viewModel.loadMyRecipes();
 
@@ -214,7 +214,7 @@ public class MyRecipesViewModelTest {
         stubMyRecipes(List.of(recipeOne));
         viewModel.loadMyRecipes();
         viewModel.toggleVisibility(recipeOne);
-        RecipeResponse response = new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null);
+        RecipeResponse response = new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false);
         doAnswer(ApiResultAnswers.success(response))
                 .when(recipeRepository).updateRecipeVisibility(eq("recipe-1"), eq("PRIVATE"), any());
 

@@ -22,8 +22,12 @@ import com.dtos.response.tags.TagResponse;
  * @param primaryImageUrl web URL for the cover thumbnail photo
  * @param hasPersonalNote boolean flag indicating whether current user attached a private note
  * @param personalNoteText textual content of the user's private note, if present
+ * @param isMachineTranslated whether {@code title} was produced by on-demand machine
+ *                            translation rather than the recipe's own authored text or a
+ *                            human-reviewed translation — surfaced so the client can show an
+ *                            "auto-translated" indicator
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 02/08/2026
  */
 public record RecipePreviewResponse(
@@ -41,6 +45,7 @@ public record RecipePreviewResponse(
         List<TagResponse> tags,
         String primaryImageUrl,
         boolean hasPersonalNote,
-        String personalNoteText
+        String personalNoteText,
+        boolean isMachineTranslated
 ) {
 }

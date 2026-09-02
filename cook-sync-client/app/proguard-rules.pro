@@ -1,6 +1,27 @@
 # Keep DTOs intact for Gson reflection-based (de)serialization.
 -keep class com.dtos.** { *; }
 
+# RecipeDraft (and its nested DraftIngredient/DraftInstruction rows) is independently
+# (de)serialized to/from JSON by RecipeDraftStore for local "Save draft"/resume, exactly like
+# the com.dtos.** DTOs above — but unlike them, it isn't part of any kept API surface, so R8's
+# optimizer is free to narrow its List<DescriptionBlockDTO> field down to a raw ArrayList and
+# drop the field entirely from the reflection-visible surface. That strips exactly the generic
+# signature Gson needs (see the -keepattributes Signature comment below), breaking
+# RecipeDraftStore.loadAll()'s deserialization the same way — a resumed/saved draft's
+# description blocks come back as LinkedTreeMap instead of DescriptionBlockDTO.
+-keep class com.cooksync.app.data.model.recipe.RecipeDraft { *; }
+-keep class com.cooksync.app.data.model.recipe.RecipeDraft$* { *; }
+
+# R8 strips generic signature metadata by default. Gson relies on Field.getGenericType() to
+# resolve a field's element type for any generic collection (e.g. List<DescriptionBlockDTO>);
+# without this, it can't tell the field apart from a raw List and deserializes each JSON object
+# as a com.google.gson.internal.LinkedTreeMap instead, which throws a ClassCastException the
+# first time that element is later read as its real DTO type (e.g.
+# WizardDescriptionBlockAdapter#onBindViewHolder) — release-build only, since debug builds skip
+# R8 entirely. *Annotation* additionally keeps @SerializedName usable by Gson's reflection.
+-keepattributes Signature
+-keepattributes *Annotation*
+
 # Cloudinary pulls in androidx.work (WorkManager) transitively for background uploads.
 # WorkManager auto-initializes via a manifest ContentProvider and builds a Room database
 # (WorkDatabase) whose generated *_Impl classes are instantiated purely via reflection,

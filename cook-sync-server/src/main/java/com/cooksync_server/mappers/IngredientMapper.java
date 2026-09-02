@@ -1,5 +1,6 @@
 package com.cooksync_server.mappers;
 
+import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.Unit;
@@ -60,9 +61,13 @@ public final class IngredientMapper {
             recipeId = entity.getRecipe().getId();
         }
 
+        String sourceLocale = entity.getRecipe() == null ? "en" : entity.getRecipe().getSourceLocale();
+        String name = TranslationAccess.resolve(
+                ContentTranslation.EntityType.INGREDIENT_NAME, entity.getId(), entity.getName(), sourceLocale).value();
+
         return new IngredientResponse(
                 entity.getId(),
-                entity.getName(),
+                name,
                 entity.getQuantity(),
                 recipeId,
                 unitResponse
