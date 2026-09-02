@@ -85,7 +85,7 @@ class UserControllerTest {
     @Test
     void getUserPublicRecipes_ShouldRouteToRecipeService_WithGivenPaging() throws Exception {
         RecipePreviewResponse recipe = new RecipePreviewResponse("recipe-1", "Jane", "Soup",
-                "desc", "EASY", "PUBLIC", 10, 20, 0, null, "2026-01-01", List.of(), null, false, null);
+                "desc", "EASY", "PUBLIC", 10, 20, 0, null, "2026-01-01", List.of(), null, false, null, false);
         PagedResponse<RecipePreviewResponse> page = new PagedResponse<>(List.of(recipe), 0, 5, 1, 1, true);
         when(recipeService.getPublicRecipesByUser("user-2", 0, 5)).thenReturn(page);
 

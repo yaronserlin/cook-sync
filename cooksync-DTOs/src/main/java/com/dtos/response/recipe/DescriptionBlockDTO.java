@@ -9,14 +9,18 @@ package com.dtos.response.recipe;
  * @param text prose content, populated when type is TEXT
  * @param imageUrl image resource URL, populated when type is IMAGE
  * @param caption optional image caption, only meaningful when type is IMAGE
+ * @param isMachineTranslated whether {@code text} was produced by on-demand machine translation
+ *                            rather than the recipe's own authored text or a human-reviewed
+ *                            translation, always false when type is IMAGE
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public record DescriptionBlockDTO(
         String type,
         String text,
         String imageUrl,
-        String caption
+        String caption,
+        boolean isMachineTranslated
 ) {
 }

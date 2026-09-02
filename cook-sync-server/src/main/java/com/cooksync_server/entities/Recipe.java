@@ -62,6 +62,16 @@ public class Recipe {
     @Column(nullable = false, length = 255)
     private String title;
 
+    /**
+     * IETF language tag the recipe's title, description blocks, ingredient names, and
+     * instruction steps were actually authored in (e.g. {@code "en"}). Determines whether a
+     * request even needs translating: a request already in this language gets the recipe's own
+     * text back untouched, regardless of what other languages exist as cached translations.
+     */
+    @Builder.Default
+    @Column(name = "source_locale", nullable = false, length = 10)
+    private String sourceLocale = "en";
+
     @Column(columnDefinition = "TEXT")
     private String description;
 

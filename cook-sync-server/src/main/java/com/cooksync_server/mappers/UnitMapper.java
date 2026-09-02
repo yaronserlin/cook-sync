@@ -1,5 +1,6 @@
 package com.cooksync_server.mappers;
 
+import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.Unit;
 import com.dtos.response.unit.UnitResponse;
 
@@ -27,6 +28,7 @@ public final class UnitMapper {
         }
         String created = MapperUtils.toIsoStringOrNull(unit.getCreatedAt());
         String updated = MapperUtils.toIsoStringOrNull(unit.getUpdatedAt());
-        return new UnitResponse(unit.getId(), unit.getCode(), unit.getName(), created, updated);
+        String name = TranslationAccess.resolve(ContentTranslation.EntityType.UNIT_NAME, unit.getId(), unit.getName(), "en").value();
+        return new UnitResponse(unit.getId(), unit.getCode(), name, created, updated);
     }
 }

@@ -346,7 +346,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDate date = com.cooksync.app.util.DateFormatUtils.parseIsoDate(isoTimestamp);
             if (date == null) return "";
-            return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
+            return date.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + date.getYear();
         }
         return isoTimestamp.substring(0, 10);
     }

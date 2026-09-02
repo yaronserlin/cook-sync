@@ -153,7 +153,7 @@ public class AddRecipeViewModel extends BaseViewModel {
      * @param text the block's new text content
      */
     public void updateDescriptionBlockText(DescriptionBlockDTO block, String text) {
-        replaceDescriptionBlock(block, new DescriptionBlockDTO(block.type(), text, block.imageUrl(), block.caption()));
+        replaceDescriptionBlock(block, new DescriptionBlockDTO(block.type(), text, block.imageUrl(), block.caption(), false));
     }
 
     /**
@@ -164,7 +164,7 @@ public class AddRecipeViewModel extends BaseViewModel {
      * @param caption the block's new caption text
      */
     public void setDescriptionImageCaption(DescriptionBlockDTO block, String caption) {
-        replaceDescriptionBlock(block, new DescriptionBlockDTO(block.type(), block.text(), block.imageUrl(), caption));
+        replaceDescriptionBlock(block, new DescriptionBlockDTO(block.type(), block.text(), block.imageUrl(), caption, false));
     }
 
     /**
@@ -193,7 +193,7 @@ public class AddRecipeViewModel extends BaseViewModel {
      * @param localUri the picked image's local (file://) URI, as a string
      */
     public void addDescriptionImage(String localUri) {
-        draft.descriptionBlocks.add(new DescriptionBlockDTO("IMAGE", null, localUri, null));
+        draft.descriptionBlocks.add(new DescriptionBlockDTO("IMAGE", null, localUri, null, false));
         if (draft.primaryImageUrl == null || draft.primaryImageUrl.isEmpty()) {
             draft.primaryImageUrl = localUri;
         }
@@ -238,8 +238,8 @@ public class AddRecipeViewModel extends BaseViewModel {
     public int splitDescriptionTextBlock(DescriptionBlockDTO block, String beforeText, String afterText) {
         int index = draft.descriptionBlocks.indexOf(block);
         if (index < 0) return -1;
-        draft.descriptionBlocks.set(index, new DescriptionBlockDTO(block.type(), beforeText, block.imageUrl(), block.caption()));
-        draft.descriptionBlocks.add(index + 1, new DescriptionBlockDTO("TEXT", afterText, null, null));
+        draft.descriptionBlocks.set(index, new DescriptionBlockDTO(block.type(), beforeText, block.imageUrl(), block.caption(), false));
+        draft.descriptionBlocks.add(index + 1, new DescriptionBlockDTO("TEXT", afterText, null, null, false));
         return index + 1;
     }
 

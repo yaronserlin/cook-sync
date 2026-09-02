@@ -10,6 +10,7 @@ import com.dtos.response.PagedResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
@@ -41,6 +42,28 @@ public abstract class BaseRepository {
 
     /** Matches {@code OrganicToast}'s auto-dismiss duration. Shared across ViewModels for undo timing. */
     public static final long UNDO_WINDOW_MS = UiTimingConstants.UNDO_TOAST_DURATION_MS;
+
+    /**
+     * Maps the server's machine-readable {@code errorCode} (see {@code GlobalExceptionHandler})
+     * to a localized string resource. The server's {@code message} field is English-only and
+     * meant for logs, not display, so {@link #extractErrorMessage(Response)} resolves through
+     * this table instead of ever showing that raw text to the user. A code with no entry here
+     * (e.g. {@code VALIDATION_ERROR}) falls back to the HTTP-status default below.
+     */
+    private static final Map<String, Integer> ERROR_CODE_MESSAGES = Map.ofEntries(
+            Map.entry("RESOURCE_NOT_FOUND", R.string.error_not_found),
+            Map.entry("RESOURCE_ALREADY_EXISTS", R.string.error_resource_conflict),
+            Map.entry("RESOURCE_IN_USE", R.string.error_resource_in_use),
+            Map.entry("UNAUTHORIZED_ACTION", R.string.error_no_permission),
+            Map.entry("ACCESS_DENIED", R.string.error_no_permission),
+            Map.entry("INVALID_CREDENTIALS", R.string.error_invalid_credentials),
+            Map.entry("USER_ALREADY_EXISTS", R.string.error_account_exists),
+            Map.entry("INVALID_OTP", R.string.error_invalid_otp),
+            Map.entry("OTP_EXPIRED", R.string.error_otp_expired),
+            Map.entry("TOO_MANY_OTP_ATTEMPTS", R.string.error_too_many_otp_attempts),
+            Map.entry("DATA_INTEGRITY_VIOLATION", R.string.error_resource_conflict),
+            Map.entry("INTERNAL_SERVER_ERROR", R.string.error_server)
+    );
 
     /**
      * Page size used by {@link #fetchAllPages}. Every server-paginated endpoint the app
@@ -134,12 +157,14 @@ public abstract class BaseRepository {
     }
 
     /**
-     * Extracts a human-readable error message from a failed HTTP response, preferring the
-     * {@code message} field in the JSON body if present, falling back to a status-code-specific
-     * default otherwise.
+     * Extracts a localized, user-facing error message for a failed HTTP response. Resolves the
+     * server's machine-readable {@code error.errorCode} (see {@code GlobalExceptionHandler})
+     * through {@link #ERROR_CODE_MESSAGES} rather than displaying the server's {@code message}
+     * field, which is English-only and intended for logs. Falls back to a status-code-specific
+     * default when the code is missing or unrecognized (e.g. {@code VALIDATION_ERROR}).
      *
      * @param response the non-successful HTTP response
-     * @return a user-facing error string
+     * @return a localized, user-facing error string
      */
     protected String extractErrorMessage(Response<?> response) {
         try {
@@ -147,24 +172,19 @@ public abstract class BaseRepository {
                 String errorJson = response.errorBody().string();
                 if (errorJson != null && !errorJson.isBlank()) {
                     org.json.JSONObject obj = new org.json.JSONObject(errorJson);
-                    if (obj.has("message") && !obj.isNull("message") && !obj.getString("message").isBlank()) {
-                        return obj.getString("message");
-                    }
                     if (obj.has("error") && !obj.isNull("error")) {
-                        org.json.JSONObject errObj = obj.getJSONObject("error");
-                        if (errObj.has("message") && !errObj.isNull("message") && !errObj.getString("message").isBlank()) {
-                            return errObj.getString("message");
+                        Object errorField = obj.get("error");
+                        if (errorField instanceof org.json.JSONObject errObj
+                                && errObj.has("errorCode") && !errObj.isNull("errorCode")) {
+                            Integer resId = ERROR_CODE_MESSAGES.get(errObj.getString("errorCode"));
+                            if (resId != null) {
+                                return CookSyncApplication.getAppContext().getString(resId);
+                            }
                         }
                     }
                 }
             }
         } catch (Exception ignored) {
-        }
-        if (response.body() instanceof ApiResponse<?> apiResponse) {
-            String msg = apiResponse.message();
-            if (msg != null && !msg.isBlank()) {
-                return msg;
-            }
         }
         return switch (response.code()) {
             case 400 -> CookSyncApplication.getAppContext().getString(R.string.error_invalid_request);

@@ -1,5 +1,6 @@
 package com.cooksync_server.mappers;
 
+import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.Instruction;
 import com.dtos.response.ingredient.IngredientResponse;
 import com.dtos.response.instruction.InstructionResponse;
@@ -32,10 +33,13 @@ public final class InstructionMapper {
                 : instruction.getIngredients().stream().map(IngredientMapper::toResponse).collect(Collectors.toSet());
         String created = MapperUtils.toIsoStringOrNull(instruction.getCreatedAt());
         String updated = MapperUtils.toIsoStringOrNull(instruction.getUpdatedAt());
+        String sourceLocale = instruction.getRecipe() == null ? "en" : instruction.getRecipe().getSourceLocale();
+        String description = TranslationAccess.resolve(ContentTranslation.EntityType.INSTRUCTION_TEXT,
+                instruction.getId(), instruction.getDescription(), sourceLocale).value();
         return new InstructionResponse(
                 instruction.getId(),
                 instruction.getStepNumber(),
-                instruction.getDescription(),
+                description,
                 instruction.isHasTimer(),
                 instruction.getTimeSeconds(),
                 created,

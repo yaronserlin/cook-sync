@@ -200,7 +200,7 @@ class RecipeServiceTest {
         Unit sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").build();
         IngredientRequestDTO ingredientDto = new IngredientRequestDTO("tmp-1", "Flour", 200, "unit-1");
         InstructionRequestDTO instructionDto = new InstructionRequestDTO(1, "Mix ingredients", false, null, List.of(), null);
-        DescriptionBlockDTO blockDto = new DescriptionBlockDTO("TEXT", "A tasty dish", null, null);
+        DescriptionBlockDTO blockDto = new DescriptionBlockDTO("TEXT", "A tasty dish", null, null, false);
         RecipeCreateRequestDTO request = new RecipeCreateRequestDTO(
                 "New Recipe", "medium", "PUBLIC", 10, 20, 4,
                 List.of("tag-1"), List.of(ingredientDto), List.of(instructionDto),
@@ -304,7 +304,7 @@ class RecipeServiceTest {
         Unit sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").build();
         IngredientRequestDTO newIngredientDto = new IngredientRequestDTO(null, "Salt", 5, "unit-1");
         InstructionRequestDTO newInstructionDto = new InstructionRequestDTO(1, "New step", false, null, List.of(), null);
-        DescriptionBlockDTO newBlockDto = new DescriptionBlockDTO("TEXT", "New description", null, null);
+        DescriptionBlockDTO newBlockDto = new DescriptionBlockDTO("TEXT", "New description", null, null, false);
         RecipeCreateRequestDTO updateRequest = new RecipeCreateRequestDTO(
                 "Updated Title", "MEDIUM", "PUBLIC", 15, 20, 3,
                 List.of(), List.of(newIngredientDto), List.of(newInstructionDto),
