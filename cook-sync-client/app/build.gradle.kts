@@ -121,6 +121,16 @@ android {
     }
 }
 
+configurations.all {
+    // Several AndroidX libraries (appcompat, constraintlayout, work, ...) pull in
+    // profileinstaller transitively, which makes AGP embed a baseline profile
+    // (assets/dexopt/baseline.prof) in release builds. Installing that profile fails
+    // with INSTALL_BASELINE_PROFILE_FAILED on this machine's x86_64 "Page Size 16KB"
+    // emulator image, aborting the whole install. Excluding it stops AGP from
+    // embedding a profile at all, since nothing on the classpath would use it anyway.
+    exclude(group = "androidx.profileinstaller", module = "profileinstaller")
+}
+
 dependencies {
     implementation(libs.activity.ktx)
     implementation(libs.appcompat)
