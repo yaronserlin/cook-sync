@@ -357,6 +357,8 @@
     <string name="admin_badge_units">%1$d סה&#8221;כ</string>
     <string name="admin_badge_announcements">%1$d סה&#8221;כ</string>
     <string name="admin_units_add_new">הוספת יחידת מידה חדשה</string>
+    <string name="admin_units_name_hint">למשל: גרם</string>
+    <string name="admin_units_code_hint">למשל: g</string>
     <string name="admin_units_validation_required">יש למלא שם וקוד</string>
     <string name="admin_units_create_success">יחידת המידה נוצרה בהצלחה</string>
     <string name="admin_units_deleted_format">יחידת המידה \"%1$s\" נמחקה</string>
