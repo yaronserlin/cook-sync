@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@color/color_bg"
+    tools:context=".ui.common.ForceUpdateActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/dp_28">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/app_name"
+            android:textSize="@dimen/sp_38"
+            android:fontFamily="@font/caprasimo"
+            android:textColor="@color/color_accent"
+            android:layout_marginBottom="@dimen/dp_48" />
+
+        <TextView
+            android:id="@+id/tv_force_update_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/force_update_title"
+            android:textSize="@dimen/sp_26"
+            android:fontFamily="@font/caprasimo"
+            android:textColor="@color/color_text"
+            android:lineSpacingExtra="@dimen/dp_2"
+            android:layout_marginBottom="@dimen/dp_12" />
+
+        <TextView
+            android:id="@+id/tv_force_update_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/force_update_message"
+            android:textSize="@dimen/sp_14"
+            android:textColor="@color/color_text"
+            android:alpha="0.65"
+            android:lineSpacingExtra="@dimen/dp_3"
+            android:layout_marginBottom="@dimen/dp_36" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_download_update"
+            style="@style/CookSync.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/force_update_download_action" />
+
+    </LinearLayout>
+
+</FrameLayout>

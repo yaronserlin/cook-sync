@@ -320,6 +320,11 @@
 
     <string name="announcement_dialog_dismiss">הבנתי</string>
 
+    <string name="force_update_title">נדרש עדכון</string>
+    <string name="force_update_message">כדי להמשיך להשתמש ב-CookSync נדרש לעדכן לגרסה חדשה. יש להוריד את הגרסה העדכנית כדי להמשיך.</string>
+    <string name="force_update_download_action">הורדת העדכון</string>
+    <string name="force_update_open_link_failed">לא ניתן היה לפתוח את קישור ההורדה</string>
+
     <string name="notification_channel_general_name">הודעות מערכת</string>
     <string name="notification_channel_general_description">הודעות מערכת ועדכונים מ-CookSync</string>
 
