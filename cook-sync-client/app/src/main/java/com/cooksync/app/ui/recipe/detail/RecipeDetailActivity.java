@@ -80,6 +80,7 @@ public class RecipeDetailActivity extends BaseActivity {
     private ImageView heroImage;
     private TextView title;
     private TextView kicker;
+    private TextView machineTranslatedBadge;
     private TextView rating;
     private TextView reviewCount;
     private TextView prepTime;
@@ -174,6 +175,7 @@ public class RecipeDetailActivity extends BaseActivity {
         heroImage = findViewById(R.id.detail_image);
         title = findViewById(R.id.detail_title);
         kicker = findViewById(R.id.detail_kicker);
+        machineTranslatedBadge = findViewById(R.id.detail_machine_translated_badge);
         rating = findViewById(R.id.detail_rating);
         reviewCount = findViewById(R.id.detail_review_count);
         prepTime = findViewById(R.id.detail_prep_time);
@@ -532,6 +534,7 @@ public class RecipeDetailActivity extends BaseActivity {
         }
 
         title.setText(recipe.title());
+        machineTranslatedBadge.setVisibility(recipe.isMachineTranslated() ? View.VISIBLE : View.GONE);
         rating.setText(viewModel.formatAverageRating(recipe.averageRating()));
         reviewCount.setText(getString(R.string.review_count_format, recipe.reviewCount()));
         prepTime.setText(getString(R.string.time_format_short, recipe.prepTimeMinutes()));

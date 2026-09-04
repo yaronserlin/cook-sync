@@ -90,6 +90,22 @@
                     android:textSize="@dimen/sp_28"
                     tools:text="Shakshuka with feta" />
 
+                <TextView
+                    android:id="@+id/detail_machine_translated_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_6"
+                    android:background="@drawable/bg_pill_solid"
+                    android:backgroundTint="@color/color_accent_200"
+                    android:paddingHorizontal="@dimen/dp_9"
+                    android:paddingVertical="@dimen/dp_3"
+                    android:text="@string/recipe_machine_translated_badge"
+                    android:textColor="@color/color_accent_800"
+                    android:textSize="@dimen/sp_10"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_description_blocks"
                     android:layout_width="match_parent"
