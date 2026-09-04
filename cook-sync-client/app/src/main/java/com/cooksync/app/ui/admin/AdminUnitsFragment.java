@@ -34,6 +34,7 @@ public class AdminUnitsFragment extends Fragment {
     private AdminUnitsViewModel viewModel;
     private AdminUnitAdapter adapter;
     private EditText etName;
+    private EditText etNamePlural;
     private EditText etCode;
     private ProgressBar progressBar;
 
@@ -65,6 +66,7 @@ public class AdminUnitsFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminUnitsViewModel.class);
 
         etName = view.findViewById(R.id.et_unit_name);
+        etNamePlural = view.findViewById(R.id.et_unit_name_plural);
         etCode = view.findViewById(R.id.et_unit_code);
         progressBar = view.findViewById(R.id.progress_bar);
 
@@ -87,12 +89,13 @@ public class AdminUnitsFragment extends Fragment {
 
         view.findViewById(R.id.btn_add_unit).setOnClickListener(v -> {
             String name = etName.getText().toString().trim();
+            String namePlural = etNamePlural.getText().toString().trim();
             String code = etCode.getText().toString().trim();
-            if (name.isEmpty() || code.isEmpty()) {
+            if (name.isEmpty() || namePlural.isEmpty() || code.isEmpty()) {
                 OrganicToast.showError(requireActivity(), null, getString(R.string.admin_units_validation_required));
                 return;
             }
-            viewModel.createUnit(name, code);
+            viewModel.createUnit(name, namePlural, code);
         });
 
         observeViewModel();
@@ -118,6 +121,7 @@ public class AdminUnitsFragment extends Fragment {
         viewModel.getUnitCreateResult().observe(getViewLifecycleOwner(), result -> {
             if (result instanceof ApiResult.Success) {
                 etName.setText("");
+                etNamePlural.setText("");
                 etCode.setText("");
                 OrganicToast.showSuccess(requireActivity(), null, getString(R.string.admin_units_create_success));
                 viewModel.loadUnits();

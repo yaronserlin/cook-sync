@@ -47,7 +47,7 @@ public class AdminUnitsViewModelTest {
     @Test
     public void loadUnits_publishesSuccess() {
         List<UnitResponse> units = List.of(
-                new UnitResponse("u1", "kg", "Kilogram", "2026-01-01", "2026-01-01"));
+                new UnitResponse("u1", "kg", "Kilogram", "Kilograms", "2026-01-01", "2026-01-01"));
         doAnswer(ApiResultAnswers.success(units)).when(unitRepository).getAllUnits(any());
 
         viewModel.loadUnits();
@@ -59,10 +59,10 @@ public class AdminUnitsViewModelTest {
 
     @Test
     public void createUnit_forwardsNameAndCodeToRepository() {
-        viewModel.createUnit("Teaspoon", "tsp");
+        viewModel.createUnit("Teaspoon", "Teaspoons", "tsp");
 
         verify(unitRepository).createUnit(
-                eq(new UnitRequestDTO("Teaspoon", "tsp")), any());
+                eq(new UnitRequestDTO("Teaspoon", "Teaspoons", "tsp")), any());
     }
 
     @Test
