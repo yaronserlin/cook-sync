@@ -3,6 +3,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
 }
 
 java {
@@ -37,7 +38,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1"
 
         resValue("string", "app_name", "CookSync")
 
@@ -177,4 +178,8 @@ dependencies {
     implementation(libs.cloudinary.android)
     implementation(libs.fresco)
     implementation(libs.photoview)
+
+    // Push notifications (device registration, system announcements — see PushMessagingService).
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 }

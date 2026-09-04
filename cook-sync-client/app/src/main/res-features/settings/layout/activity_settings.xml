@@ -103,6 +103,13 @@
                     android:layout_marginTop="@dimen/dp_8" />
 
                 <include
+                    android:id="@+id/row_notification_preferences"
+                    layout="@layout/item_settings_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8" />
+
+                <include
                     android:id="@+id/row_account_details"
                     layout="@layout/item_settings_row"
                     android:layout_width="match_parent"

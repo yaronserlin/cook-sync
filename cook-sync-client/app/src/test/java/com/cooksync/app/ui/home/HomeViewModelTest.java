@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cooksync.app.data.repository.AnnouncementRepository;
+import com.cooksync.app.data.repository.DeviceTokenRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.service.RecipePublishManager;
@@ -26,6 +28,7 @@ import com.cooksync.app.domain.Event;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.testutil.ApiResultAnswers;
 import com.dtos.response.PagedResponse;
+import com.dtos.response.announcement.AnnouncementResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 
@@ -52,6 +55,8 @@ public class HomeViewModelTest {
 
     private RecipeRepository recipeRepository;
     private TagRepository tagRepository;
+    private AnnouncementRepository announcementRepository;
+    private DeviceTokenRepository deviceTokenRepository;
     private MockedStatic<RecipePublishManager> publishManagerStatic;
     private MutableLiveData<Event<RecipeResponse>> recipePublishedEvent;
     private HomeViewModel viewModel;
@@ -66,6 +71,8 @@ public class HomeViewModelTest {
     public void setUp() {
         recipeRepository = mock(RecipeRepository.class);
         tagRepository = mock(TagRepository.class);
+        announcementRepository = mock(AnnouncementRepository.class);
+        deviceTokenRepository = mock(DeviceTokenRepository.class);
 
         RecipePublishManager publishManager = mock(RecipePublishManager.class);
         recipePublishedEvent = new MutableLiveData<>();
@@ -73,7 +80,7 @@ public class HomeViewModelTest {
         publishManagerStatic = mockStatic(RecipePublishManager.class);
         publishManagerStatic.when(RecipePublishManager::getInstance).thenReturn(publishManager);
 
-        viewModel = new HomeViewModel(recipeRepository, tagRepository);
+        viewModel = new HomeViewModel(recipeRepository, tagRepository, announcementRepository, deviceTokenRepository);
     }
 
     @After
@@ -258,6 +265,40 @@ public class HomeViewModelTest {
                 new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false)));
 
         verify(recipeRepository).getPublicFeed(eq(0), eq(10), any());
+    }
+
+    @Test
+    public void checkActiveAnnouncement_firesEvent_whenOneIsPending() {
+        AnnouncementResponse announcement = new AnnouncementResponse("ann-1", "Title", "Body", "INFO", true, "2026-01-01T00:00:00");
+        doAnswer(ApiResultAnswers.success(announcement)).when(announcementRepository).getActiveAnnouncement(any());
+
+        viewModel.checkActiveAnnouncement();
+
+        AnnouncementResponse fired = viewModel.getAnnouncementEvent().getValue().getContentIfNotHandled();
+        assertEquals("ann-1", fired.id());
+    }
+
+    @Test
+    public void checkActiveAnnouncement_doesNotFireEvent_whenNoneIsPending() {
+        doAnswer(ApiResultAnswers.success(null)).when(announcementRepository).getActiveAnnouncement(any());
+
+        viewModel.checkActiveAnnouncement();
+
+        assertTrue(viewModel.getAnnouncementEvent().getValue() == null);
+    }
+
+    @Test
+    public void dismissAnnouncement_forwardsIdToRepository() {
+        viewModel.dismissAnnouncement("ann-1");
+
+        verify(announcementRepository).dismiss(eq("ann-1"), any());
+    }
+
+    @Test
+    public void registerDeviceToken_forwardsTokenAndPlatformToRepository() {
+        viewModel.registerDeviceToken("token-abc");
+
+        verify(deviceTokenRepository).registerDevice(eq("token-abc"), eq("ANDROID"), any());
     }
 
     private void loadFavoritesContaining(RecipePreviewResponse... recipes) {

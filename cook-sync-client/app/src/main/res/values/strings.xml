@@ -269,6 +269,7 @@
     <string name="settings_row_cooking_preferences_label">Cooking preferences</string>
     <string name="settings_row_cooking_preferences_sub_on">Screen awake: On</string>
     <string name="settings_row_cooking_preferences_sub_off">Screen awake: Off</string>
+    <string name="settings_row_notification_preferences_label">Notification preferences</string>
     <string name="settings_row_account_details_label">Account details</string>
     <string name="settings_row_account_details_sub">Name, email, password, avatar</string>
     <string name="settings_row_admin_console_label">Admin console</string>
@@ -310,6 +311,18 @@
     <string name="cooking_preferences_screen_awake_sub">Prevents the screen from sleeping while cooking mode is open</string>
     <string name="cooking_preferences_timer_sound_label">Timer sound &amp; vibration</string>
     <string name="cooking_preferences_timer_sound_sub">Play a sound and vibrate when a step timer finishes</string>
+
+    <string name="notification_preferences_title">Notification preferences</string>
+    <string name="notification_preferences_push_label">Push notifications</string>
+    <string name="notification_preferences_push_sub">Allow CookSync to send notifications to this device</string>
+    <string name="notification_preferences_announcements_label">System announcements</string>
+    <string name="notification_preferences_announcements_sub">Get notified about important updates, like a required app update or policy change</string>
+
+    <string name="announcement_dialog_dismiss">Got it</string>
+
+    <string name="notification_channel_general_id" translatable="false">general</string>
+    <string name="notification_channel_general_name">Announcements</string>
+    <string name="notification_channel_general_description">System announcements and updates from CookSync</string>
 
     <string name="legal_terms_of_use_title">Terms of Use</string>
     <string name="legal_privacy_policy_title">Privacy Policy</string>

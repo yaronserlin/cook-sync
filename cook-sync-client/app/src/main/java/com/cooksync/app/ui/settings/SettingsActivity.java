@@ -229,6 +229,10 @@ public class SettingsActivity extends BaseActivity {
                 v -> Navigator.start(this, CookingPreferencesActivity.class));
         refreshCookingPreferencesSub();
 
+        bindRow(R.id.row_notification_preferences, R.drawable.ic_bell,
+                getString(R.string.settings_row_notification_preferences_label), null,
+                v -> Navigator.start(this, NotificationPreferencesActivity.class));
+
         bindRow(R.id.row_account_details, R.drawable.ic_user_cog,
                 getString(R.string.settings_row_account_details_label), getString(R.string.settings_row_account_details_sub),
                 v -> Navigator.start(this, AccountDetailsActivity.class));
