@@ -183,22 +183,22 @@ public class DataSeeder implements CommandLineRunner {
     private List<Unit> seedUnits() {
         log.info(">>> Seeding measurement units...");
         return unitRepository.saveAll(List.of(
-                Unit.builder().name("Cup").code("cup").build(),
-                Unit.builder().name("Tablespoon").code("tbsp").build(),
-                Unit.builder().name("Teaspoon").code("tsp").build(),
-                Unit.builder().name("Gram").code("g").build(),
-                Unit.builder().name("Kilogram").code("kg").build(),
-                Unit.builder().name("Milliliter").code("ml").build(),
-                Unit.builder().name("Liter").code("l").build(),
-                Unit.builder().name("Pinch").code("pinch").build(),
-                Unit.builder().name("Clove").code("clove").build(),
-                Unit.builder().name("Piece").code("piece").build(),
-                Unit.builder().name("Slice").code("slice").build(),
-                Unit.builder().name("Can").code("can").build(),
-                Unit.builder().name("Package").code("pkg").build(),
-                Unit.builder().name("Handful").code("handful").build(),
-                Unit.builder().name("Sprig").code("sprig").build(),
-                Unit.builder().name("Bundle").code("bundle").build()
+                Unit.builder().name("Cup").namePlural("Cups").code("cup").build(),
+                Unit.builder().name("Tablespoon").namePlural("Tablespoons").code("tbsp").build(),
+                Unit.builder().name("Teaspoon").namePlural("Teaspoons").code("tsp").build(),
+                Unit.builder().name("Gram").namePlural("Grams").code("g").build(),
+                Unit.builder().name("Kilogram").namePlural("Kilograms").code("kg").build(),
+                Unit.builder().name("Milliliter").namePlural("Milliliters").code("ml").build(),
+                Unit.builder().name("Liter").namePlural("Liters").code("l").build(),
+                Unit.builder().name("Pinch").namePlural("Pinches").code("pinch").build(),
+                Unit.builder().name("Clove").namePlural("Cloves").code("clove").build(),
+                Unit.builder().name("Piece").namePlural("Pieces").code("piece").build(),
+                Unit.builder().name("Slice").namePlural("Slices").code("slice").build(),
+                Unit.builder().name("Can").namePlural("Cans").code("can").build(),
+                Unit.builder().name("Package").namePlural("Packages").code("pkg").build(),
+                Unit.builder().name("Handful").namePlural("Handfuls").code("handful").build(),
+                Unit.builder().name("Sprig").namePlural("Sprigs").code("sprig").build(),
+                Unit.builder().name("Bundle").namePlural("Bundles").code("bundle").build()
         ));
     }
 

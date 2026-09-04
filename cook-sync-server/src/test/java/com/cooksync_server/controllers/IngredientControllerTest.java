@@ -64,7 +64,7 @@ class IngredientControllerTest {
     void addIngredient_ShouldReturnCreated_WhenPayloadValid() throws Exception {
         IngredientRequestDTO request = new IngredientRequestDTO(null, "Flour", 2.5, "unit-1");
         IngredientResponse response = new IngredientResponse("ing-1", "Flour", BigDecimal.valueOf(2.5),
-                "recipe-1", new UnitResponse("unit-1", "cup", "Cup", null, null));
+                "recipe-1", new UnitResponse("unit-1", "cup", "Cup", "Cups", null, null));
         when(ingredientService.addIngredientToRecipe(eq("recipe-1"), any(), eq("chef@example.com")))
                 .thenReturn(response);
 

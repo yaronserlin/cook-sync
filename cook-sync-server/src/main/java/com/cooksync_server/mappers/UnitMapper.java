@@ -29,6 +29,7 @@ public final class UnitMapper {
         String created = MapperUtils.toIsoStringOrNull(unit.getCreatedAt());
         String updated = MapperUtils.toIsoStringOrNull(unit.getUpdatedAt());
         String name = TranslationAccess.resolve(ContentTranslation.EntityType.UNIT_NAME, unit.getId(), unit.getName(), "en").value();
-        return new UnitResponse(unit.getId(), unit.getCode(), name, created, updated);
+        String namePlural = TranslationAccess.resolve(ContentTranslation.EntityType.UNIT_NAME_PLURAL, unit.getId(), unit.getNamePlural(), "en").value();
+        return new UnitResponse(unit.getId(), unit.getCode(), name, namePlural, created, updated);
     }
 }

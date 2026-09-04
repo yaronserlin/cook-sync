@@ -51,7 +51,7 @@ class UnitServiceTest {
 
     @BeforeEach
     void setUp() {
-        sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").build();
+        sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").namePlural("Grams").build();
     }
 
     @Test
@@ -67,7 +67,7 @@ class UnitServiceTest {
 
     @Test
     void createUnit_ShouldThrowResourceAlreadyExistsException_WhenCodeTaken() {
-        UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
+        UnitRequestDTO request = new UnitRequestDTO("Gram", "Grams", "g");
         when(unitRepository.existsByCodeIgnoreCase("g")).thenReturn(true);
 
         assertThrows(ResourceAlreadyExistsException.class, () -> unitService.createUnit(request));
@@ -75,7 +75,7 @@ class UnitServiceTest {
 
     @Test
     void createUnit_ShouldThrowResourceAlreadyExistsException_WhenNameTaken() {
-        UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
+        UnitRequestDTO request = new UnitRequestDTO("Gram", "Grams", "g");
         when(unitRepository.existsByCodeIgnoreCase("g")).thenReturn(false);
         when(unitRepository.existsByNameIgnoreCase("Gram")).thenReturn(true);
 
@@ -84,7 +84,7 @@ class UnitServiceTest {
 
     @Test
     void createUnit_ShouldSaveUnit_WhenCodeAndNameAvailable() {
-        UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
+        UnitRequestDTO request = new UnitRequestDTO("Gram", "Grams", "g");
         when(unitRepository.existsByCodeIgnoreCase("g")).thenReturn(false);
         when(unitRepository.existsByNameIgnoreCase("Gram")).thenReturn(false);
         when(unitRepository.save(org.mockito.ArgumentMatchers.any(Unit.class)))
@@ -94,6 +94,7 @@ class UnitServiceTest {
 
         assertEquals("g", response.code());
         assertEquals("Gram", response.name());
+        assertEquals("Grams", response.namePlural());
     }
 
     @Test

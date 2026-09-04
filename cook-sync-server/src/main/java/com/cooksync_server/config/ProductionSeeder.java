@@ -154,33 +154,33 @@ public class ProductionSeeder implements CommandLineRunner {
      * @return the units keyed by their lowercased {@link Unit#getCode()}
      */
     private Map<String, Unit> seedUnits() {
-        record UnitSeed(String name, String code) {
+        record UnitSeed(String name, String namePlural, String code) {
 
         }
 
         List<UnitSeed> unitSeeds = List.of(
-                new UnitSeed("Cup", "cup"),
-                new UnitSeed("Tablespoon", "tbsp"),
-                new UnitSeed("Teaspoon", "tsp"),
-                new UnitSeed("Gram", "g"),
-                new UnitSeed("Kilogram", "kg"),
-                new UnitSeed("Milliliter", "ml"),
-                new UnitSeed("Liter", "l"),
-                new UnitSeed("Pinch", "pinch"),
-                new UnitSeed("Clove", "clove"),
-                new UnitSeed("Piece", "piece"),
-                new UnitSeed("Slice", "slice"),
-                new UnitSeed("Can", "can"),
-                new UnitSeed("Package", "pkg"),
-                new UnitSeed("Handful", "handful"),
-                new UnitSeed("Sprig", "sprig"),
-                new UnitSeed("Bundle", "bundle")
+                new UnitSeed("Cup", "Cups", "cup"),
+                new UnitSeed("Tablespoon", "Tablespoons", "tbsp"),
+                new UnitSeed("Teaspoon", "Teaspoons", "tsp"),
+                new UnitSeed("Gram", "Grams", "g"),
+                new UnitSeed("Kilogram", "Kilograms", "kg"),
+                new UnitSeed("Milliliter", "Milliliters", "ml"),
+                new UnitSeed("Liter", "Liters", "l"),
+                new UnitSeed("Pinch", "Pinches", "pinch"),
+                new UnitSeed("Clove", "Cloves", "clove"),
+                new UnitSeed("Piece", "Pieces", "piece"),
+                new UnitSeed("Slice", "Slices", "slice"),
+                new UnitSeed("Can", "Cans", "can"),
+                new UnitSeed("Package", "Packages", "pkg"),
+                new UnitSeed("Handful", "Handfuls", "handful"),
+                new UnitSeed("Sprig", "Sprigs", "sprig"),
+                new UnitSeed("Bundle", "Bundles", "bundle")
         );
 
         Map<String, Unit> unitMap = new HashMap<>();
         for (UnitSeed seed : unitSeeds) {
             Unit unit = unitRepository.findByCodeIgnoreCase(seed.code())
-                    .orElseGet(() -> unitRepository.save(Unit.builder().name(seed.name()).code(seed.code()).build()));
+                    .orElseGet(() -> unitRepository.save(Unit.builder().name(seed.name()).namePlural(seed.namePlural()).code(seed.code()).build()));
             unitMap.put(seed.code().toLowerCase(), unit);
         }
         return unitMap;
