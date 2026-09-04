@@ -320,6 +320,11 @@
 
     <string name="announcement_dialog_dismiss">Got it</string>
 
+    <string name="force_update_title">Update required</string>
+    <string name="force_update_message">A new version of CookSync is required to continue. Please download the latest version to keep using the app.</string>
+    <string name="force_update_download_action">Download update</string>
+    <string name="force_update_open_link_failed">Couldn\'t open the download link</string>
+
     <string name="notification_channel_general_id" translatable="false">general</string>
     <string name="notification_channel_general_name">Announcements</string>
     <string name="notification_channel_general_description">System announcements and updates from CookSync</string>
