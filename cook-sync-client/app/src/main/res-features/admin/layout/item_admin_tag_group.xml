@@ -33,6 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_marginTop="@dimen/dp_4"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:padding="@dimen/dp_4"
         android:text="@string/admin_merge_action"
         android:textColor="@color/color_accent_700"

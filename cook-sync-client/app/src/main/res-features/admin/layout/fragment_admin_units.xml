@@ -32,33 +32,40 @@
 
             <EditText
                 android:id="@+id/et_unit_name"
+                style="@style/CookSync.Input"
                 android:layout_width="@dimen/dp_0"
                 android:layout_height="@dimen/dp_44"
                 android:layout_weight="1"
-                android:background="@drawable/bg_input"
-                android:hint="Name (e.g. Gram)"
+                android:hint="@string/admin_units_name_hint"
                 android:inputType="text"
                 android:paddingHorizontal="@dimen/dp_12"
                 android:textSize="@dimen/sp_14" />
 
             <EditText
                 android:id="@+id/et_unit_code"
+                style="@style/CookSync.Input"
                 android:layout_width="@dimen/dp_90"
                 android:layout_height="@dimen/dp_44"
                 android:layout_marginStart="@dimen/dp_8"
-                android:background="@drawable/bg_input"
-                android:hint="Code (g)"
+                android:hint="@string/admin_units_code_hint"
                 android:inputType="text"
                 android:paddingHorizontal="@dimen/dp_12"
                 android:textSize="@dimen/sp_14" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_unit"
+                style="@style/CookSync.Button.Primary"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/dp_44"
                 android:layout_marginStart="@dimen/dp_8"
+                android:insetTop="@dimen/dp_0"
+                android:insetBottom="@dimen/dp_0"
+                android:minHeight="@dimen/dp_0"
+                android:minWidth="@dimen/dp_0"
+                android:paddingHorizontal="@dimen/dp_16"
                 android:text="@string/action_add"
-                app:backgroundTint="@color/color_accent" />
+                android:textSize="@dimen/sp_14"
+                app:cornerRadius="@dimen/dp_22" />
         </LinearLayout>
     </LinearLayout>
 
@@ -73,7 +80,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_units"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/dp_0"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingBottom="@dimen/dp_16"
         tools:listitem="@layout/item_admin_unit" />

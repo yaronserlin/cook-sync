@@ -358,6 +358,8 @@
     <string name="admin_badge_units">%1$d total</string>
     <string name="admin_badge_announcements">%1$d total</string>
     <string name="admin_units_add_new">Add new measurement unit</string>
+    <string name="admin_units_name_hint">e.g. Gram</string>
+    <string name="admin_units_code_hint">e.g. g</string>
     <string name="admin_units_validation_required">Name and code are required</string>
     <string name="admin_units_create_success">Unit created successfully</string>
     <string name="admin_units_deleted_format">Unit \"%1$s\" deleted</string>
