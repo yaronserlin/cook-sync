@@ -58,11 +58,12 @@ public class AdminUnitsViewModel extends BaseViewModel {
     /**
      * Creates a new measurement unit.
      *
-     * @param name display name of the new unit
+     * @param name singular display name of the new unit
+     * @param namePlural plural display name of the new unit
      * @param code short symbol code of the new unit
      */
-    public void createUnit(String name, String code) {
-        unitRepository.createUnit(new UnitRequestDTO(name, code), unitCreateResult);
+    public void createUnit(String name, String namePlural, String code) {
+        unitRepository.createUnit(new UnitRequestDTO(name, namePlural, code), unitCreateResult);
     }
 
     /**
