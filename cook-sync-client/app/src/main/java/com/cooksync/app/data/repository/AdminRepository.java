@@ -7,6 +7,8 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
+import com.dtos.response.announcement.AnnouncementResponse;
+import com.dtos.response.appconfig.AppConfigResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -102,4 +104,54 @@ public interface AdminRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void mergeTags(String sourceTagId, String targetTagId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Creates a new system announcement and immediately broadcasts it via push to every
+     * push-enabled device.
+     *
+     * @param title the announcement's short headline
+     * @param body the announcement's full message body
+     * @param severity "INFO" or "ACTION_REQUIRED"
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void createAnnouncement(String title, String body, String severity,
+                             MutableLiveData<ApiResult<AnnouncementResponse>> resultTarget);
+
+    /**
+     * Fetches a paginated, newest-first list of every announcement, active or not.
+     *
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getAnnouncements(int page, int size,
+                           MutableLiveData<ApiResult<PagedResponse<AnnouncementResponse>>> resultTarget);
+
+    /**
+     * Deactivates an announcement so it stops being surfaced to users who haven't seen it yet.
+     *
+     * @param id the announcement's ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deactivateAnnouncement(String id, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Fetches the Android platform's current minimum supported version code and download link,
+     * for the "App version" settings card.
+     *
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getAppConfig(MutableLiveData<ApiResult<AppConfigResponse>> resultTarget);
+
+    /**
+     * Updates the Android platform's minimum supported version code and download link. Raising
+     * the minimum above the currently-installed base's own version code starts forcing every
+     * client below it to update before continuing.
+     *
+     * @param minSupportedVersionCode the lowest client version code still allowed to use the app
+     * @param downloadUrl where users should go to download the current build
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void updateAppConfig(int minSupportedVersionCode, String downloadUrl,
+                          MutableLiveData<ApiResult<AppConfigResponse>> resultTarget);
 }

@@ -37,6 +37,7 @@ public class AdminConsoleActivity extends BaseActivity {
     private AdminTagsViewModel tagsViewModel;
     private AdminUsersViewModel usersViewModel;
     private AdminUnitsViewModel unitsViewModel;
+    private AdminAnnouncementsViewModel announcementsViewModel;
     private TabLayout tabLayout;
     private TextView tvHeading;
     private TextView tvBadge;
@@ -67,6 +68,7 @@ public class AdminConsoleActivity extends BaseActivity {
         tagsViewModel = provider.get(AdminTagsViewModel.class);
         usersViewModel = provider.get(AdminUsersViewModel.class);
         unitsViewModel = provider.get(AdminUnitsViewModel.class);
+        announcementsViewModel = provider.get(AdminAnnouncementsViewModel.class);
 
         tvHeading = findViewById(R.id.tv_admin_heading);
         tvBadge = findViewById(R.id.tv_admin_badge);
@@ -80,7 +82,8 @@ public class AdminConsoleActivity extends BaseActivity {
                 getString(R.string.admin_tab_reports),
                 getString(R.string.admin_tab_tags),
                 getString(R.string.admin_tab_users),
-                getString(R.string.admin_tab_units)
+                getString(R.string.admin_tab_units),
+                getString(R.string.admin_tab_announcements)
         };
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setCustomView(R.layout.item_admin_tab);
@@ -117,6 +120,7 @@ public class AdminConsoleActivity extends BaseActivity {
         tagsViewModel.loadDuplicateTagGroups();
         usersViewModel.refreshUsers(null, null);
         unitsViewModel.loadUnits();
+        announcementsViewModel.loadAnnouncements();
     }
 
     /**
@@ -214,6 +218,15 @@ public class AdminConsoleActivity extends BaseActivity {
                 }
             }
         });
+        announcementsViewModel.getAnnouncementsResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<com.dtos.response.PagedResponse<com.dtos.response.announcement.AnnouncementResponse>> success) {
+                String badge = getString(R.string.admin_badge_announcements, success.getData().content().size());
+                setTabCount(AdminPagerAdapter.TAB_ANNOUNCEMENTS, badge);
+                if (activeTab == AdminPagerAdapter.TAB_ANNOUNCEMENTS) {
+                    tvBadge.setText(badge);
+                }
+            }
+        });
         updateHeader();
     }
 
@@ -235,6 +248,7 @@ public class AdminConsoleActivity extends BaseActivity {
             case AdminPagerAdapter.TAB_TAGS -> tvHeading.setText(R.string.admin_heading_tags);
             case AdminPagerAdapter.TAB_USERS -> tvHeading.setText(R.string.admin_heading_users);
             case AdminPagerAdapter.TAB_UNITS -> tvHeading.setText(R.string.admin_heading_units);
+            case AdminPagerAdapter.TAB_ANNOUNCEMENTS -> tvHeading.setText(R.string.admin_heading_announcements);
             default -> tvHeading.setText(R.string.admin_heading_reports);
         }
         TabLayout.Tab tab = tabLayout.getTabAt(activeTab);

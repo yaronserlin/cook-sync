@@ -6,11 +6,11 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 /**
- * Supplies {@link AdminConsoleActivity}'s four moderation tabs — Reports, Tags, Users, Units —
- * to its {@link androidx.viewpager2.widget.ViewPager2}.
+ * Supplies {@link AdminConsoleActivity}'s five moderation tabs — Reports, Tags, Users, Units,
+ * Announcements — to its {@link androidx.viewpager2.widget.ViewPager2}.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 07/08/2026
  */
 public class AdminPagerAdapter extends FragmentStateAdapter {
@@ -23,6 +23,8 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
     public static final int TAB_USERS = 2;
     /** ViewPager2 position of the Units tab. */
     public static final int TAB_UNITS = 3;
+    /** ViewPager2 position of the Announcements tab. */
+    public static final int TAB_ANNOUNCEMENTS = 4;
 
     /**
      * Constructs the pager adapter bound to its host activity.
@@ -36,11 +38,11 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
     /**
      * Returns the fixed number of tabs.
      *
-     * @return the number of tabs, always 4
+     * @return the number of tabs, always 5
      */
     @Override
     public int getItemCount() {
-        return 4;
+        return 5;
     }
 
     /**
@@ -56,7 +58,8 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
             case TAB_REPORTS -> new AdminReportsFragment();
             case TAB_TAGS -> new AdminTagsFragment();
             case TAB_USERS -> new AdminUsersFragment();
-            default -> new AdminUnitsFragment();
+            case TAB_UNITS -> new AdminUnitsFragment();
+            default -> new AdminAnnouncementsFragment();
         };
     }
 }

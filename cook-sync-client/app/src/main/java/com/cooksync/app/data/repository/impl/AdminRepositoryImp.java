@@ -7,11 +7,15 @@ import com.cooksync.app.data.datasource.remote.RetrofitClient;
 import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.appconfig.AppConfigUpdateRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
+import com.dtos.response.announcement.AnnouncementResponse;
+import com.dtos.response.appconfig.AppConfigResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -108,5 +112,49 @@ public class AdminRepositoryImp extends BaseRepository implements AdminRepositor
     public void mergeTags(String sourceTagId, String targetTagId, MutableLiveData<ApiResult<Void>> resultTarget) {
         TagMergeRequestDTO request = new TagMergeRequestDTO(sourceTagId, targetTagId);
         executeAsync(apiService.mergeTags(request), resultTarget);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createAnnouncement(String title, String body, String severity,
+                                    MutableLiveData<ApiResult<AnnouncementResponse>> resultTarget) {
+        executeAsync(apiService.createAnnouncement(new AnnouncementCreateRequestDTO(title, body, severity)), resultTarget);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getAnnouncements(int page, int size,
+                                  MutableLiveData<ApiResult<PagedResponse<AnnouncementResponse>>> resultTarget) {
+        executeAsync(apiService.getAnnouncements(page, size), resultTarget);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deactivateAnnouncement(String id, MutableLiveData<ApiResult<Void>> resultTarget) {
+        executeAsync(apiService.deactivateAnnouncement(id), resultTarget);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getAppConfig(MutableLiveData<ApiResult<AppConfigResponse>> resultTarget) {
+        executeAsync(apiService.getAppConfig("ANDROID"), resultTarget);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateAppConfig(int minSupportedVersionCode, String downloadUrl,
+                                 MutableLiveData<ApiResult<AppConfigResponse>> resultTarget) {
+        executeAsync(apiService.updateAppConfig(
+                new AppConfigUpdateRequestDTO("ANDROID", minSupportedVersionCode, downloadUrl)), resultTarget);
     }
 }
