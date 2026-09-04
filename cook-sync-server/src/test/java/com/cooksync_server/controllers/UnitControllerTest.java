@@ -49,13 +49,14 @@ class UnitControllerTest {
 
     @Test
     void getAllUnits_ShouldReturnPagedUnits() throws Exception {
-        UnitResponse unit = new UnitResponse("unit-1", "g", "Gram", null, null);
+        UnitResponse unit = new UnitResponse("unit-1", "g", "Gram", "Grams", null, null);
         when(unitService.getAllUnits(any(Integer.class), any(Integer.class)))
                 .thenReturn(new PagedResponse<>(List.of(unit), 0, 20, 1, 1, true));
 
         mockMvc.perform(get("/api/units"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content[0].code").value("g"))
-                .andExpect(jsonPath("$.data.content[0].name").value("Gram"));
+                .andExpect(jsonPath("$.data.content[0].name").value("Gram"))
+                .andExpect(jsonPath("$.data.content[0].namePlural").value("Grams"));
     }
 }

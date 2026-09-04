@@ -83,7 +83,7 @@ public class ContentTranslation {
      * title versus its description, ingredients, etc.
      */
     public enum EntityType {
-        RECIPE_TITLE, RECIPE_DESCRIPTION, RECIPE_DESCRIPTION_BLOCK, INGREDIENT_NAME, INSTRUCTION_TEXT, UNIT_NAME, TAG_NAME
+        RECIPE_TITLE, RECIPE_DESCRIPTION, RECIPE_DESCRIPTION_BLOCK, INGREDIENT_NAME, INSTRUCTION_TEXT, UNIT_NAME, UNIT_NAME_PLURAL, TAG_NAME
     }
 
     /**

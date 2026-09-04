@@ -95,7 +95,7 @@ class AdminEndpointsSecurityTest {
     @Test
     @WithMockUser(roles = "USER")
     void createUnit_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
-        UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
+        UnitRequestDTO request = new UnitRequestDTO("Gram", "Grams", "g");
 
         mockMvc.perform(post("/api/units")
                         .with(csrf())
@@ -107,9 +107,9 @@ class AdminEndpointsSecurityTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void createUnit_ShouldReturnCreated_ForAdminUser() throws Exception {
-        UnitRequestDTO request = new UnitRequestDTO("Gram", "g");
+        UnitRequestDTO request = new UnitRequestDTO("Gram", "Grams", "g");
         when(unitService.createUnit(org.mockito.ArgumentMatchers.any()))
-                .thenReturn(new UnitResponse("unit-1", "g", "Gram", null, null));
+                .thenReturn(new UnitResponse("unit-1", "g", "Gram", "Grams", null, null));
 
         mockMvc.perform(post("/api/units")
                         .with(csrf())

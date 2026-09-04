@@ -55,6 +55,7 @@ public class UnitServiceImp implements UnitService{
     public UnitResponse createUnit(UnitRequestDTO request) {
         String formattedCode = request.code().toLowerCase().trim();
         String formattedName = StringUtils.capitalize(request.name().toLowerCase().trim());
+        String formattedNamePlural = StringUtils.capitalize(request.namePlural().toLowerCase().trim());
 
         if (unitRepository.existsByCodeIgnoreCase(formattedCode)) {
             throw new ResourceAlreadyExistsException("Unit code '" + formattedCode + "'", formattedCode);
@@ -65,6 +66,7 @@ public class UnitServiceImp implements UnitService{
 
         Unit newUnit = Unit.builder()
                 .name(formattedName)
+                .namePlural(formattedNamePlural)
                 .code(formattedCode)
                 .build();
 

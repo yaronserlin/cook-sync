@@ -45,6 +45,9 @@ public class Unit {
     @Column(nullable = false, length = 255, unique = true)
     private String name;
 
+    @Column(name = "name_plural", nullable = false, length = 255)
+    private String namePlural;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
