@@ -49,6 +49,9 @@ public class SecurityConfig {
                         ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_REFRESH_TOKEN,
                         ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_FORGOT_PASSWORD, ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_RESET_PASSWORD,
                         ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_VERIFY_REGISTRATION_OTP, ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_RESEND_REGISTRATION_OTP).permitAll()
+                // Must be checkable before login (or by a client too old to trust its own login
+                // flow), so it can't require a JWT the caller may not be able to obtain yet.
+                .requestMatchers(ApiRoutes.APP_CONFIG).permitAll()
                 // Docker's/Render's health checks hit this with no JWT to send; only "health" is
                 // exposed at all (see management.endpoints.web.exposure.include), and
                 // show-details=never keeps its response to a bare status, so nothing sensitive

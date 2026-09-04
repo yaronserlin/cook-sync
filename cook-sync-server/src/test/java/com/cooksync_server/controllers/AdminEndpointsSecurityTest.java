@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.services.AdminService;
+import com.cooksync_server.services.AnnouncementService;
+import com.cooksync_server.services.AppConfigService;
 import com.cooksync_server.services.UnitService;
+import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.appconfig.AppConfigUpdateRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -51,6 +56,12 @@ class AdminEndpointsSecurityTest {
 
     @MockitoBean
     private AdminService adminService;
+
+    @MockitoBean
+    private AnnouncementService announcementService;
+
+    @MockitoBean
+    private AppConfigService appConfigService;
 
     @MockitoBean
     private UnitService unitService;
@@ -169,6 +180,44 @@ class AdminEndpointsSecurityTest {
         TagMergeRequestDTO request = new TagMergeRequestDTO("tag-1", "tag-2");
 
         mockMvc.perform(post("/api/admin/tags/merge")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void createAnnouncement_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        AnnouncementCreateRequestDTO request = new AnnouncementCreateRequestDTO("Title", "Body", "INFO");
+
+        mockMvc.perform(post("/api/admin/announcements")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getAnnouncements_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(get("/api/admin/announcements"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void deactivateAnnouncement_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        mockMvc.perform(patch("/api/admin/announcements/announcement-1/deactivate").with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void updateAppConfig_ShouldReturnForbidden_ForNonAdminUser() throws Exception {
+        AppConfigUpdateRequestDTO request = new AppConfigUpdateRequestDTO("ANDROID", 2, "https://example.com/app.apk");
+
+        mockMvc.perform(put("/api/admin/app-config")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
