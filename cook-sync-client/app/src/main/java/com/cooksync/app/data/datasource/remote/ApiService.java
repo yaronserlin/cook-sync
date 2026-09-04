@@ -14,7 +14,11 @@ import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.request.auth.VerifyEmailChangeOtpRequestDTO;
 import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
+import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.appconfig.AppConfigUpdateRequestDTO;
+import com.dtos.request.device.DeviceTokenRegisterRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
+import com.dtos.request.notification.NotificationPreferencesUpdateRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.request.review.ReportReviewRequestDTO;
@@ -27,7 +31,10 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
+import com.dtos.response.announcement.AnnouncementResponse;
+import com.dtos.response.appconfig.AppConfigResponse;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.notification.NotificationPreferencesResponse;
 import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.note.NoteResponse;
@@ -701,4 +708,109 @@ public interface ApiService {
      */
     @POST("api/admin/tags/merge")
     Call<ApiResponse<Void>> mergeTags(@Body TagMergeRequestDTO request);
+
+    /**
+     * Registers (or refreshes) the calling device's push-notification token for the
+     * authenticated user.
+     *
+     * @param request the device's current push token and platform
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/devices")
+    Call<ApiResponse<Void>> registerDevice(@Body DeviceTokenRegisterRequestDTO request);
+
+    /**
+     * Removes a device's push-notification token registration, e.g. on logout.
+     *
+     * @param pushToken the device's FCM registration token
+     * @return call yielding an empty acknowledgement
+     */
+    @DELETE("api/devices/{pushToken}")
+    Call<ApiResponse<Void>> unregisterDevice(@Path("pushToken") String pushToken);
+
+    /**
+     * Fetches the newest active system announcement the authenticated user hasn't dismissed
+     * yet, if any.
+     *
+     * @return call yielding the announcement, or a null payload if none is pending
+     */
+    @GET("api/announcements/active")
+    Call<ApiResponse<AnnouncementResponse>> getActiveAnnouncement();
+
+    /**
+     * Records that the authenticated user has dismissed ("Got it") the given announcement.
+     *
+     * @param id the announcement's ID
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/announcements/{id}/dismiss")
+    Call<ApiResponse<Void>> dismissAnnouncement(@Path("id") String id);
+
+    /**
+     * Fetches the authenticated user's current notification preferences.
+     *
+     * @return call yielding the user's notification preferences
+     */
+    @GET("api/notification-preferences")
+    Call<ApiResponse<NotificationPreferencesResponse>> getNotificationPreferences();
+
+    /**
+     * Updates the authenticated user's notification preferences.
+     *
+     * @param request the new preference values
+     * @return call yielding an empty acknowledgement
+     */
+    @PUT("api/notification-preferences")
+    Call<ApiResponse<Void>> updateNotificationPreferences(@Body NotificationPreferencesUpdateRequestDTO request);
+
+    /**
+     * Creates a new system announcement and immediately broadcasts it via push (admin-only).
+     *
+     * @param request the announcement content
+     * @return call yielding the created announcement
+     */
+    @POST("api/admin/announcements")
+    Call<ApiResponse<AnnouncementResponse>> createAnnouncement(@Body AnnouncementCreateRequestDTO request);
+
+    /**
+     * Fetches a paginated, newest-first list of every announcement, active or not (admin-only).
+     *
+     * @param page zero-based page index
+     * @param size page size limit
+     * @return call yielding a page of announcements
+     */
+    @GET("api/admin/announcements")
+    Call<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncements(
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
+    /**
+     * Deactivates an announcement so it stops being surfaced to users who haven't seen it yet
+     * (admin-only).
+     *
+     * @param id the announcement's ID
+     * @return call yielding an empty acknowledgement
+     */
+    @PATCH("api/admin/announcements/{id}/deactivate")
+    Call<ApiResponse<Void>> deactivateAnnouncement(@Path("id") String id);
+
+    /**
+     * Fetches the minimum supported client version and download link for a platform.
+     * Unauthenticated — must be reachable before login.
+     *
+     * @param platform the platform to look up, e.g. "ANDROID"
+     * @return call yielding the platform's current app-config
+     */
+    @GET("api/app-config")
+    Call<ApiResponse<AppConfigResponse>> getAppConfig(@Query("platform") String platform);
+
+    /**
+     * Updates a platform's minimum supported client version and download link (admin-only).
+     *
+     * @param request the new configuration
+     * @return call yielding the saved app-config
+     */
+    @PUT("api/admin/app-config")
+    Call<ApiResponse<AppConfigResponse>> updateAppConfig(@Body AppConfigUpdateRequestDTO request);
 }

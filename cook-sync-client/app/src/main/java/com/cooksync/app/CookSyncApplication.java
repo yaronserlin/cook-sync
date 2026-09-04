@@ -2,19 +2,26 @@ package com.cooksync.app;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.cooksync.app.data.datasource.local.TokenStore;
+import com.cooksync.app.data.service.VersionGateManager;
 import com.cooksync.app.ui.auth.LoginActivity;
 import com.cooksync.app.ui.auth.RegisterActivity;
 import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.common.ForceUpdateActivity;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.SessionManager;
+import com.dtos.response.appconfig.AppConfigResponse;
 
 import java.lang.ref.WeakReference;
 
@@ -65,9 +72,34 @@ public class CookSyncApplication extends Application {
         appContext = getApplicationContext();
         TokenStore.init(this);
         SessionManager.getInstance().restoreFromTokenStore();
+        createNotificationChannel();
 
         registerActivityLifecycleCallbacks(new ActivityTrackingCallbacks());
         SessionManager.getInstance().isLoggedIn().observeForever(this::onSessionStateChanged);
+
+        VersionGateManager.getInstance().getBlockingConfig().observeForever(this::onUpdateRequired);
+        VersionGateManager.getInstance().checkNow();
+    }
+
+    /**
+     * Registers the app's single notification channel (Android 8+ requires every notification
+     * to belong to one). Referenced by ID from both {@code AndroidManifest.xml}'s
+     * {@code com.google.firebase.messaging.default_notification_channel_id} meta-data (used when
+     * FCM auto-displays a notification while the app is backgrounded) and
+     * {@code PushMessagingService} (used when it builds the notification itself, i.e. while the
+     * app is foregrounded). Registering an already-registered channel is a safe no-op, so this
+     * runs unconditionally on every app start rather than checking first.
+     */
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+        NotificationChannel channel = new NotificationChannel(
+                getString(R.string.notification_channel_general_id),
+                getString(R.string.notification_channel_general_name),
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(getString(R.string.notification_channel_general_description));
+        ContextCompat.getSystemService(this, NotificationManager.class).createNotificationChannel(channel);
     }
 
     /**
@@ -111,6 +143,29 @@ public class CookSyncApplication extends Application {
         Intent extras = new Intent();
         extras.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         Navigator.start(this, LoginActivity.class, extras);
+    }
+
+    /**
+     * Reacts to {@link VersionGateManager#getBlockingConfig()} emitting — meaning this build's
+     * version code is below the server's configured minimum — by redirecting straight to
+     * {@link ForceUpdateActivity}, clearing every other screen off the back stack. Runs
+     * regardless of login state (checked independently of {@link #onSessionStateChanged}),
+     * since a build can be too old whether or not the user is signed in.
+     *
+     * @param config the platform's current app-config, carrying the download link to show
+     */
+    private void onUpdateRequired(AppConfigResponse config) {
+        if (config == null) {
+            return;
+        }
+        Activity top = currentActivity.get();
+        if (top instanceof ForceUpdateActivity) {
+            return;
+        }
+        Intent intent = new Intent(this, ForceUpdateActivity.class);
+        intent.putExtra(ForceUpdateActivity.EXTRA_DOWNLOAD_URL, config.downloadUrl());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
     /**
