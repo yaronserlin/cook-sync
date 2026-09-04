@@ -41,6 +41,7 @@ public class TranslationService {
 
     private final ContentTranslationRepository translationRepository;
     private final TranslationProvider provider;
+    private final TranslationCacheWriter cacheWriter;
 
     /**
      * Resolves one field's display value for the current request's locale.
@@ -69,7 +70,7 @@ public class TranslationService {
                                               String original, String requestLocale) {
         return provider.translate(original, requestLocale)
                 .map(value -> {
-                    translationRepository.save(ContentTranslation.builder()
+                    cacheWriter.save(ContentTranslation.builder()
                             .entityType(entityType)
                             .entityId(entityId)
                             .locale(requestLocale)
