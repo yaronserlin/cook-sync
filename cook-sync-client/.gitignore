@@ -24,3 +24,8 @@ proguard/
 keystore/
 keystore.properties
 *.jks
+
+# Firebase project config — contains this project's API key; kept out of the (potentially
+# public) repo. Each developer downloads their own from the Firebase console (Project settings >
+# General > Your apps > google-services.json) and drops it in app/.
+google-services.json

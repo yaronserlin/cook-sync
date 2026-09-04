@@ -269,6 +269,7 @@
     <string name="settings_row_cooking_preferences_label">העדפות בישול</string>
     <string name="settings_row_cooking_preferences_sub_on">מסך פעיל: מופעל</string>
     <string name="settings_row_cooking_preferences_sub_off">מסך פעיל: כבוי</string>
+    <string name="settings_row_notification_preferences_label">העדפות התראות</string>
     <string name="settings_row_account_details_label">פרטי חשבון</string>
     <string name="settings_row_account_details_sub">שם, אימייל, סיסמה, תמונת פרופיל</string>
     <string name="settings_row_admin_console_label">מסוף ניהול</string>
@@ -310,6 +311,17 @@
     <string name="cooking_preferences_screen_awake_sub">מונע מהמסך להיכבות בזמן שמצב הבישול פתוח</string>
     <string name="cooking_preferences_timer_sound_label">צליל ורטט לטיימר</string>
     <string name="cooking_preferences_timer_sound_sub">משמיע צליל ומרטיט כשטיימר של שלב מסתיים</string>
+
+    <string name="notification_preferences_title">העדפות התראות</string>
+    <string name="notification_preferences_push_label">התראות Push</string>
+    <string name="notification_preferences_push_sub">אפשור שליחת התראות מ-CookSync למכשיר הזה</string>
+    <string name="notification_preferences_announcements_label">הודעות מערכת</string>
+    <string name="notification_preferences_announcements_sub">קבל/י עדכונים חשובים, כמו עדכון גרסה נדרש או שינוי במדיניות</string>
+
+    <string name="announcement_dialog_dismiss">הבנתי</string>
+
+    <string name="notification_channel_general_name">הודעות מערכת</string>
+    <string name="notification_channel_general_description">הודעות מערכת ועדכונים מ-CookSync</string>
 
     <string name="legal_terms_of_use_title">תנאי שימוש</string>
     <string name="legal_privacy_policy_title">מדיניות פרטיות</string>

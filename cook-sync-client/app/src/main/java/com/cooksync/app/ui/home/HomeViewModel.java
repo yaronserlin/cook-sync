@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.cooksync.app.data.repository.AnnouncementRepository;
 import com.cooksync.app.data.repository.BaseRepository;
+import com.cooksync.app.data.repository.DeviceTokenRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.service.RecipePublishManager;
@@ -16,6 +18,7 @@ import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.RecipeFilterUtils;
 import com.cooksync.app.util.constants.PaginationConstants;
 import com.dtos.response.PagedResponse;
+import com.dtos.response.announcement.AnnouncementResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
@@ -41,11 +44,14 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final DeviceTokenRepository deviceTokenRepository;
 
     private final MutableLiveData<FeedState> feedState = new MutableLiveData<>(new FeedState.Idle());
     private final MutableLiveData<ApiResult<List<TagResponse>>> tagsResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
     private final MutableLiveData<Event<String>> errorEvent = new MutableLiveData<>();
+    private final MutableLiveData<Event<AnnouncementResponse>> announcementEvent = new MutableLiveData<>();
 
     private final List<RecipePreviewResponse> currentRecipes = new ArrayList<>();
     private int currentPage = 0;
@@ -68,10 +74,16 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
      *
      * @param recipeRepository the repository used for feed/favorite calls
      * @param tagRepository the repository used to load the available tags
+     * @param announcementRepository the repository used to check for a pending system announcement
+     * @param deviceTokenRepository the repository used to register this device's push token
      */
-    public HomeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository) {
+    public HomeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository,
+                          AnnouncementRepository announcementRepository,
+                          DeviceTokenRepository deviceTokenRepository) {
         this.recipeRepository = recipeRepository;
         this.tagRepository = tagRepository;
+        this.announcementRepository = announcementRepository;
+        this.deviceTokenRepository = deviceTokenRepository;
         RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(recipePublishedObserver);
     }
 
@@ -91,6 +103,15 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
      * @return the error event stream
      */
     public LiveData<Event<String>> getErrorEvent() { return errorEvent; }
+
+    /**
+     * One-off notification that a system announcement is pending and should be shown as a
+     * dialog — fires at most once per {@link #checkActiveAnnouncement()} call, never re-delivered
+     * on rotation/re-attachment.
+     *
+     * @return the pending-announcement event stream
+     */
+    public LiveData<Event<AnnouncementResponse>> getAnnouncementEvent() { return announcementEvent; }
 
     /**
      * Resets pagination, then reloads the feed from the first page. The active
@@ -146,6 +167,45 @@ public class HomeViewModel extends AbstractFilterableListViewModel {
      */
     public void loadFavorites() {
         recipeRepository.getFavorites(favoritesResult);
+    }
+
+    /**
+     * Checks for a pending system announcement (one the user hasn't dismissed yet) and, if one
+     * exists, fires {@link #announcementEvent} so the view can show it as a dialog. Called once
+     * per {@link HomeActivity#onResume()} — a rare fallback for anyone who missed the push
+     * notification itself, so a failure here is silently ignored rather than surfaced as an
+     * error.
+     */
+    public void checkActiveAnnouncement() {
+        MutableLiveData<ApiResult<AnnouncementResponse>> result = new MutableLiveData<>();
+        observeOnce(result, apiResult -> {
+            if (apiResult instanceof ApiResult.Success<AnnouncementResponse> success && success.getData() != null) {
+                announcementEvent.setValue(new Event<>(success.getData()));
+            }
+        });
+        announcementRepository.getActiveAnnouncement(result);
+    }
+
+    /**
+     * Records that the user dismissed ("Got it") the given announcement, so it isn't shown
+     * again.
+     *
+     * @param announcementId the announcement's ID
+     */
+    public void dismissAnnouncement(String announcementId) {
+        announcementRepository.dismiss(announcementId, new MutableLiveData<>());
+    }
+
+    /**
+     * Registers this device's current FCM push token against the authenticated user's account.
+     * Called once per app start; failures are silently ignored (retried naturally on the next
+     * app start) rather than surfaced, since a missed registration only delays push delivery to
+     * this device, not a user-facing action.
+     *
+     * @param pushToken the device's current FCM registration token
+     */
+    public void registerDeviceToken(String pushToken) {
+        deviceTokenRepository.registerDevice(pushToken, "ANDROID", new MutableLiveData<>());
     }
 
     /**

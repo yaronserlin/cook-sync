@@ -3,17 +3,26 @@ import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
+import com.cooksync.app.ui.common.AnnouncementDialog;
 import com.cooksync.app.ui.common.AvatarView;
 import com.cooksync.app.ui.common.ChipStyler;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
@@ -62,6 +71,16 @@ public class HomeActivity extends BaseActivity {
     private View emptyStateView;
 
     /**
+     * Android 13+ requires this permission at runtime before a notification can actually be
+     * shown (declaring it in the manifest alone isn't enough). The result is ignored either way
+     * — {@link com.cooksync.app.data.service.PushMessagingService} already checks the live
+     * permission state before posting, so denying this prompt just means notifications silently
+     * don't show, not a broken flow.
+     */
+    private final ActivityResultLauncher<String> notificationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> { });
+
+    /**
      * Inflates the Home layout, binds {@link HomeViewModel} via {@link ViewModelFactory}, wires
      * up the feed/tag adapters and their observers, kicks off the initial tag-catalog load, and
      * attaches the filter button's listener to launch {@link FilterSheetLauncher}.
@@ -80,6 +99,8 @@ public class HomeActivity extends BaseActivity {
         setupObservers();
 
         viewModel.loadTags();
+        requestNotificationPermissionIfNeeded();
+        registerDeviceToken();
 
         findViewById(R.id.btn_filters).setOnClickListener(v ->
                 FilterSheetLauncher.show(getSupportFragmentManager(), loadedTagNames, viewModel,
@@ -104,9 +125,41 @@ public class HomeActivity extends BaseActivity {
         }
         viewModel.loadInitialFeed();
         viewModel.loadFavorites();
+        viewModel.checkActiveAnnouncement();
         if (bottomNav != null) {
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
+    }
+
+    /**
+     * Requests the {@code POST_NOTIFICATIONS} runtime permission on Android 13+, where declaring
+     * it in the manifest alone isn't enough to actually show a notification. A no-op on older
+     * versions (the permission is granted automatically there) and if already granted/denied —
+     * re-requesting a permission the user already decided on just re-shows the system's
+     * remembered choice without prompting again.
+     */
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+    }
+
+    /**
+     * Fetches this device's current FCM registration token and registers it against the
+     * authenticated user's account, so the server can deliver push notifications to it. Run once
+     * per app start (not tied to login specifically) since this screen is reached both right
+     * after logging in and on every subsequent app launch while a session is still active.
+     */
+    private void registerDeviceToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                viewModel.registerDeviceToken(task.getResult());
+            }
+        });
     }
 
     /**
@@ -242,6 +295,13 @@ public class HomeActivity extends BaseActivity {
             String message = event.getContentIfNotHandled();
             if (message != null) {
                 showError(message, bottomNav);
+            }
+        });
+
+        viewModel.getAnnouncementEvent().observe(this, event -> {
+            com.dtos.response.announcement.AnnouncementResponse announcement = event.getContentIfNotHandled();
+            if (announcement != null) {
+                AnnouncementDialog.show(this, announcement, () -> viewModel.dismissAnnouncement(announcement.id()));
             }
         });
     }
