@@ -110,6 +110,16 @@
             <artifactId>cloudinary-http5</artifactId>
             <version>2.4.0</version>
         </dependency>
+
+        <!-- Firebase Admin SDK - server-side push notification sending (device registration,
+             system announcement broadcasts). FirebaseConfig degrades gracefully (no bean
+             registered) when FIREBASE_SERVICE_ACCOUNT_JSON is unset, same pattern as
+             CloudinaryConfig above. -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.4.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
