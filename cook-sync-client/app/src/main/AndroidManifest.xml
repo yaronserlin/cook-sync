@@ -4,6 +4,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Required at runtime (not just declared here) on Android 13+ to actually show a
+         notification — requested from HomeActivity. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".CookSyncApplication"
@@ -89,6 +92,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.settings.NotificationPreferencesActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.settings.LegalDocumentActivity"
             android:exported="false" />
 
@@ -97,8 +104,29 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.common.ForceUpdateActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.admin.AdminConsoleActivity"
             android:exported="false" />
+
+        <service
+            android:name=".data.service.PushMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Channel FCM auto-displays into when it shows a notification itself (app not in the
+             foreground) — must match the channel PushMessagingService registers/uses. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/notification_channel_general_id" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_bell" />
 
     </application>
 

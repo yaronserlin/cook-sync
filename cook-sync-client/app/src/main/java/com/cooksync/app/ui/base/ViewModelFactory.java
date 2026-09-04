@@ -6,16 +6,24 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.data.repository.impl.AdminRepositoryImp;
+import com.cooksync.app.data.repository.AnnouncementRepository;
+import com.cooksync.app.data.repository.impl.AnnouncementRepositoryImp;
 import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.data.repository.impl.AuthRepositoryImp;
+import com.cooksync.app.data.repository.DeviceTokenRepository;
+import com.cooksync.app.data.repository.impl.DeviceTokenRepositoryImp;
 import com.cooksync.app.data.repository.MediaRepository;
 import com.cooksync.app.data.repository.impl.MediaRepositoryImp;
+import com.cooksync.app.data.repository.NotificationPreferencesRepository;
+import com.cooksync.app.data.repository.impl.NotificationPreferencesRepositoryImp;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.impl.RecipeRepositoryImp;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.impl.TagRepositoryImp;
 import com.cooksync.app.data.repository.UnitRepository;
 import com.cooksync.app.data.repository.impl.UnitRepositoryImp;
+import com.cooksync.app.ui.admin.AdminAnnouncementsViewModel;
+import com.cooksync.app.ui.admin.AdminAppConfigViewModel;
 import com.cooksync.app.ui.admin.AdminReportsViewModel;
 import com.cooksync.app.ui.admin.AdminStatsViewModel;
 import com.cooksync.app.ui.admin.AdminTagsViewModel;
@@ -34,6 +42,7 @@ import com.cooksync.app.ui.recipe.myrecipes.MyRecipesViewModel;
 import com.cooksync.app.ui.recipe.review.ReviewViewModel;
 import com.cooksync.app.ui.recipe.search.SearchViewModel;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel;
+import com.cooksync.app.ui.settings.NotificationPreferencesViewModel;
 import com.cooksync.app.ui.settings.SettingsViewModel;
 
 /**
@@ -56,6 +65,9 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final MediaRepository mediaRepository;
     private final AdminRepository adminRepository;
     private final UnitRepository unitRepository;
+    private final NotificationPreferencesRepository notificationPreferencesRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final DeviceTokenRepository deviceTokenRepository;
 
     /**
      * Constructs the factory, eagerly creating the shared repository instances it hands out to
@@ -68,6 +80,9 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         this.mediaRepository = new MediaRepositoryImp();
         this.adminRepository = new AdminRepositoryImp();
         this.unitRepository = new UnitRepositoryImp();
+        this.notificationPreferencesRepository = new NotificationPreferencesRepositoryImp();
+        this.announcementRepository = new AnnouncementRepositoryImp();
+        this.deviceTokenRepository = new DeviceTokenRepositoryImp();
     }
 
     /**
@@ -83,7 +98,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @SuppressWarnings("unchecked")
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-            return (T) new HomeViewModel(recipeRepository, tagRepository);
+            return (T) new HomeViewModel(recipeRepository, tagRepository, announcementRepository, deviceTokenRepository);
         } else if (modelClass.isAssignableFrom(LoginViewModel.class)) {
             return (T) new LoginViewModel(authRepository);
         } else if (modelClass.isAssignableFrom(RegisterViewModel.class)) {
@@ -120,6 +135,12 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository);
         } else if (modelClass.isAssignableFrom(UserProfileViewModel.class)) {
             return (T) new UserProfileViewModel(authRepository, recipeRepository);
+        } else if (modelClass.isAssignableFrom(NotificationPreferencesViewModel.class)) {
+            return (T) new NotificationPreferencesViewModel(notificationPreferencesRepository);
+        } else if (modelClass.isAssignableFrom(AdminAnnouncementsViewModel.class)) {
+            return (T) new AdminAnnouncementsViewModel(adminRepository);
+        } else if (modelClass.isAssignableFrom(AdminAppConfigViewModel.class)) {
+            return (T) new AdminAppConfigViewModel(adminRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }
