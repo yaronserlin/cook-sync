@@ -86,6 +86,8 @@ public class RecipeDetailActivity extends BaseActivity {
     private TextView prepTime;
     private TextView cookTime;
     private TextView servings;
+    private ImageButton btnServingsMinus;
+    private ImageButton btnServingsPlus;
     private TextView ingredientsHeader;
     private TextView summaryRating;
     private TextView summaryStars;
@@ -117,6 +119,13 @@ public class RecipeDetailActivity extends BaseActivity {
     private Integer activeStarFilter = null;
     private RecipeDetailViewModel.ReviewSort currentSort = RecipeDetailViewModel.ReviewSort.NEWEST;
     private boolean isInitialLoad = true;
+
+    /** The recipe's own serving count, as authored; 0 until {@link #bindRecipe} has run once. */
+    private int originalServings = 0;
+    /** The serving count currently selected on the stepper, carried into Cooking Mode. */
+    private int selectedServings = 0;
+    /** Floor for the servings stepper — halving/dividing further than one serving isn't useful. */
+    private static final int MIN_SERVINGS = 1;
 
     /**
      * Inflates the detail layout, binds {@link RecipeDetailViewModel} via {@link ViewModelFactory},
@@ -181,6 +190,10 @@ public class RecipeDetailActivity extends BaseActivity {
         prepTime = findViewById(R.id.detail_prep_time);
         cookTime = findViewById(R.id.detail_cook_time);
         servings = findViewById(R.id.detail_servings);
+        btnServingsMinus = findViewById(R.id.btn_servings_minus);
+        btnServingsPlus = findViewById(R.id.btn_servings_plus);
+        btnServingsMinus.setOnClickListener(v -> changeSelectedServings(-1));
+        btnServingsPlus.setOnClickListener(v -> changeSelectedServings(1));
         ingredientsHeader = findViewById(R.id.detail_ingredients_header);
         summaryRating = findViewById(R.id.detail_summary_rating);
         summaryStars = findViewById(R.id.detail_summary_stars);
@@ -236,6 +249,7 @@ public class RecipeDetailActivity extends BaseActivity {
         findViewById(R.id.btn_start_cooking).setOnClickListener(v -> {
             Intent intent = new Intent();
             intent.putExtra(Navigator.EXTRA_RECIPE_ID, getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID));
+            intent.putExtra(Navigator.EXTRA_SELECTED_SERVINGS, selectedServings);
             Navigator.start(this, CookingModeActivity.class, intent);
         });
 
@@ -539,8 +553,9 @@ public class RecipeDetailActivity extends BaseActivity {
         reviewCount.setText(getString(R.string.review_count_format, recipe.reviewCount()));
         prepTime.setText(getString(R.string.time_format_short, recipe.prepTimeMinutes()));
         cookTime.setText(getString(R.string.time_format_short, recipe.cookTimeMinutes()));
-        servings.setText(String.valueOf(recipe.servings()));
-        ingredientsHeader.setText(getString(R.string.ingredients_header_format, recipe.servings()));
+        originalServings = Math.max(recipe.servings(), MIN_SERVINGS);
+        selectedServings = originalServings;
+        updateServingsDisplay();
 
         String currentUserId = SessionManager.getInstance().getUserId();
         boolean isMine = recipe.createdBy() != null && Objects.equals(recipe.createdBy().id(), currentUserId);
@@ -710,6 +725,28 @@ public class RecipeDetailActivity extends BaseActivity {
                 : getString(R.string.reviews_count_filtered_summary, displayed.size(), activeStarFilter));
 
         reviewsEmptyState.setVisibility(displayed.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Adjusts {@link #selectedServings} by {@code delta} (clamped to {@link #MIN_SERVINGS}) and
+     * re-renders the servings display and ingredient quantities — no network call, purely a
+     * local recompute.
+     *
+     * @param delta {@code -1} or {@code +1}, from the stepper's minus/plus buttons
+     */
+    private void changeSelectedServings(int delta) {
+        selectedServings = Math.max(selectedServings + delta, MIN_SERVINGS);
+        updateServingsDisplay();
+    }
+
+    /**
+     * Renders the current {@link #selectedServings} onto the stepper and ingredients-header
+     * labels, and re-scales every displayed ingredient quantity to match.
+     */
+    private void updateServingsDisplay() {
+        servings.setText(String.valueOf(selectedServings));
+        ingredientsHeader.setText(getString(R.string.ingredients_header_format, selectedServings));
+        ingredientAdapter.setServings(originalServings, selectedServings);
     }
 
     private void updateFavoriteIcon() {

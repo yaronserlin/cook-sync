@@ -109,6 +109,8 @@
     <string name="label_prep">הכנה</string>
     <string name="label_cook">בישול</string>
     <string name="label_serves">מנות</string>
+    <string name="action_decrease_servings">פחות מנות</string>
+    <string name="action_increase_servings">יותר מנות</string>
     <string name="label_instructions">הוראות הכנה</string>
     <string name="label_reviews">ביקורות</string>
     <string name="label_fullscreen_photo_description">תמונה במסך מלא</string>
