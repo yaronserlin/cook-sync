@@ -109,6 +109,8 @@
     <string name="label_prep">PREP</string>
     <string name="label_cook">COOK</string>
     <string name="label_serves">SERVES</string>
+    <string name="action_decrease_servings">Fewer servings</string>
+    <string name="action_increase_servings">More servings</string>
     <string name="label_instructions">Instructions</string>
     <string name="label_reviews">Reviews</string>
     <string name="label_fullscreen_photo_description">Full-screen photo</string>

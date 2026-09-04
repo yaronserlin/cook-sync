@@ -79,6 +79,14 @@ public class CookingModeActivity extends BaseActivity {
     private CookingModeViewModel viewModel;
     private String recipeId;
 
+    /** The serving count carried over from the recipe detail screen's stepper, or the recipe's
+     *  own serving count if Cooking Mode was reached without one (e.g. {@link #originalServings}
+     *  itself, once known). Ingredient quantities in the "this step uses" chips are scaled from
+     *  {@link #originalServings} to this. */
+    private int selectedServings;
+    /** The recipe's own serving count, known once {@link #setupObservers} loads it. */
+    private int originalServings;
+
     private final List<InstructionResponse> steps = new ArrayList<>();
     private final Map<String, NoteResponse> notesByInstructionId = new HashMap<>();
     private final List<View> progressBarSegments = new ArrayList<>();
@@ -130,6 +138,7 @@ public class CookingModeActivity extends BaseActivity {
             finish();
             return;
         }
+        selectedServings = getIntent().getIntExtra(Navigator.EXTRA_SELECTED_SERVINGS, 0);
 
         viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(CookingModeViewModel.class);
 
@@ -196,6 +205,10 @@ public class CookingModeActivity extends BaseActivity {
             if (result instanceof ApiResult.Success<RecipeResponse> success) {
                 RecipeResponse recipe = success.getData();
                 tvTitle.setText(recipe.title());
+                originalServings = Math.max(recipe.servings(), 1);
+                if (selectedServings <= 0) {
+                    selectedServings = originalServings;
+                }
                 steps.clear();
                 if (recipe.instructions() != null) {
                     steps.addAll(recipe.instructions());
@@ -471,8 +484,11 @@ public class CookingModeActivity extends BaseActivity {
             chip.setClickable(true);
             chip.setCheckable(true);
             chip.setTextSize(15f);
-            String unitCode = ingredient.unit() != null ? ingredient.unit().code() : "";
-            String label = getString(R.string.cook_uses_chip_format, ingredient.name(), ingredient.quantity(), unitCode).trim();
+            java.math.BigDecimal scaled = com.cooksync.app.data.model.recipe.IngredientScaler.scale(
+                    ingredient.quantity(), originalServings, selectedServings);
+            String unitName = com.cooksync.app.data.model.recipe.UnitDisplayFormatter.displayName(ingredient.unit(), scaled);
+            String scaledQuantity = com.cooksync.app.data.model.recipe.IngredientQuantityFormatter.format(scaled);
+            String label = getString(R.string.cook_uses_chip_format, ingredient.name(), scaledQuantity, unitName).trim();
             boolean checked = checkedIds.contains(ingredient.id());
             bindUsesChipState(chip, label, checked);
             chip.setOnClickListener(v -> viewModel.toggleIngredientChecked(ingredient.id()));

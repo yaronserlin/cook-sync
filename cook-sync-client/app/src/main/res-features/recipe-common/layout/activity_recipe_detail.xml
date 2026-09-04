@@ -346,13 +346,45 @@
                             android:alpha="0.6"
                             android:textSize="@dimen/sp_10"
                             android:letterSpacing="0.08" />
-                        <TextView
-                            android:id="@+id/detail_servings"
+
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/caprasimo"
-                            android:textSize="@dimen/sp_18"
-                            tools:text="4" />
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageButton
+                                android:id="@+id/btn_servings_minus"
+                                android:layout_width="@dimen/dp_22"
+                                android:layout_height="@dimen/dp_22"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/action_decrease_servings"
+                                android:padding="@dimen/dp_2"
+                                android:src="@drawable/ic_remove"
+                                app:tint="@color/color_accent" />
+
+                            <TextView
+                                android:id="@+id/detail_servings"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="@dimen/dp_6"
+                                android:fontFamily="@font/caprasimo"
+                                android:gravity="center"
+                                android:minWidth="@dimen/dp_20"
+                                android:textSize="@dimen/sp_18"
+                                tools:text="4" />
+
+                            <ImageButton
+                                android:id="@+id/btn_servings_plus"
+                                android:layout_width="@dimen/dp_22"
+                                android:layout_height="@dimen/dp_22"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/action_increase_servings"
+                                android:padding="@dimen/dp_2"
+                                android:src="@drawable/ic_add"
+                                app:tint="@color/color_accent" />
+
+                        </LinearLayout>
                     </LinearLayout>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>

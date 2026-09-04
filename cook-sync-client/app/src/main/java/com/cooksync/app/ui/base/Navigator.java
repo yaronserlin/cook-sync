@@ -40,6 +40,16 @@ public final class Navigator {
      */
     public static final String EXTRA_RECIPE_ID = "extra_recipe_id";
 
+    /**
+     * Intent extra key for the serving count selected on {@link
+     * com.cooksync.app.ui.recipe.detail.RecipeDetailActivity}'s servings stepper, carried into
+     * {@link com.cooksync.app.ui.recipe.cooking.CookingModeActivity} so ingredient quantities
+     * shown there stay scaled to what the cook actually chose rather than resetting to the
+     * recipe's original serving count. Absent (or non-positive) means "use the recipe's own
+     * serving count," e.g. if Cooking Mode is ever reached some other way.
+     */
+    public static final String EXTRA_SELECTED_SERVINGS = "extra_selected_servings";
+
     private Navigator() {
     }
 

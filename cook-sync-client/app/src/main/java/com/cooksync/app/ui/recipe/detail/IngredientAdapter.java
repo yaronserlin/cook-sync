@@ -9,19 +9,30 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.data.model.recipe.IngredientQuantityFormatter;
+import com.cooksync.app.data.model.recipe.IngredientScaler;
+import com.cooksync.app.data.model.recipe.UnitDisplayFormatter;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.ingredient.IngredientResponse;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Adapter for the recipe ingredients list.
+ * Adapter for the recipe ingredients list. Displays each ingredient's quantity scaled to
+ * whatever serving count the recipe detail screen's stepper currently has selected (see
+ * {@link #setServings}), rather than the recipe's original quantities.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public class IngredientAdapter extends BaseAdapter<IngredientResponse, IngredientAdapter.ViewHolder> {
+
+    /** The recipe's original serving count; quantities are scaled from this to {@link #targetServings}. */
+    private int originalServings = 1;
+    /** The currently-selected serving count to scale displayed quantities to. */
+    private int targetServings = 1;
 
     /**
      * Replaces the displayed ingredient list.
@@ -30,6 +41,18 @@ public class IngredientAdapter extends BaseAdapter<IngredientResponse, Ingredien
      */
     public void setIngredients(List<IngredientResponse> newIngredients) {
         setItems(newIngredients);
+    }
+
+    /**
+     * Sets the serving counts used to scale every displayed quantity, and re-renders the list.
+     *
+     * @param originalServings the recipe's own serving count, as authored
+     * @param targetServings the serving count currently selected on the stepper
+     */
+    public void setServings(int originalServings, int targetServings) {
+        this.originalServings = originalServings;
+        this.targetServings = targetServings;
+        notifyDataSetChanged();
     }
 
     /**
@@ -57,8 +80,9 @@ public class IngredientAdapter extends BaseAdapter<IngredientResponse, Ingredien
         IngredientResponse ingredient = getItem(position);
         holder.name.setText(ingredient.name());
 
-        String unitName = ingredient.unit() != null ? ingredient.unit().code() : "";
-        String amount = ingredient.quantity() + " " + unitName;
+        BigDecimal scaledQuantity = IngredientScaler.scale(ingredient.quantity(), originalServings, targetServings);
+        String unitName = UnitDisplayFormatter.displayName(ingredient.unit(), scaledQuantity);
+        String amount = IngredientQuantityFormatter.format(scaledQuantity) + " " + unitName;
         holder.amount.setText(amount.trim());
     }
 
