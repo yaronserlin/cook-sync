@@ -14,13 +14,20 @@ import org.springframework.http.ResponseEntity;
 
 import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.AdminService;
+import com.cooksync_server.services.AnnouncementService;
+import com.cooksync_server.services.AppConfigService;
+import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.appconfig.AppConfigUpdateRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
+import com.dtos.response.announcement.AnnouncementResponse;
+import com.dtos.response.appconfig.AppConfigResponse;
 import com.dtos.response.user.UserResponse;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.validation.Valid;
@@ -41,6 +48,8 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
     private final AdminService adminService;
+    private final AnnouncementService announcementService;
+    private final AppConfigService appConfigService;
 
     /**
      * Retrieves aggregated system stats for the administrative dashboard.
@@ -166,5 +175,63 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> mergeTags(@Valid @RequestBody TagMergeRequestDTO request) {
         adminService.mergeTags(request);
         return ResponseEntity.ok(ApiResponse.success(null, "Tags merged successfully"));
+    }
+
+    /**
+     * Creates a new system announcement and immediately broadcasts it via push to every
+     * push-enabled device.
+     *
+     * @param request the announcement content
+     * @param authentication the authoring admin's authentication
+     * @return response entity containing the created AnnouncementResponse DTO
+     */
+    @PostMapping("/announcements")
+    public ResponseEntity<ApiResponse<AnnouncementResponse>> createAnnouncement(
+            @Valid @RequestBody AnnouncementCreateRequestDTO request,
+            Authentication authentication) {
+        AnnouncementResponse response = announcementService.create(request, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(response, "Announcement created and broadcast"));
+    }
+
+    /**
+     * Retrieves a paginated, newest-first list of every announcement, active or not.
+     *
+     * @param page zero-based page index
+     * @param size page size limit
+     * @return response entity containing PagedResponse of AnnouncementResponse DTOs
+     */
+    @GetMapping("/announcements")
+    public ResponseEntity<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncements(
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
+            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
+        return ResponseEntity.ok(ApiResponse.success(announcementService.getAll(page, size), "Announcements retrieved successfully"));
+    }
+
+    /**
+     * Deactivates an announcement so it stops being surfaced to users who haven't seen it yet.
+     *
+     * @param id the announcement's ID
+     * @return response entity acknowledging deactivation
+     */
+    @PatchMapping("/announcements/{id}/deactivate")
+    public ResponseEntity<ApiResponse<Void>> deactivateAnnouncement(@PathVariable String id) {
+        announcementService.deactivate(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Announcement deactivated"));
+    }
+
+    /**
+     * Updates a platform's minimum supported client version and download link, backing the
+     * client's forced-update gate.
+     *
+     * @param request the new configuration
+     * @param authentication the acting admin's authentication
+     * @return response entity containing the saved AppConfigResponse DTO
+     */
+    @PutMapping("/app-config")
+    public ResponseEntity<ApiResponse<AppConfigResponse>> updateAppConfig(
+            @Valid @RequestBody AppConfigUpdateRequestDTO request,
+            Authentication authentication) {
+        AppConfigResponse response = appConfigService.updateConfig(request, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(response, "App config updated successfully"));
     }
 }

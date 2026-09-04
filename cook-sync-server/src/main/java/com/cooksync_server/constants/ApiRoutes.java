@@ -47,4 +47,11 @@ public final class ApiRoutes {
 
     /** Relative path (under {@link #AUTH_BASE}) for reissuing a registration OTP code. */
     public static final String AUTH_RESEND_REGISTRATION_OTP = "/resend-registration-otp";
+
+    /**
+     * Fully-qualified path for the public, unauthenticated app-config lookup (minimum supported
+     * client version + download link) — must be reachable before login, since a client too old
+     * to trust its own login flow still needs to learn it must update.
+     */
+    public static final String APP_CONFIG = API_ROOT + "/app-config";
 }
