@@ -45,6 +45,12 @@ jobs:
       - name: Install shared DTOs module
         run: mvn -f cooksync-DTOs/pom.xml -B install -DskipTests
 
+      # google-services.json is gitignored (contains this project's Firebase API key);
+      # reconstitute it from a repo secret so the Google Services Gradle plugin can run.
+      - name: Restore Firebase config
+        working-directory: cook-sync-client
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > app/google-services.json
+
       - name: Run client unit tests
         working-directory: cook-sync-client
         run: |
@@ -71,6 +77,12 @@ jobs:
       # cook-sync-client resolves the same DTOs jar via mavenLocal() (see settings.gradle.kts).
       - name: Install shared DTOs module
         run: mvn -f cooksync-DTOs/pom.xml -B install -DskipTests
+
+      # google-services.json is gitignored (contains this project's Firebase API key);
+      # reconstitute it from a repo secret so the Google Services Gradle plugin can run.
+      - name: Restore Firebase config
+        working-directory: cook-sync-client
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > app/google-services.json
 
       # keystore.properties and the .jks it points at are gitignored (never committed);
       # reconstitute both from repo secrets so assembleRelease produces a properly signed APK.
