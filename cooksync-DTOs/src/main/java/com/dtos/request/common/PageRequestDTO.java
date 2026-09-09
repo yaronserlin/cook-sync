@@ -19,20 +19,13 @@ public record PageRequestDTO(
         Integer page,
         Integer size
 ) {
-    private static final int DEFAULT_PAGE = 0;
-    private static final int DEFAULT_SIZE = 20;
-
     /**
      * Normalizes an omitted {@code page}/{@code size} query parameter (bound as {@code null}) to
-     * this request's default.
+     * this request's default, via {@link PaginationDefaults}.
      */
     public PageRequestDTO {
-        if (page == null) {
-            page = DEFAULT_PAGE;
-        }
-        if (size == null) {
-            size = DEFAULT_SIZE;
-        }
+        page = PaginationDefaults.normalizePage(page);
+        size = PaginationDefaults.normalizeSize(size);
     }
 
     /**
