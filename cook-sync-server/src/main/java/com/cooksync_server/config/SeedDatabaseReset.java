@@ -4,8 +4,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Table-truncation routine used by the {@code @Profile("seed")}-gated
- * {@link DataSeeder} to wipe the schema before reseeding it from scratch.
- * Not used by {@link ProductionSeeder}, which is non-destructive by design.
+ * {@link DataSeeder} to wipe the schema before reseeding it from scratch. Not
+ * used by {@link ProductionSeeder}, which is non-destructive by design.
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -17,17 +17,20 @@ final class SeedDatabaseReset {
     }
 
     /**
-     * Truncates every seedable table, temporarily disabling foreign-key checks so
-     * the truncation order does not need to respect referential constraints.
+     * Truncates every seedable table, temporarily disabling foreign-key checks
+     * so the truncation order does not need to respect referential constraints.
      *
      * @param jdbcTemplate JDBC template used to issue the DDL statements
      */
     static void truncateAllTables(JdbcTemplate jdbcTemplate) {
         String[] tables = {
-                "users", "recipes", "units", "ingredients", "instructions",
-                "instruction_ingredients", "reviews", "favorite_recipes",
-                "personal_instruction_notes", "tags", "recipe_tags", "recipe_images",
-                "description_blocks"
+            "recipe_import_job_images", "recipe_import_jobs", "device_tokens",
+            "announcement_dismissals", "notification_preferences", "content_translations",
+            "password_reset_tokens", "email_change_tokens", "pending_registrations",
+            "app_config", "system_announcements", "users", "recipes", "units",
+            "ingredients", "instructions", "instruction_ingredients", "reviews",
+            "favorite_recipes", "personal_instruction_notes", "tags", "recipe_tags",
+            "recipe_images", "description_blocks"
         };
 
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");

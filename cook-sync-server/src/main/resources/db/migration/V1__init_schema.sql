@@ -17,15 +17,15 @@ CREATE TABLE IF NOT EXISTS users (
     deletion_requested_at DATETIME NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     user_id VARCHAR(36) NULL UNIQUE,
     token VARCHAR(255) NOT NULL UNIQUE,
     expiry_date DATETIME(6) NOT NULL,
-    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS recipes (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -41,23 +41,23 @@ CREATE TABLE IF NOT EXISTS recipes (
     review_count INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    CONSTRAINT fk_recipes_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_recipes_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS tags (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS recipe_tags (
     recipe_id VARCHAR(36) NOT NULL,
     tag_id VARCHAR(36) NOT NULL,
     PRIMARY KEY (recipe_id, tag_id),
-    CONSTRAINT fk_recipe_tags_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    CONSTRAINT fk_recipe_tags_tag FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_recipe_tags_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+    CONSTRAINT fk_recipe_tags_tag FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS units (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS units (
     name VARCHAR(255) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS ingredients (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -73,9 +73,9 @@ CREATE TABLE IF NOT EXISTS ingredients (
     name VARCHAR(255) NOT NULL,
     quantity DECIMAL(10, 2) NOT NULL,
     unit_id VARCHAR(36) NOT NULL,
-    CONSTRAINT fk_ingredients_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    CONSTRAINT fk_ingredients_unit FOREIGN KEY (unit_id) REFERENCES units(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_ingredients_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+    CONSTRAINT fk_ingredients_unit FOREIGN KEY (unit_id) REFERENCES units (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS instructions (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -87,16 +87,16 @@ CREATE TABLE IF NOT EXISTS instructions (
     time_seconds INT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    CONSTRAINT fk_instructions_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_instructions_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS instruction_ingredients (
     instruction_id VARCHAR(36) NOT NULL,
     ingredient_id VARCHAR(36) NOT NULL,
     PRIMARY KEY (instruction_id, ingredient_id),
-    CONSTRAINT fk_inst_ing_instruction FOREIGN KEY (instruction_id) REFERENCES instructions(id) ON DELETE CASCADE,
-    CONSTRAINT fk_inst_ing_ingredient FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_inst_ing_instruction FOREIGN KEY (instruction_id) REFERENCES instructions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_inst_ing_ingredient FOREIGN KEY (ingredient_id) REFERENCES ingredients (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS personal_instruction_notes (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -106,10 +106,10 @@ CREATE TABLE IF NOT EXISTS personal_instruction_notes (
     note TEXT NOT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    CONSTRAINT fk_notes_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_notes_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    CONSTRAINT fk_notes_instruction FOREIGN KEY (instruction_id) REFERENCES instructions(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_notes_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_notes_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+    CONSTRAINT fk_notes_instruction FOREIGN KEY (instruction_id) REFERENCES instructions (id) ON DELETE SET NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS reviews (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -124,9 +124,9 @@ CREATE TABLE IF NOT EXISTS reviews (
     reported_at DATETIME NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
-    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_reviews_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS review_reports (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -135,26 +135,26 @@ CREATE TABLE IF NOT EXISTS review_reports (
     reason VARCHAR(50) NOT NULL,
     comment TEXT NULL,
     created_at DATETIME NOT NULL,
-    CONSTRAINT fk_reports_review FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
-    CONSTRAINT fk_reports_reporter FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_reports_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reports_reporter FOREIGN KEY (reporter_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS favorite_recipes (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
     recipe_id VARCHAR(36) NOT NULL,
     created_at DATETIME NOT NULL,
-    CONSTRAINT fk_favorites_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_favorites_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_favorites_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_favorites_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS recipe_images (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     recipe_id VARCHAR(36) NOT NULL,
     image_url VARCHAR(1000) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-    CONSTRAINT fk_images_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_images_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS description_blocks (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -164,8 +164,8 @@ CREATE TABLE IF NOT EXISTS description_blocks (
     image_url VARCHAR(1000) NULL,
     caption VARCHAR(500) NULL,
     sort_order INT NOT NULL,
-    CONSTRAINT fk_desc_blocks_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT fk_desc_blocks_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- password_reset_tokens and email_change_tokens intentionally have no FK to
 -- users and no explicit charset/collation, so both tables adopt whichever
@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     code_hash VARCHAR(255) NOT NULL,
     expiry_date DATETIME(6) NOT NULL,
     attempt_count INT NOT NULL DEFAULT 0
-) ENGINE=InnoDB;
+) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS email_change_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS email_change_tokens (
     code_hash VARCHAR(255) NOT NULL,
     expiry_date DATETIME(6) NOT NULL,
     attempt_count INT NOT NULL DEFAULT 0
-) ENGINE=InnoDB;
+) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS pending_registrations (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -207,4 +207,98 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
     otp_code_hash VARCHAR(255) NOT NULL,
     otp_expires_at DATETIME(6) NOT NULL,
     attempt_count INT NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+ALTER TABLE recipes
+ADD COLUMN source_locale VARCHAR(10) NOT NULL DEFAULT 'en',
+ADD COLUMN source_attribution_url VARCHAR(2048) NULL,
+ADD COLUMN source_attribution_note VARCHAR(255) NULL;
+
+CREATE TABLE IF NOT EXISTS content_translations (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    entity_type VARCHAR(40) NOT NULL,
+    entity_id VARCHAR(36) NOT NULL,
+    locale VARCHAR(10) NOT NULL,
+    value TEXT NOT NULL,
+    source VARCHAR(20) NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT uk_content_translation_target UNIQUE (
+        entity_type,
+        entity_id,
+        locale
+    )
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS device_tokens (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    push_token VARCHAR(255) NOT NULL UNIQUE,
+    platform VARCHAR(16) NOT NULL,
+    created_at DATETIME NOT NULL,
+    last_seen_at DATETIME NOT NULL,
+    CONSTRAINT fk_device_tokens_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE INDEX idx_device_tokens_user ON device_tokens (user_id);
+
+CREATE TABLE IF NOT EXISTS system_announcements (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    severity VARCHAR(16) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_by VARCHAR(36) NOT NULL,
+    created_at DATETIME NOT NULL,
+    CONSTRAINT fk_system_announcements_created_by FOREIGN KEY (created_by) REFERENCES users (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS announcement_dismissals (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    announcement_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    dismissed_at DATETIME NOT NULL,
+    UNIQUE KEY uq_announcement_dismissals_announcement_user (announcement_id, user_id),
+    CONSTRAINT fk_announcement_dismissals_announcement FOREIGN KEY (announcement_id) REFERENCES system_announcements (id) ON DELETE CASCADE,
+    CONSTRAINT fk_announcement_dismissals_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    user_id VARCHAR(36) NOT NULL PRIMARY KEY,
+    system_announcements BOOLEAN NOT NULL DEFAULT TRUE,
+    push_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_notification_preferences_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS app_config (
+    platform VARCHAR(16) NOT NULL PRIMARY KEY,
+    min_supported_version_code INT NOT NULL DEFAULT 1,
+    download_url VARCHAR(2048) NULL,
+    updated_by VARCHAR(36) NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT fk_app_config_updated_by FOREIGN KEY (updated_by) REFERENCES users (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+ALTER TABLE units ADD COLUMN name_plural VARCHAR(255) NOT NULL;
+
+CREATE TABLE IF NOT EXISTS recipe_import_jobs (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    source_type VARCHAR(16) NOT NULL,
+    source_url VARCHAR(2048) NULL,
+    status VARCHAR(16) NOT NULL,
+    error_message VARCHAR(1024) NULL,
+    result_recipe_id VARCHAR(36) NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT fk_recipe_import_jobs_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_recipe_import_jobs_recipe FOREIGN KEY (result_recipe_id) REFERENCES recipes (id) ON DELETE SET NULL,
+    INDEX idx_recipe_import_jobs_user_created (user_id, created_at)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS recipe_import_job_images (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    job_id VARCHAR(36) NOT NULL,
+    image_url VARCHAR(2048) NOT NULL,
+    sort_order INT NOT NULL,
+    CONSTRAINT fk_recipe_import_job_images_job FOREIGN KEY (job_id) REFERENCES recipe_import_jobs (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
