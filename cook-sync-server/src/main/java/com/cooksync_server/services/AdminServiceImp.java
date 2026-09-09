@@ -29,6 +29,8 @@ import com.cooksync_server.repositories.ReviewReportRepository;
 import com.cooksync_server.repositories.ReviewRepository;
 import com.cooksync_server.repositories.TagRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -84,24 +86,17 @@ public class AdminServiceImp implements AdminService {
      * Retrieves paginated, optionally search-filtered and sorted list of
      * registered users.
      *
-     * @param page page number index
-     * @param size page size limit
-     * @param q optional search fragment matched against first name, last name,
-     * or email
-     * @param enabled optional account status filter (true = active, false =
-     * disabled, null = both)
-     * @param sortBy field to sort by; must be one of firstName, lastName,
-     * email, createdAt
-     * @param direction sort direction, "asc" or "desc" (default desc)
+     * @param request the directory's pagination, search, filter, and sort parameters
      * @return PagedResponse containing UserResponse DTO list
      */
     @Override
-    public PagedResponse<UserResponse> getAllUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction) {
-        String sortField = SORTABLE_USER_FIELDS.contains(sortBy) ? sortBy : PaginationDefaults.DEFAULT_SORT_FIELD;
-        Sort sort = "asc".equalsIgnoreCase(direction) ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+    public PagedResponse<UserResponse> getAllUsers(AdminUserQueryRequestDTO request) {
+        String sortField = SORTABLE_USER_FIELDS.contains(request.sortBy()) ? request.sortBy() : PaginationDefaults.DEFAULT_SORT_FIELD;
+        Sort sort = "asc".equalsIgnoreCase(request.direction()) ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        String q = request.q();
         String normalizedQ = (q == null || q.isBlank()) ? null : q.trim().toLowerCase();
 
-        Page<User> result = userRepository.search(normalizedQ, enabled, PageRequest.of(page, size, sort));
+        Page<User> result = userRepository.search(normalizedQ, request.enabled(), PageRequest.of(request.page(), request.size(), sort));
         return PagedResponseMapper.toPagedResponse(result, UserMapper::toResponse);
     }
 
@@ -111,8 +106,9 @@ public class AdminServiceImp implements AdminService {
      * @return list of ReportedReviewResponse DTOs
      */
     @Override
-    public PagedResponse<ReportedReviewResponse> getReportedReviews(int page, int size) {
-        Page<Review> result = reviewRepository.findByReportedTrueAndHiddenFalse(PageRequest.of(page, size, Sort.by("createdAt").descending()));
+    public PagedResponse<ReportedReviewResponse> getReportedReviews(PageRequestDTO request) {
+        Page<Review> result = reviewRepository.findByReportedTrueAndHiddenFalse(
+                PageRequest.of(request.page(), request.size(), Sort.by("createdAt").descending()));
         return PagedResponseMapper.toPagedResponse(result, review -> {
             ReviewReport latestReport = reviewReportRepository
                     .findTopByReviewIdOrderByCreatedAtDesc(review.getId())
@@ -245,7 +241,9 @@ public class AdminServiceImp implements AdminService {
      * @return list of DuplicateTagGroupResponse DTOs
      */
     @Override
-    public PagedResponse<DuplicateTagGroupResponse> getDuplicateTagGroups(int page, int size) {
+    public PagedResponse<DuplicateTagGroupResponse> getDuplicateTagGroups(PageRequestDTO request) {
+        int page = request.page();
+        int size = request.size();
         Map<String, List<Tag>> byNormalizedName = new LinkedHashMap<>();
         for (Tag tag : tagRepository.findAll()) {
             String normalized = normalize(tag.getName());

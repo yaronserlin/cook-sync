@@ -4,6 +4,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,11 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
-import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.AdminService;
 import com.cooksync_server.services.AnnouncementService;
 import com.cooksync_server.services.AppConfigService;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
 import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.appconfig.AppConfigUpdateRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.ApiResponse;
@@ -28,7 +30,6 @@ import com.dtos.response.announcement.AnnouncementResponse;
 import com.dtos.response.appconfig.AppConfigResponse;
 import com.dtos.response.user.UserResponse;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -65,23 +66,13 @@ public class AdminController {
      * Retrieves paginated list of registered user accounts, optionally search-filtered by
      * name/email, filtered by enabled status, and sorted.
      *
-     * @param page zero-based page index
-     * @param size page size limit
-     * @param q optional search fragment matched against first name, last name, or email
-     * @param enabled optional account status filter (true = active, false = disabled)
-     * @param sortBy field to sort by: firstName, lastName, email, or createdAt (default createdAt)
-     * @param direction sort direction, "asc" or "desc" (default desc)
+     * @param request the directory's pagination, search, filter, and sort parameters, bound from
+     *                query parameters
      * @return response entity containing PagedResponse of UserResponse DTOs
      */
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getAllUsers(
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) Boolean enabled,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_SORT_FIELD) String sortBy,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_SORT_DIRECTION) String direction) {
-        return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers(page, size, q, enabled, sortBy, direction), "Users retrieved successfully"));
+    public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getAllUsers(@ModelAttribute AdminUserQueryRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers(request), "Users retrieved successfully"));
     }
 
     /**
@@ -92,10 +83,8 @@ public class AdminController {
      * @return response entity containing list of ReportedReviewResponse DTOs
      */
     @GetMapping("/reviews/reported")
-    public ResponseEntity<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        return ResponseEntity.ok(ApiResponse.success(adminService.getReportedReviews(page, size), "Reported reviews retrieved successfully"));
+    public ResponseEntity<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(@ModelAttribute PageRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(adminService.getReportedReviews(request), "Reported reviews retrieved successfully"));
     }
 
     /**
@@ -154,15 +143,12 @@ public class AdminController {
     /**
      * Detects and groups potential duplicate tags for consolidation audit.
      *
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return response entity containing list of DuplicateTagGroupResponse DTOs
      */
     @GetMapping("/tags/duplicates")
-    public ResponseEntity<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        return ResponseEntity.ok(ApiResponse.success(adminService.getDuplicateTagGroups(page, size), "Duplicate tag groups retrieved successfully"));
+    public ResponseEntity<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(@ModelAttribute PageRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(adminService.getDuplicateTagGroups(request), "Duplicate tag groups retrieved successfully"));
     }
 
     /**
@@ -196,15 +182,12 @@ public class AdminController {
     /**
      * Retrieves a paginated, newest-first list of every announcement, active or not.
      *
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return response entity containing PagedResponse of AnnouncementResponse DTOs
      */
     @GetMapping("/announcements")
-    public ResponseEntity<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncements(
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        return ResponseEntity.ok(ApiResponse.success(announcementService.getAll(page, size), "Announcements retrieved successfully"));
+    public ResponseEntity<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncements(@ModelAttribute PageRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(announcementService.getAll(request), "Announcements retrieved successfully"));
     }
 
     /**

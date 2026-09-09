@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.base.BaseViewModel;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.announcement.AnnouncementResponse;
 
@@ -49,7 +50,7 @@ public class AdminAnnouncementsViewModel extends BaseViewModel {
      * re-fetches page 0 rather than appending further pages.
      */
     public void loadAnnouncements() {
-        adminRepository.getAnnouncements(0, 50, announcementsResult);
+        adminRepository.getAnnouncements(new PageRequestDTO(0, 50), announcementsResult);
     }
 
     /**

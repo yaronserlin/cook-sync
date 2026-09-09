@@ -16,6 +16,7 @@ import com.cooksync_server.repositories.AnnouncementDismissalRepository;
 import com.cooksync_server.repositories.SystemAnnouncementRepository;
 import com.cooksync_server.repositories.UserRepository;
 import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.announcement.AnnouncementResponse;
 
@@ -58,8 +59,9 @@ public class AnnouncementServiceImp implements AnnouncementService {
 
     @Override
     @Transactional(readOnly = true)
-    public PagedResponse<AnnouncementResponse> getAll(int page, int size) {
-        Page<SystemAnnouncement> announcements = announcementRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size));
+    public PagedResponse<AnnouncementResponse> getAll(PageRequestDTO request) {
+        Page<SystemAnnouncement> announcements = announcementRepository.findAllByOrderByCreatedAtDesc(
+                PageRequest.of(request.page(), request.size()));
         return PagedResponseMapper.toPagedResponse(announcements, this::toResponse);
     }
 

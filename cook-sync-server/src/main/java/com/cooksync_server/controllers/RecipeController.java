@@ -5,17 +5,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.constants.PaginationDefaults;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -44,21 +47,12 @@ public class RecipeController {
      * Retrieves a paginated slice of public recipes for feed infinite scrolling.
      * Supports server-side sorting and filtering via optional query parameters.
      *
-     * @param page zero-based page index
-     * @param size page size limit
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
+     * @param request the feed's pagination, sort, and facet-filter parameters
      * @return response entity containing PagedResponse of RecipePreviewResponse DTOs
      */
     @GetMapping("/paged")
-    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getAllRecipesPaged(
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String difficulty,
-            @RequestParam(required = false) Double minRating) {
-        return ResponseEntity.ok(ApiResponse.success(recipeService.getAllRecipesPaged(page, size, sortBy, difficulty, minRating), "Recipes retrieved successfully"));
+    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getAllRecipesPaged(@ModelAttribute RecipeFeedRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(recipeService.getAllRecipesPaged(request), "Recipes retrieved successfully"));
     }
 
     /**
@@ -77,27 +71,12 @@ public class RecipeController {
      * Executes unified keyword and faceted attribute search across recipe catalog.
      * Supports server-side sorting and filtering via optional query parameters.
      *
-     * @param q unified free-text search string
-     * @param author author name filter string
-     * @param ingredient ingredient name filter string
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request the search's keyword/facet, pagination, and sort parameters
      * @return response entity containing search result list of RecipePreviewResponse DTOs
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) String ingredient,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String difficulty,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        PagedResponse<RecipePreviewResponse> recipes = recipeService.searchRecipes(q, author, ingredient, sortBy, difficulty, minRating, page, size);
+    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(@ModelAttribute RecipeSearchRequestDTO request) {
+        PagedResponse<RecipePreviewResponse> recipes = recipeService.searchRecipes(request);
         return ResponseEntity.ok(ApiResponse.success(recipes, "Search completed"));
     }
 
@@ -106,22 +85,14 @@ public class RecipeController {
      * Supports server-side sorting and filtering via optional query parameters.
      *
      * @param tagName target tag label name
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request the browse's pagination, sort, and facet-filter parameters
      * @return response entity containing list of RecipePreviewResponse DTOs
      */
     @GetMapping("/tag/{tagName}")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getRecipesByTag(
             @PathVariable String tagName,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String difficulty,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        PagedResponse<RecipePreviewResponse> recipes = recipeService.findRecipesByTag(tagName, sortBy, difficulty, minRating, page, size);
+            @ModelAttribute RecipeTagFilterRequestDTO request) {
+        PagedResponse<RecipePreviewResponse> recipes = recipeService.findRecipesByTag(tagName, request);
         return ResponseEntity.ok(ApiResponse.success(recipes, "Recipes retrieved by tag"));
     }
 
@@ -129,16 +100,14 @@ public class RecipeController {
      * Retrieves all recipes authored by the currently authenticated user.
      *
      * @param authentication active user authentication token
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return response entity containing user's RecipePreviewResponse DTOs
      */
     @GetMapping("/mine")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getMyRecipes(
             Authentication authentication,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        PagedResponse<RecipePreviewResponse> recipes = recipeService.getMyRecipes(authentication.getName(), page, size);
+            @ModelAttribute PageRequestDTO request) {
+        PagedResponse<RecipePreviewResponse> recipes = recipeService.getMyRecipes(authentication.getName(), request);
         return ResponseEntity.ok(ApiResponse.success(recipes, "Your recipes retrieved successfully"));
     }
 

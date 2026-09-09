@@ -3,6 +3,7 @@ package com.cooksync.app.ui.admin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -55,7 +56,7 @@ public class AdminTagsViewModelTest {
         PagedResponse<DuplicateTagGroupResponse> page =
                 new PagedResponse<>(List.of(group), 0, 20, 1, 1, true);
         doAnswer(ApiResultAnswers.success(page))
-                .when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+                .when(adminRepository).getDuplicateTagGroups(argThat(r -> r.page() == 0 && r.size() == 20), any());
 
         viewModel.loadDuplicateTagGroups();
 
@@ -67,7 +68,7 @@ public class AdminTagsViewModelTest {
     @Test
     public void loadDuplicateTagGroups_error_postsErrorResult() {
         doAnswer(ApiResultAnswers.<PagedResponse<DuplicateTagGroupResponse>>error("network error"))
-                .when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+                .when(adminRepository).getDuplicateTagGroups(argThat(r -> r.page() == 0 && r.size() == 20), any());
 
         viewModel.loadDuplicateTagGroups();
 
@@ -82,18 +83,18 @@ public class AdminTagsViewModelTest {
 
         viewModel.loadNextTagGroupsPage();
 
-        verify(adminRepository, never()).getDuplicateTagGroups(eq(1), eq(20), any());
+        verify(adminRepository, never()).getDuplicateTagGroups(argThat(r -> r.page() == 1 && r.size() == 20), any());
     }
 
     @Test
     public void loadNextTagGroupsPage_noOp_whileFetchAlreadyInFlight() {
-        doAnswer(invocation -> null).when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+        doAnswer(invocation -> null).when(adminRepository).getDuplicateTagGroups(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.loadDuplicateTagGroups();
         assertTrue(viewModel.getTagGroupsResult().getValue() instanceof ApiResult.Loading<List<DuplicateTagGroupResponse>>);
 
         viewModel.loadNextTagGroupsPage();
 
-        verify(adminRepository, never()).getDuplicateTagGroups(eq(1), eq(20), any());
+        verify(adminRepository, never()).getDuplicateTagGroups(argThat(r -> r.page() == 1 && r.size() == 20), any());
     }
 
     @Test
@@ -140,7 +141,7 @@ public class AdminTagsViewModelTest {
         PagedResponse<DuplicateTagGroupResponse> page =
                 new PagedResponse<>(List.of(threeVariantGroup), 0, 20, 1, 1, true);
         doAnswer(ApiResultAnswers.success(page))
-                .when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+                .when(adminRepository).getDuplicateTagGroups(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.loadDuplicateTagGroups();
 
         doAnswer(ApiResultAnswers.<Void>success(null))
@@ -166,7 +167,7 @@ public class AdminTagsViewModelTest {
         PagedResponse<DuplicateTagGroupResponse> page =
                 new PagedResponse<>(List.of(group), 0, 20, 1, 1, true);
         doAnswer(ApiResultAnswers.success(page))
-                .when(adminRepository).getDuplicateTagGroups(eq(0), eq(20), any());
+                .when(adminRepository).getDuplicateTagGroups(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.loadDuplicateTagGroups();
     }
 }

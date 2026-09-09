@@ -4,6 +4,7 @@ import com.cooksync.app.CookSyncApplication;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.constants.UiTimingConstants;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -115,10 +116,10 @@ public abstract class BaseRepository {
      * result to the given LiveData.
      *
      * @param <T> the type of items contained within each page
-     * @param callFactory produces the Retrofit call for a given (page, size) pair
+     * @param callFactory produces the Retrofit call for a given pagination request
      * @param resultTarget the LiveData to post the result to
      */
-    protected <T> void fetchAsync(BiFunction<Integer, Integer, Call<ApiResponse<PagedResponse<T>>>> callFactory,
+    protected <T> void fetchAsync(Function<PageRequestDTO, Call<ApiResponse<PagedResponse<T>>>> callFactory,
                                    MutableLiveData<ApiResult<List<T>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(callFactory)));
@@ -134,16 +135,16 @@ public abstract class BaseRepository {
      * unbounded.
      *
      * @param <T> the type of items contained within each page
-     * @param callFactory produces the Retrofit call for a given (page, size) pair
+     * @param callFactory produces the Retrofit call for a given pagination request
      * @return {@link ApiResult.Success} wrapping the concatenated content of every page, or the
      *         first {@link ApiResult.Error} encountered
      */
     protected <T> ApiResult<List<T>> fetchAllPages(
-            BiFunction<Integer, Integer, Call<ApiResponse<PagedResponse<T>>>> callFactory) {
+            Function<PageRequestDTO, Call<ApiResponse<PagedResponse<T>>>> callFactory) {
         List<T> all = new ArrayList<>();
         int page = 0;
         while (true) {
-            ApiResult<PagedResponse<T>> pageResult = executeCall(callFactory.apply(page, LOOP_FETCH_PAGE_SIZE));
+            ApiResult<PagedResponse<T>> pageResult = executeCall(callFactory.apply(new PageRequestDTO(page, LOOP_FETCH_PAGE_SIZE)));
             if (pageResult instanceof ApiResult.Error<PagedResponse<T>> error) {
                 return new ApiResult.Error<>(error.getMessage(), error.getCause());
             }

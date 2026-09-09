@@ -11,6 +11,7 @@ import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.UserNameFormatter;
 import com.cooksync.app.util.constants.PaginationConstants;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.user.UserResponse;
 
@@ -160,8 +161,8 @@ public class AdminUsersViewModel extends BaseViewModel {
                 usersResult.postValue(new ApiResult.Error<>(error.getMessage(), error.getCause()));
             }
         });
-        adminRepository.getUsers(usersPage, USERS_PAGE_SIZE, usersQuery, usersEnabledFilter,
-                "createdAt", usersSortDirection, result);
+        adminRepository.getUsers(new AdminUserQueryRequestDTO(usersPage, USERS_PAGE_SIZE, usersQuery, usersEnabledFilter,
+                "createdAt", usersSortDirection), result);
     }
 
     /**

@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.services.UnitService;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
 
@@ -50,7 +51,7 @@ class UnitControllerTest {
     @Test
     void getAllUnits_ShouldReturnPagedUnits() throws Exception {
         UnitResponse unit = new UnitResponse("unit-1", "g", "Gram", "Grams", null, null);
-        when(unitService.getAllUnits(any(Integer.class), any(Integer.class)))
+        when(unitService.getAllUnits(any(PageRequestDTO.class)))
                 .thenReturn(new PagedResponse<>(List.of(unit), 0, 20, 1, 1, true));
 
         mockMvc.perform(get("/api/units"))

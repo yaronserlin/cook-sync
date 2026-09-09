@@ -4,14 +4,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.constants.PaginationDefaults;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -89,18 +89,16 @@ public class NoteController {
      * Retrieves all personal notes attached to a recipe, including general and step-specific notes.
      *
      * @param recipeId target recipe ID
-     * @param page page number
-     * @param size page size
+     * @param request pagination parameters
      * @param authentication active user authentication token
      * @return response entity containing PagedResponse of NoteResponse DTOs
      */
     @GetMapping("/recipe/{recipeId}/all")
     public ResponseEntity<ApiResponse<PagedResponse<NoteResponse>>> getNotesForRecipe(
             @PathVariable String recipeId,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size,
+            @ModelAttribute PageRequestDTO request,
             Authentication authentication) {
-        PagedResponse<NoteResponse> notes = noteService.getNotesForRecipe(recipeId, authentication.getName(), page, size);
+        PagedResponse<NoteResponse> notes = noteService.getNotesForRecipe(recipeId, authentication.getName(), request);
         return ResponseEntity.ok(ApiResponse.success(notes, "OK"));
     }
 }

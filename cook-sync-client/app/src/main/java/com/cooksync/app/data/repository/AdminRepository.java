@@ -3,6 +3,8 @@ package com.cooksync.app.data.repository;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
@@ -32,25 +34,18 @@ public interface AdminRepository {
     /**
      * Fetches a paginated, searchable, sortable list of every registered user.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
-     * @param q optional search text matched against name/email, or {@code null}
-     * @param enabled optional filter by account status, or {@code null} for both
-     * @param sortBy one of "firstName", "lastName", "email", "createdAt"
-     * @param direction "asc" or "desc"
+     * @param request the directory's pagination, search, filter, and sort parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void getUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction,
-                  MutableLiveData<ApiResult<PagedResponse<UserResponse>>> resultTarget);
+    void getUsers(AdminUserQueryRequestDTO request, MutableLiveData<ApiResult<PagedResponse<UserResponse>>> resultTarget);
 
     /**
      * Fetches a paginated page of reviews currently flagged for moderation.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param request pagination parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void getReportedReviews(int page, int size,
+    void getReportedReviews(PageRequestDTO request,
                              MutableLiveData<ApiResult<PagedResponse<ReportedReviewResponse>>> resultTarget);
 
     /**
@@ -89,11 +84,10 @@ public interface AdminRepository {
     /**
      * Fetches a paginated page of tags that appear to be duplicates of one another.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param request pagination parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void getDuplicateTagGroups(int page, int size,
+    void getDuplicateTagGroups(PageRequestDTO request,
                                 MutableLiveData<ApiResult<PagedResponse<DuplicateTagGroupResponse>>> resultTarget);
 
     /**
@@ -120,11 +114,10 @@ public interface AdminRepository {
     /**
      * Fetches a paginated, newest-first list of every announcement, active or not.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param request pagination parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void getAnnouncements(int page, int size,
+    void getAnnouncements(PageRequestDTO request,
                            MutableLiveData<ApiResult<PagedResponse<AnnouncementResponse>>> resultTarget);
 
     /**

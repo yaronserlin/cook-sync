@@ -33,6 +33,7 @@ import com.cooksync_server.repositories.AnnouncementDismissalRepository;
 import com.cooksync_server.repositories.SystemAnnouncementRepository;
 import com.cooksync_server.repositories.UserRepository;
 import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.announcement.AnnouncementResponse;
 
@@ -118,7 +119,7 @@ class AnnouncementServiceTest {
         Page<SystemAnnouncement> page = new PageImpl<>(List.of(announcement), PageRequest.of(0, 20), 1);
         when(announcementRepository.findAllByOrderByCreatedAtDesc(any(Pageable.class))).thenReturn(page);
 
-        PagedResponse<AnnouncementResponse> response = announcementService.getAll(0, 20);
+        PagedResponse<AnnouncementResponse> response = announcementService.getAll(new PageRequestDTO(0, 20));
 
         assertEquals(1, response.content().size());
         assertEquals("ann-1", response.content().get(0).id());

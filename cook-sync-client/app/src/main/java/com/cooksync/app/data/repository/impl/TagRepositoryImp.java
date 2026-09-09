@@ -36,7 +36,7 @@ public class TagRepositoryImp extends BaseRepository implements TagRepository {
      */
     @Override
     public void getAllTags(MutableLiveData<ApiResult<List<TagResponse>>> resultTarget) {
-        fetchAsync(apiService::getAllTags, resultTarget);
+        fetchAsync(request -> apiService.getAllTags(request.toQueryMap()), resultTarget);
     }
 
     /**

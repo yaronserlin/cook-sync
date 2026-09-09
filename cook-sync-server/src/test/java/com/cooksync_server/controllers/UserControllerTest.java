@@ -1,6 +1,7 @@
 package com.cooksync_server.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,6 +20,7 @@ import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.services.FavoriteService;
 import com.cooksync_server.services.RecipeService;
 import com.cooksync_server.services.UserProfileService;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
@@ -87,7 +89,8 @@ class UserControllerTest {
         RecipePreviewResponse recipe = new RecipePreviewResponse("recipe-1", "Jane", "Soup",
                 "desc", "EASY", "PUBLIC", 10, 20, 0, null, "2026-01-01", List.of(), null, false, null, false);
         PagedResponse<RecipePreviewResponse> page = new PagedResponse<>(List.of(recipe), 0, 5, 1, 1, true);
-        when(recipeService.getPublicRecipesByUser("user-2", 0, 5)).thenReturn(page);
+        when(recipeService.getPublicRecipesByUser(eq("user-2"),
+                argThat(r -> r.page() == 0 && r.size() == 5))).thenReturn(page);
 
         mockMvc.perform(get("/api/users/user-2/recipes").param("page", "0").param("size", "5"))
                 .andExpect(status().isOk())
@@ -97,7 +100,7 @@ class UserControllerTest {
     @Test
     void getUserPublicFavorites_ShouldRouteToFavoriteService_WithGivenPaging() throws Exception {
         PagedResponse<RecipePreviewResponse> emptyPage = new PagedResponse<>(List.of(), 0, 20, 0, 0, true);
-        when(favoriteService.getPublicFavoritesByUser(eq("user-2"), any(Integer.class), any(Integer.class)))
+        when(favoriteService.getPublicFavoritesByUser(eq("user-2"), any(PageRequestDTO.class)))
                 .thenReturn(emptyPage);
 
         mockMvc.perform(get("/api/users/user-2/favorites"))

@@ -4,9 +4,13 @@ import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.cooksync_server.entities.DescriptionBlock;
 import com.cooksync_server.entities.Instruction;
@@ -146,7 +150,7 @@ class RecipeServiceTest {
         Page<Recipe> recipePage = new PageImpl<>(List.of(sampleRecipe), PageRequest.of(0, 10), 1);
         when(recipeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(recipePage);
 
-        PagedResponse<RecipePreviewResponse> response = recipeService.getAllRecipesPaged(0, 10, "newest", null, null);
+        PagedResponse<RecipePreviewResponse> response = recipeService.getAllRecipesPaged(new RecipeFeedRequestDTO(0, 10, "newest", null, null));
 
         assertNotNull(response);
         assertEquals(1, response.content().size());
@@ -163,7 +167,7 @@ class RecipeServiceTest {
         when(recipeRepository.findByCreatedByIdAndVisibility("user-1", Recipe.Visibility.PUBLIC, PageRequest.of(0, 10)))
                 .thenReturn(recipePage);
 
-        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser("user-1", 0, 10);
+        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser("user-1", new PageRequestDTO(0, 10));
 
         assertNotNull(response);
         assertEquals(1, response.content().size());
@@ -175,7 +179,7 @@ class RecipeServiceTest {
         sampleUser.setShowRecipesPublicly(false);
         when(userRepository.findById("user-1")).thenReturn(Optional.of(sampleUser));
 
-        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser("user-1", 0, 10);
+        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser("user-1", new PageRequestDTO(0, 10));
 
         assertNotNull(response);
         assertTrue(response.content().isEmpty());
@@ -187,7 +191,7 @@ class RecipeServiceTest {
     void getPublicRecipesByUser_ShouldThrowResourceNotFoundException_WhenUserDoesNotExist() {
         when(userRepository.findById("missing")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> recipeService.getPublicRecipesByUser("missing", 0, 10));
+        assertThrows(ResourceNotFoundException.class, () -> recipeService.getPublicRecipesByUser("missing", new PageRequestDTO(0, 10)));
     }
 
     // ------------------------------------------------------------------
@@ -436,7 +440,7 @@ class RecipeServiceTest {
         when(recipeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(recipePage);
 
         PagedResponse<RecipePreviewResponse> response =
-                recipeService.searchRecipes("beef", null, null, "newest", null, null, 0, 10);
+                recipeService.searchRecipes(new RecipeSearchRequestDTO("beef", null, null, "newest", null, null, 0, 10));
 
         assertNotNull(response);
         assertEquals(1, response.content().size());
@@ -449,7 +453,7 @@ class RecipeServiceTest {
         when(recipeRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(recipePage);
 
         PagedResponse<RecipePreviewResponse> response =
-                recipeService.findRecipesByTag("dinner", "newest", null, null, 0, 10);
+                recipeService.findRecipesByTag("dinner", new RecipeTagFilterRequestDTO("newest", null, null, 0, 10));
 
         assertNotNull(response);
         assertEquals(1, response.content().size());
@@ -462,7 +466,7 @@ class RecipeServiceTest {
         Page<Recipe> recipePage = new PageImpl<>(List.of(sampleRecipe), PageRequest.of(0, 10), 1);
         when(recipeRepository.findByCreatedById("user-1", PageRequest.of(0, 10))).thenReturn(recipePage);
 
-        PagedResponse<RecipePreviewResponse> response = recipeService.getMyRecipes("gordon@cooksync.com", 0, 10);
+        PagedResponse<RecipePreviewResponse> response = recipeService.getMyRecipes("gordon@cooksync.com", new PageRequestDTO(0, 10));
 
         assertNotNull(response);
         assertEquals(1, response.content().size());
@@ -474,6 +478,6 @@ class RecipeServiceTest {
         when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-                () -> recipeService.getMyRecipes("missing@cooksync.com", 0, 10));
+                () -> recipeService.getMyRecipes("missing@cooksync.com", new PageRequestDTO(0, 10)));
     }
 }

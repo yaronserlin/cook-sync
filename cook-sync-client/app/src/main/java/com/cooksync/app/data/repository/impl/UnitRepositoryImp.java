@@ -36,7 +36,7 @@ public class UnitRepositoryImp extends BaseRepository implements UnitRepository 
      */
     @Override
     public void getAllUnits(MutableLiveData<ApiResult<List<UnitResponse>>> resultTarget) {
-        fetchAsync(apiService::getUnits, resultTarget);
+        fetchAsync(request -> apiService.getUnits(request.toQueryMap()), resultTarget);
     }
 
     /**

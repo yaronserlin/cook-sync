@@ -40,7 +40,11 @@ import com.cooksync_server.repositories.UnitRepository;
 import com.cooksync_server.repositories.UserRepository;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
@@ -78,23 +82,20 @@ public class RecipeServiceImp implements RecipeService{
     /**
      * Retrieves paginated slice of public recipes for feed infinite scrolling.
      *
-     * @param page page index
-     * @param size page size limit
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
+     * @param request the feed's pagination, sort, and facet-filter parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> getAllRecipesPaged(int page, int size, String sortBy, String difficulty, Double minRating) {
-        log.debug("Fetching paginated public recipes. Page: {}, Size: {}, SortBy: {}, Difficulty: {}, MinRating: {}", page, size, sortBy, difficulty, minRating);
-        Sort sort = RecipeSpecifications.resolveSortOrder(sortBy);
+    public PagedResponse<RecipePreviewResponse> getAllRecipesPaged(RecipeFeedRequestDTO request) {
+        log.debug("Fetching paginated public recipes. Page: {}, Size: {}, SortBy: {}, Difficulty: {}, MinRating: {}",
+                request.page(), request.size(), request.sortBy(), request.difficulty(), request.minRating());
+        Sort sort = RecipeSpecifications.resolveSortOrder(request.sortBy());
         Specification<Recipe> spec = RecipeSpecifications.combine(
                 RecipeSpecifications.isPublicAndEnabled(),
-                RecipeSpecifications.hasDifficulty(difficulty),
-                RecipeSpecifications.hasMinRating(minRating)
+                RecipeSpecifications.hasDifficulty(request.difficulty()),
+                RecipeSpecifications.hasMinRating(request.minRating())
         );
-        Page<Recipe> result = recipeRepository.findAll(spec, PageRequest.of(page, size, sort));
+        Page<Recipe> result = recipeRepository.findAll(spec, PageRequest.of(request.page(), request.size(), sort));
         return PagedResponseMapper.toPagedResponse(result, RecipeMapper::toPreview);
     }
 
@@ -129,17 +130,18 @@ public class RecipeServiceImp implements RecipeService{
      * @return list of RecipePreviewResponse DTOs
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> searchRecipes(String keyword, String author, String ingredient, String sortBy, String difficulty, Double minRating, int page, int size) {
-        log.debug("Executing recipe search. Keyword: {}, Author: {}, Ingredient: {}, SortBy: {}, Difficulty: {}, MinRating: {}, Page: {}, Size: {}", keyword, author, ingredient, sortBy, difficulty, minRating, page, size);
-        Sort sort = RecipeSpecifications.resolveSortOrder(sortBy);
+    public PagedResponse<RecipePreviewResponse> searchRecipes(RecipeSearchRequestDTO request) {
+        log.debug("Executing recipe search. Keyword: {}, Author: {}, Ingredient: {}, SortBy: {}, Difficulty: {}, MinRating: {}, Page: {}, Size: {}",
+                request.q(), request.author(), request.ingredient(), request.sortBy(), request.difficulty(), request.minRating(), request.page(), request.size());
+        Sort sort = RecipeSpecifications.resolveSortOrder(request.sortBy());
         Specification<Recipe> spec = RecipeSpecifications.combine(
                 RecipeSpecifications.isPublicAndEnabled(),
-                RecipeSpecifications.matchesUnifiedQuery(keyword),
-                RecipeSpecifications.hasAuthor(author),
-                RecipeSpecifications.hasIngredient(ingredient),
-                RecipeSpecifications.hasDifficulty(difficulty),
-                RecipeSpecifications.hasMinRating(minRating));
-        Page<Recipe> result = recipeRepository.findAll(spec, PageRequest.of(page, size, sort));
+                RecipeSpecifications.matchesUnifiedQuery(request.q()),
+                RecipeSpecifications.hasAuthor(request.author()),
+                RecipeSpecifications.hasIngredient(request.ingredient()),
+                RecipeSpecifications.hasDifficulty(request.difficulty()),
+                RecipeSpecifications.hasMinRating(request.minRating()));
+        Page<Recipe> result = recipeRepository.findAll(spec, PageRequest.of(request.page(), request.size(), sort));
         return PagedResponseMapper.toPagedResponse(result, RecipeMapper::toPreview);
     }
 
@@ -147,23 +149,20 @@ public class RecipeServiceImp implements RecipeService{
      * Retrieves public recipes tagged with specified tag name.
      *
      * @param tagName target tag label name
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
-     * @param page page index
-     * @param size page size limit
+     * @param request the browse's pagination, sort, and facet-filter parameters
      * @return list of RecipePreviewResponse DTOs
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> findRecipesByTag(String tagName, String sortBy, String difficulty, Double minRating, int page, int size) {
-        log.debug("Fetching recipes by tag name: {}, SortBy: {}, Difficulty: {}, MinRating: {}, Page: {}, Size: {}", tagName, sortBy, difficulty, minRating, page, size);
-        Sort sort = RecipeSpecifications.resolveSortOrder(sortBy);
+    public PagedResponse<RecipePreviewResponse> findRecipesByTag(String tagName, RecipeTagFilterRequestDTO request) {
+        log.debug("Fetching recipes by tag name: {}, SortBy: {}, Difficulty: {}, MinRating: {}, Page: {}, Size: {}",
+                tagName, request.sortBy(), request.difficulty(), request.minRating(), request.page(), request.size());
+        Sort sort = RecipeSpecifications.resolveSortOrder(request.sortBy());
         Specification<Recipe> spec = RecipeSpecifications.combine(
                 RecipeSpecifications.isPublicAndEnabled(),
                 RecipeSpecifications.hasTag(tagName),
-                RecipeSpecifications.hasDifficulty(difficulty),
-                RecipeSpecifications.hasMinRating(minRating));
-        Page<Recipe> result = recipeRepository.findAll(spec, PageRequest.of(page, size, sort));
+                RecipeSpecifications.hasDifficulty(request.difficulty()),
+                RecipeSpecifications.hasMinRating(request.minRating()));
+        Page<Recipe> result = recipeRepository.findAll(spec, PageRequest.of(request.page(), request.size(), sort));
         return PagedResponseMapper.toPagedResponse(result, RecipeMapper::toPreview);
     }
 
@@ -171,17 +170,16 @@ public class RecipeServiceImp implements RecipeService{
      * Retrieves all recipes authored by the authenticated user.
      *
      * @param userEmail user email address
-     * @param page page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return list of RecipePreviewResponse DTOs
      * @throws ResourceNotFoundException if no user with the given email exists
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, int page, int size) {
-        log.debug("Fetching recipes for user email: {}, Page: {}, Size: {}", userEmail, page, size);
+    public PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, PageRequestDTO request) {
+        log.debug("Fetching recipes for user email: {}, Page: {}, Size: {}", userEmail, request.page(), request.size());
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
-        Page<Recipe> result = recipeRepository.findByCreatedById(user.getId(), PageRequest.of(page, size));
+        Page<Recipe> result = recipeRepository.findByCreatedById(user.getId(), PageRequest.of(request.page(), request.size()));
         return PagedResponseMapper.toPagedResponse(result, RecipeMapper::toPreview);
     }
 
@@ -192,23 +190,22 @@ public class RecipeServiceImp implements RecipeService{
      * an error if the user opted out.
      *
      * @param userId target user ID
-     * @param page page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs, empty if the user opted out
      * @throws ResourceNotFoundException if no user with the given ID exists
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, int page, int size) {
-        log.debug("Fetching public recipes for user ID: {}, Page: {}, Size: {}", userId, page, size);
+    public PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, PageRequestDTO request) {
+        log.debug("Fetching public recipes for user ID: {}, Page: {}, Size: {}", userId, request.page(), request.size());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
 
         if (!user.isShowRecipesPublicly()) {
-            return new PagedResponse<>(List.of(), page, size, 0, 0, true);
+            return new PagedResponse<>(List.of(), request.page(), request.size(), 0, 0, true);
         }
 
         Page<Recipe> result = recipeRepository.findByCreatedByIdAndVisibility(
-                user.getId(), Recipe.Visibility.PUBLIC, PageRequest.of(page, size));
+                user.getId(), Recipe.Visibility.PUBLIC, PageRequest.of(request.page(), request.size()));
         return PagedResponseMapper.toPagedResponse(result, RecipeMapper::toPreview);
     }
 

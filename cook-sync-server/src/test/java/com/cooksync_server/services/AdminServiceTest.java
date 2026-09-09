@@ -37,6 +37,8 @@ import com.cooksync_server.repositories.ReviewReportRepository;
 import com.cooksync_server.repositories.ReviewRepository;
 import com.cooksync_server.repositories.TagRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -110,7 +112,7 @@ class AdminServiceTest {
         Page<User> userPage = new PageImpl<>(java.util.List.of(sampleUser), PageRequest.of(0, 10), 1);
         when(userRepository.search(any(), any(), any(Pageable.class))).thenReturn(userPage);
 
-        PagedResponse<UserResponse> response = adminService.getAllUsers(0, 10, null, null, "createdAt", "desc");
+        PagedResponse<UserResponse> response = adminService.getAllUsers(new AdminUserQueryRequestDTO(0, 10, null, null, "createdAt", "desc"));
 
         assertEquals(1, response.content().size());
         assertEquals("Gordon", response.content().get(0).firstName());
@@ -130,7 +132,7 @@ class AdminServiceTest {
         when(reviewRepository.findByReportedTrueAndHiddenFalse(any(Pageable.class))).thenReturn(reviewPage);
         when(reviewReportRepository.findTopByReviewIdOrderByCreatedAtDesc("review-1")).thenReturn(Optional.empty());
 
-        PagedResponse<ReportedReviewResponse> response = adminService.getReportedReviews(0, 10);
+        PagedResponse<ReportedReviewResponse> response = adminService.getReportedReviews(new PageRequestDTO(0, 10));
 
         assertEquals(1, response.content().size());
         assertEquals("review-1", response.content().get(0).id());
@@ -303,7 +305,7 @@ class AdminServiceTest {
         when(tagRepository.findAll()).thenReturn(List.of(vegan, vegetarian, veganDuplicate));
         when(recipeRepository.countByTagId(anyString())).thenReturn(0L);
 
-        PagedResponse<DuplicateTagGroupResponse> response = adminService.getDuplicateTagGroups(0, 1);
+        PagedResponse<DuplicateTagGroupResponse> response = adminService.getDuplicateTagGroups(new PageRequestDTO(0, 1));
 
         assertEquals(1, response.content().size());
         DuplicateTagGroupResponse group = response.content().get(0);
@@ -320,7 +322,7 @@ class AdminServiceTest {
         when(tagRepository.findAll()).thenReturn(List.of(hyphenated, underscored, slashed, spaced));
         when(recipeRepository.countByTagId(anyString())).thenReturn(0L);
 
-        PagedResponse<DuplicateTagGroupResponse> response = adminService.getDuplicateTagGroups(0, 10);
+        PagedResponse<DuplicateTagGroupResponse> response = adminService.getDuplicateTagGroups(new PageRequestDTO(0, 10));
 
         assertEquals(1, response.content().size());
         DuplicateTagGroupResponse group = response.content().get(0);

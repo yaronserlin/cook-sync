@@ -1,6 +1,10 @@
 package com.cooksync_server.services;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -18,14 +22,10 @@ public interface RecipeService {
     /**
      * Retrieves a paginated slice of public recipes for feed infinite scrolling.
      *
-     * @param page page index
-     * @param size page size limit
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
+     * @param request the feed's pagination, sort, and facet-filter parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs
      */
-    PagedResponse<RecipePreviewResponse> getAllRecipesPaged(int page, int size, String sortBy, String difficulty, Double minRating);
+    PagedResponse<RecipePreviewResponse> getAllRecipesPaged(RecipeFeedRequestDTO request);
 
     /**
      * Retrieves the full detail view of a single recipe by ID.
@@ -39,41 +39,29 @@ public interface RecipeService {
     /**
      * Executes a unified keyword and faceted attribute search across the recipe catalog.
      *
-     * @param keyword unified free-text search string
-     * @param author author name filter
-     * @param ingredient ingredient name filter
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
-     * @param page page index
-     * @param size page size limit
+     * @param request the search's keyword/facet, pagination, and sort parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs
      */
-    PagedResponse<RecipePreviewResponse> searchRecipes(String keyword, String author, String ingredient, String sortBy, String difficulty, Double minRating, int page, int size);
+    PagedResponse<RecipePreviewResponse> searchRecipes(RecipeSearchRequestDTO request);
 
     /**
      * Retrieves public recipes tagged with a specific tag name.
      *
      * @param tagName target tag label name
-     * @param sortBy sort criterion: newest (default), rating, fastest
-     * @param difficulty optional difficulty filter: EASY, MEDIUM, HARD
-     * @param minRating optional minimum average rating threshold
-     * @param page page index
-     * @param size page size limit
+     * @param request the browse's pagination, sort, and facet-filter parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs
      */
-    PagedResponse<RecipePreviewResponse> findRecipesByTag(String tagName, String sortBy, String difficulty, Double minRating, int page, int size);
+    PagedResponse<RecipePreviewResponse> findRecipesByTag(String tagName, RecipeTagFilterRequestDTO request);
 
     /**
      * Retrieves all recipes authored by the authenticated user.
      *
      * @param userEmail user email address
-     * @param page page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs
      * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given email exists
      */
-    PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, int page, int size);
+    PagedResponse<RecipePreviewResponse> getMyRecipes(String userEmail, PageRequestDTO request);
 
     /**
      * Retrieves the publicly visible recipes authored by a given user, for that user's public
@@ -81,12 +69,11 @@ public interface RecipeService {
      * {@code showRecipesPublicly}, regardless of what recipes they actually have.
      *
      * @param userId target user ID
-     * @param page page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse containing RecipePreviewResponse DTOs, empty if the user opted out
      * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user with the given ID exists
      */
-    PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, int page, int size);
+    PagedResponse<RecipePreviewResponse> getPublicRecipesByUser(String userId, PageRequestDTO request);
 
     /**
      * Creates a new recipe with nested ingredients, instructions, tags, and images.

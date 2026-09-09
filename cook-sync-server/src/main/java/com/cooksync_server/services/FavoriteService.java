@@ -1,6 +1,7 @@
 package com.cooksync_server.services;
 
 import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
@@ -35,12 +36,11 @@ public interface FavoriteService {
      * Retrieves a paginated list of recipe previews bookmarked as favorite by the user.
      *
      * @param userEmail authenticated user email address
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse of RecipePreviewResponse DTOs
      * @throws ResourceNotFoundException if no user with the given email exists
      */
-    PagedResponse<RecipePreviewResponse> getUserFavorites(String userEmail, int page, int size);
+    PagedResponse<RecipePreviewResponse> getUserFavorites(String userEmail, PageRequestDTO request);
 
     /**
      * Retrieves the publicly visible favorites of a given user, for that user's public profile
@@ -49,10 +49,9 @@ public interface FavoriteService {
      * notes on those recipes, since those stay private regardless of this setting.
      *
      * @param userId target user ID
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse of RecipePreviewResponse DTOs, empty if the user opted out
      * @throws ResourceNotFoundException if no user with the given ID exists
      */
-    PagedResponse<RecipePreviewResponse> getPublicFavoritesByUser(String userId, int page, int size);
+    PagedResponse<RecipePreviewResponse> getPublicFavoritesByUser(String userId, PageRequestDTO request);
 }

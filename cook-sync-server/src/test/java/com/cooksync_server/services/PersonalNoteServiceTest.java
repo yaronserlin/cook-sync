@@ -33,6 +33,7 @@ import com.cooksync_server.repositories.InstructionRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
@@ -209,7 +210,7 @@ class PersonalNoteServiceTest {
                 .thenReturn(page);
 
         PagedResponse<NoteResponse> response = personalNoteService.getNotesForRecipe(
-                recipeUuid.toString(), "gordon@cooksync.com", 0, 10);
+                recipeUuid.toString(), "gordon@cooksync.com", new PageRequestDTO(0, 10));
 
         assertEquals(1, response.content().size());
         assertEquals("note-1", response.content().get(0).id());
@@ -221,7 +222,7 @@ class PersonalNoteServiceTest {
         when(userRepository.findByEmail("missing@cooksync.com")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
-                () -> personalNoteService.getNotesForRecipe(recipeUuid.toString(), "missing@cooksync.com", 0, 10));
+                () -> personalNoteService.getNotesForRecipe(recipeUuid.toString(), "missing@cooksync.com", new PageRequestDTO(0, 10)));
     }
 
     @Test

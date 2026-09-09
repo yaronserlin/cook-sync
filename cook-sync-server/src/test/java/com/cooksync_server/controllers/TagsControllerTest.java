@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.cooksync_server.config.JwtUtil;
 import com.cooksync_server.services.TagService;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
@@ -56,7 +57,7 @@ class TagsControllerTest {
     @Test
     void getAllTags_ShouldReturnPagedTags() throws Exception {
         TagResponse tag = new TagResponse("tag-1", "dessert", null, null);
-        when(tagService.getAllTags(0, 20)).thenReturn(new PagedResponse<>(List.of(tag), 0, 20, 1, 1, true));
+        when(tagService.getAllTags(any(PageRequestDTO.class))).thenReturn(new PagedResponse<>(List.of(tag), 0, 20, 1, 1, true));
 
         mockMvc.perform(get("/api/tags"))
                 .andExpect(status().isOk())

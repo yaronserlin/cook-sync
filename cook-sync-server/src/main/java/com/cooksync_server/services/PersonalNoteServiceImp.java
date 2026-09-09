@@ -19,6 +19,7 @@ import com.cooksync_server.repositories.InstructionRepository;
 import com.cooksync_server.repositories.PersonalInstructionNoteRepository;
 import com.cooksync_server.repositories.RecipeRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
@@ -115,18 +116,17 @@ public class PersonalNoteServiceImp implements PersonalNoteService{
      *
      * @param recipeId target recipe ID
      * @param userEmail user email address
-     * @param page page number
-     * @param size page size
+     * @param request pagination parameters
      * @return PagedResponse of NoteResponse DTOs
      * @throws ResourceNotFoundException if no user matches {@code userEmail}
      */
     @Transactional(readOnly = true)
-    public PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size) {
+    public PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, PageRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
         Page<PersonalInstructionNote> notesPage = noteRepository.findAllByUserIdAndRecipeId(
-                user.getId(), recipeId, PageRequest.of(page, size));
+                user.getId(), recipeId, PageRequest.of(request.page(), request.size()));
 
         return PagedResponseMapper.toPagedResponse(notesPage, PersonalNoteServiceImp::toResponse);
     }

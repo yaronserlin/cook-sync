@@ -10,6 +10,7 @@ import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.constants.PaginationConstants;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 
@@ -90,7 +91,7 @@ public class AdminTagsViewModel extends BaseViewModel {
                 tagGroupsResult.postValue(new ApiResult.Error<>(error.getMessage(), error.getCause()));
             }
         });
-        adminRepository.getDuplicateTagGroups(tagGroupsPage, TAG_GROUPS_PAGE_SIZE, result);
+        adminRepository.getDuplicateTagGroups(new PageRequestDTO(tagGroupsPage, TAG_GROUPS_PAGE_SIZE), result);
     }
 
     /**

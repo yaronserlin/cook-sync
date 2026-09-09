@@ -2,6 +2,7 @@ package com.cooksync_server.services;
 
 import java.util.List;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
@@ -18,11 +19,10 @@ public interface TagService {
     /**
      * Retrieves a paginated list of all tags in the catalog.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse of TagResponse DTOs
      */
-    PagedResponse<TagResponse> getAllTags(int page, int size);
+    PagedResponse<TagResponse> getAllTags(PageRequestDTO request);
 
     /**
      * Retrieves the most-used tags across all recipes, ranked by descending recipe count.

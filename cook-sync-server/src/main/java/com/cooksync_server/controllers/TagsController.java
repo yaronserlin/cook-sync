@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import com.dtos.response.PagedResponse;
 
 import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.TagService;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.tags.TagResponse;
@@ -41,15 +43,12 @@ public class TagsController {
     /**
      * Retrieves all recipe tags available in the catalog.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return response entity containing list of TagResponse DTOs
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedResponse<TagResponse>>> getAllTags(
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
-        PagedResponse<TagResponse> tags = tagService.getAllTags(page, size);
+    public ResponseEntity<ApiResponse<PagedResponse<TagResponse>>> getAllTags(@ModelAttribute PageRequestDTO request) {
+        PagedResponse<TagResponse> tags = tagService.getAllTags(request);
         return ResponseEntity.ok(ApiResponse.success(tags, "All tags retrieved successfully"));
     }
 

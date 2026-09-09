@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -27,6 +28,8 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.testutil.ApiResultAnswers;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.announcement.AnnouncementResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -97,7 +100,7 @@ public class HomeViewModelTest {
         FeedState.Success state = (FeedState.Success) viewModel.getFeedState().getValue();
         assertEquals(List.of(recipeOne), state.getRecipes());
         assertFalse(state.hasMore());
-        verify(recipeRepository, never()).getRecipesByTag(any(), anyInt(), anyInt(), any());
+        verify(recipeRepository, never()).getRecipesByTag(any(), any(), any());
     }
 
     @Test
@@ -112,7 +115,7 @@ public class HomeViewModelTest {
         // ahead of recipeOne (2026-01-01) once both pages are merged.
         FeedState.Success state = (FeedState.Success) viewModel.getFeedState().getValue();
         assertEquals(List.of(recipeTwo, recipeOne), state.getRecipes());
-        verify(recipeRepository).getPublicFeed(eq(1), eq(10), any());
+        verify(recipeRepository).getPublicFeed(argThat(r -> r.page() == 1 && r.size() == 10), any());
     }
 
     @Test
@@ -122,13 +125,13 @@ public class HomeViewModelTest {
 
         viewModel.loadNextPage();
 
-        verify(recipeRepository, times(1)).getPublicFeed(anyInt(), anyInt(), any());
+        verify(recipeRepository, times(1)).getPublicFeed(any(), any());
     }
 
     @Test
     public void loadInitialFeed_publishesErrorState_whenRepositoryFails() {
         doAnswer(ApiResultAnswers.<PagedResponse<RecipePreviewResponse>>error("Server unavailable"))
-                .when(recipeRepository).getPublicFeed(eq(0), eq(10), any());
+                .when(recipeRepository).getPublicFeed(argThat(r -> r.page() == 0 && r.size() == 10), any());
 
         viewModel.loadInitialFeed();
 
@@ -140,27 +143,27 @@ public class HomeViewModelTest {
     @Test
     public void toggleTag_singleSelection_routesToTagFilteredEndpoint() {
         doAnswer(ApiResultAnswers.success(page(List.of(recipeOne), true)))
-                .when(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
+                .when(recipeRepository).getRecipesByTag(eq("Vegan"), argThat(r -> r.page() == 0 && r.size() == 10), any());
 
         viewModel.toggleTag("Vegan");
 
         assertEquals(Set.of("Vegan"), viewModel.getSelectedTags());
-        verify(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
-        verify(recipeRepository, never()).getPublicFeed(anyInt(), anyInt(), any());
+        verify(recipeRepository).getRecipesByTag(eq("Vegan"), argThat(r -> r.page() == 0 && r.size() == 10), any());
+        verify(recipeRepository, never()).getPublicFeed(any(), any());
     }
 
     @Test
     public void toggleTag_secondSelection_fallsBackToGeneralFeed() {
         doAnswer(ApiResultAnswers.success(page(List.of(recipeOne), true)))
-                .when(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
+                .when(recipeRepository).getRecipesByTag(eq("Vegan"), argThat(r -> r.page() == 0 && r.size() == 10), any());
         stubPublicFeed(0, page(List.of(recipeOne, recipeTwo), true));
 
         viewModel.toggleTag("Vegan");
         viewModel.toggleTag("Dessert");
 
         assertEquals(Set.of("Vegan", "Dessert"), viewModel.getSelectedTags());
-        verify(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
-        verify(recipeRepository).getPublicFeed(eq(0), eq(10), any());
+        verify(recipeRepository).getRecipesByTag(eq("Vegan"), argThat(r -> r.page() == 0 && r.size() == 10), any());
+        verify(recipeRepository).getPublicFeed(argThat(r -> r.page() == 0 && r.size() == 10), any());
     }
 
     @Test
@@ -264,7 +267,7 @@ public class HomeViewModelTest {
         recipePublishedEvent.setValue(new Event<>(
                 new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false, null, null)));
 
-        verify(recipeRepository).getPublicFeed(eq(0), eq(10), any());
+        verify(recipeRepository).getPublicFeed(argThat(r -> r.page() == 0 && r.size() == 10), any());
     }
 
     @Test
@@ -307,7 +310,8 @@ public class HomeViewModelTest {
     }
 
     private void stubPublicFeed(int pageNumber, PagedResponse<RecipePreviewResponse> response) {
-        doAnswer(ApiResultAnswers.success(response)).when(recipeRepository).getPublicFeed(eq(pageNumber), eq(10), any());
+        doAnswer(ApiResultAnswers.success(response)).when(recipeRepository)
+                .getPublicFeed(argThat(r -> r.page() == pageNumber && r.size() == 10), any());
     }
 
     private PagedResponse<RecipePreviewResponse> page(List<RecipePreviewResponse> content, boolean last) {

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.cooksync_server.entities.Tag;
 import com.cooksync_server.repositories.TagRepository;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
@@ -51,7 +52,7 @@ class TagServiceTest {
         Page<Tag> page = new PageImpl<>(java.util.List.of(sampleTag), PageRequest.of(0, 10), 1);
         when(tagRepository.findAll(org.mockito.ArgumentMatchers.any(Pageable.class))).thenReturn(page);
 
-        PagedResponse<TagResponse> response = tagService.getAllTags(0, 10);
+        PagedResponse<TagResponse> response = tagService.getAllTags(new PageRequestDTO(0, 10));
 
         assertEquals(1, response.content().size());
         assertEquals("dessert", response.content().get(0).name());

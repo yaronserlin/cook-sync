@@ -1,6 +1,8 @@
 package com.cooksync.app.data.datasource.remote;
 
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
@@ -20,6 +22,9 @@ import com.dtos.request.device.DeviceTokenRegisterRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.request.notification.NotificationPreferencesUpdateRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.request.recipeimport.RecipeImportStartRequestDTO;
 import com.dtos.request.review.ReportReviewRequestDTO;
@@ -50,6 +55,7 @@ import com.dtos.response.user.UserResponse;
 import com.cooksync.app.util.constants.ApiEndpoints;
 
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -61,6 +67,7 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
 
 /**
  * Retrofit contract for every REST endpoint this module (core networking + authentication)
@@ -155,15 +162,13 @@ public interface ApiService {
      * if the target user has disabled {@code showRecipesPublicly}.
      *
      * @param id target user ID
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of the user's public recipes
      */
     @GET("api/users/{id}/recipes")
     Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicUserRecipes(
             @Path("id") String id,
-            @Query("page") int page,
-            @Query("size") int size
+            @QueryMap Map<String, String> params
     );
 
     /**
@@ -171,15 +176,13 @@ public interface ApiService {
      * Empty if the target user has disabled {@code showFavoritesPublicly}.
      *
      * @param id target user ID
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of the user's public favorites
      */
     @GET("api/users/{id}/favorites")
     Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicUserFavorites(
             @Path("id") String id,
-            @Query("page") int page,
-            @Query("size") int size
+            @QueryMap Map<String, String> params
     );
 
     /**
@@ -302,48 +305,35 @@ public interface ApiService {
     /**
      * Fetches a paginated list of public recipe previews for the home feed.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link RecipeFeedRequestDTO#toQueryMap()} for the feed's pagination, sort,
+     *               and facet-filter parameters
      * @return call yielding a paged collection of recipe previews
      */
     @GET("api/recipes/paged")
-    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicFeed(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getPublicFeed(@QueryMap Map<String, String> params);
 
     /**
      * Searches for public recipes matching a text query, author, or ingredient.
      *
-     * @param query search text
-     * @param author optional author name filter
-     * @param ingredient optional ingredient name filter
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link RecipeSearchRequestDTO#toQueryMap()} for the search's keyword/facet,
+     *               pagination, and sort parameters
      * @return call yielding a paged collection of matching recipe previews
      */
     @GET("api/recipes/search")
-    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(
-            @Query("q") String query,
-            @Query("author") String author,
-            @Query("ingredient") String ingredient,
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(@QueryMap Map<String, String> params);
 
     /**
      * Fetches public recipes associated with a specific tag.
      *
      * @param tagName the name of the tag to filter by
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link RecipeTagFilterRequestDTO#toQueryMap()} for the browse's pagination,
+     *               sort, and facet-filter parameters
      * @return call yielding a paged collection of recipe previews
      */
     @GET("api/recipes/tag/{tagName}")
     Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getRecipesByTag(
             @Path("tagName") String tagName,
-            @Query("page") int page,
-            @Query("size") int size
+            @QueryMap Map<String, String> params
     );
 
     /**
@@ -385,15 +375,11 @@ public interface ApiService {
      * Fetches every recipe (published or private) authored by the currently authenticated
      * user, for the "My Recipes" screen.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of the user's own recipes
      */
     @GET("api/recipes/mine")
-    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getMyRecipes(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getMyRecipes(@QueryMap Map<String, String> params);
 
     /**
      * Deletes one of the authenticated user's own recipes.
@@ -422,15 +408,11 @@ public interface ApiService {
     /**
      * Fetches a page of available tags for the horizontal filter bar.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of tags
      */
     @GET("api/tags")
-    Call<ApiResponse<PagedResponse<TagResponse>>> getAllTags(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<TagResponse>>> getAllTags(@QueryMap Map<String, String> params);
 
     /**
      * Fetches the most-used tags across all recipes, ranked by descending recipe count.
@@ -459,15 +441,11 @@ public interface ApiService {
     /**
      * Fetches a page of measurement units available for recipe ingredients.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of units
      */
     @GET("api/units")
-    Call<ApiResponse<PagedResponse<UnitResponse>>> getUnits(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<UnitResponse>>> getUnits(@QueryMap Map<String, String> params);
 
     /**
      * Creates a new measurement unit. Admin-only.
@@ -491,15 +469,11 @@ public interface ApiService {
     /**
      * Fetches a page of recipes favorited by the currently authenticated user.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of the user's favorites
      */
     @GET("api/favorites")
-    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getFavorites(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<RecipePreviewResponse>>> getFavorites(@QueryMap Map<String, String> params);
 
     /**
      * Adds a recipe to the user's favorites list.
@@ -538,15 +512,13 @@ public interface ApiService {
      * non-null). Used by Cooking Mode to show the right note alongside each step.
      *
      * @param recipeId the ID of the recipe
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of every note (general + per-step) for the recipe
      */
     @GET("api/notes/recipe/{recipeId}/all")
     Call<ApiResponse<PagedResponse<NoteResponse>>> getAllPersonalNotes(
             @Path("recipeId") String recipeId,
-            @Query("page") int page,
-            @Query("size") int size
+            @QueryMap Map<String, String> params
     );
 
     /**
@@ -617,37 +589,22 @@ public interface ApiService {
      * Fetches a paginated, searchable, sortable list of every registered user, for the Admin
      * Console's Users tab.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
-     * @param q optional search text matched against name/email, or {@code null}
-     * @param enabled optional filter by account status, or {@code null} for both
-     * @param sortBy one of "firstName", "lastName", "email", "createdAt"
-     * @param direction "asc" or "desc"
+     * @param params {@link AdminUserQueryRequestDTO#toQueryMap()} for the directory's pagination,
+     *               search, filter, and sort parameters
      * @return call yielding a paged collection of user summaries
      */
     @GET("api/admin/users")
-    Call<ApiResponse<PagedResponse<UserResponse>>> getAdminUsers(
-            @Query("page") int page,
-            @Query("size") int size,
-            @Query("q") String q,
-            @Query("enabled") Boolean enabled,
-            @Query("sortBy") String sortBy,
-            @Query("direction") String direction
-    );
+    Call<ApiResponse<PagedResponse<UserResponse>>> getAdminUsers(@QueryMap Map<String, String> params);
 
     /**
      * Fetches a paginated page of reviews currently flagged for moderation, for the Admin
      * Console's Reports tab.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of reported reviews
      */
     @GET("api/admin/reviews/reported")
-    Call<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(@QueryMap Map<String, String> params);
 
     /**
      * Dismisses a review's report(s) without deleting the review itself (the "Keep" action).
@@ -691,15 +648,11 @@ public interface ApiService {
      * Fetches a paginated page of tags that appear to be duplicates of one another, for the
      * Admin Console's Tags tab.
      *
-     * @param page 0-based page index
-     * @param size number of items per page
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a paged collection of duplicate tag groups
      */
     @GET("api/admin/tags/duplicates")
-    Call<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(@QueryMap Map<String, String> params);
 
     /**
      * Merges a duplicate tag into a canonical target tag, repointing every recipe that used
@@ -777,15 +730,11 @@ public interface ApiService {
     /**
      * Fetches a paginated, newest-first list of every announcement, active or not (admin-only).
      *
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param params {@link PageRequestDTO#toQueryMap()} for pagination
      * @return call yielding a page of announcements
      */
     @GET("api/admin/announcements")
-    Call<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncements(
-            @Query("page") int page,
-            @Query("size") int size
-    );
+    Call<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncements(@QueryMap Map<String, String> params);
 
     /**
      * Deactivates an announcement so it stops being surfaced to users who haven't seen it yet

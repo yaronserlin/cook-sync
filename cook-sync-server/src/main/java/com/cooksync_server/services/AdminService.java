@@ -1,5 +1,7 @@
 package com.cooksync_server.services;
 
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -26,24 +28,18 @@ public interface AdminService {
     /**
      * Retrieves a paginated, optionally search-filtered and sorted list of registered users.
      *
-     * @param page page number index
-     * @param size page size limit
-     * @param q optional search fragment matched against first name, last name, or email
-     * @param enabled optional account status filter (true = active, false = disabled, null = both)
-     * @param sortBy field to sort by; must be one of firstName, lastName, email, createdAt
-     * @param direction sort direction, "asc" or "desc" (default desc)
+     * @param request the directory's pagination, search, filter, and sort parameters
      * @return PagedResponse containing UserResponse DTOs
      */
-    PagedResponse<UserResponse> getAllUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction);
+    PagedResponse<UserResponse> getAllUsers(AdminUserQueryRequestDTO request);
 
     /**
      * Retrieves a paginated list of reviews currently flagged as reported.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse containing ReportedReviewResponse DTOs
      */
-    PagedResponse<ReportedReviewResponse> getReportedReviews(int page, int size);
+    PagedResponse<ReportedReviewResponse> getReportedReviews(PageRequestDTO request);
 
     /**
      * Dismisses the moderation report flag on a specific review.
@@ -91,11 +87,10 @@ public interface AdminService {
     /**
      * Scans the tag catalog for duplicate tag groups based on normalized name formatting.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse containing DuplicateTagGroupResponse DTOs
      */
-    PagedResponse<DuplicateTagGroupResponse> getDuplicateTagGroups(int page, int size);
+    PagedResponse<DuplicateTagGroupResponse> getDuplicateTagGroups(PageRequestDTO request);
 
     /**
      * Merges a duplicate source tag into a canonical target tag and deletes the source tag.

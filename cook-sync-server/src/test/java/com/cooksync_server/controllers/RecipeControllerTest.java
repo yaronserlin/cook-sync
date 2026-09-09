@@ -1,6 +1,7 @@
 package com.cooksync_server.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
@@ -30,6 +31,8 @@ import com.cooksync_server.services.RecipeService;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -84,7 +87,8 @@ class RecipeControllerTest {
     @WithMockUser
     void getAllRecipesPaged_ShouldReturnOk_WithPagedContent() throws Exception {
         PagedResponse<RecipePreviewResponse> paged = new PagedResponse<>(List.of(samplePreview()), 0, 20, 1, 1, true);
-        when(recipeService.getAllRecipesPaged(eq(0), eq(20), isNull(), isNull(), isNull())).thenReturn(paged);
+        when(recipeService.getAllRecipesPaged(argThat(r -> r.page() == 0 && r.size() == 20
+                && r.sortBy() == null && r.difficulty() == null && r.minRating() == null))).thenReturn(paged);
 
         mockMvc.perform(get("/api/recipes/paged"))
                 .andExpect(status().isOk())
@@ -317,7 +321,8 @@ class RecipeControllerTest {
     @WithMockUser
     void searchRecipes_ShouldReturnOk_WithQueryParams() throws Exception {
         PagedResponse<RecipePreviewResponse> paged = new PagedResponse<>(List.of(samplePreview()), 0, 20, 1, 1, true);
-        when(recipeService.searchRecipes(eq("pasta"), isNull(), isNull(), isNull(), isNull(), isNull(), eq(0), eq(20)))
+        when(recipeService.searchRecipes(argThat(r -> "pasta".equals(r.q()) && r.author() == null && r.ingredient() == null
+                && r.sortBy() == null && r.difficulty() == null && r.minRating() == null && r.page() == 0 && r.size() == 20)))
                 .thenReturn(paged);
 
         mockMvc.perform(get("/api/recipes/search").param("q", "pasta"))

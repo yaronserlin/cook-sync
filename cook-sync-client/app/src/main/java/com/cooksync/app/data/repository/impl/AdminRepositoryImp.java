@@ -7,8 +7,10 @@ import com.cooksync.app.data.datasource.remote.RetrofitClient;
 import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
 import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
 import com.dtos.request.appconfig.AppConfigUpdateRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
@@ -50,18 +52,18 @@ public class AdminRepositoryImp extends BaseRepository implements AdminRepositor
      * {@inheritDoc}
      */
     @Override
-    public void getUsers(int page, int size, String q, Boolean enabled, String sortBy, String direction,
+    public void getUsers(AdminUserQueryRequestDTO request,
                           MutableLiveData<ApiResult<PagedResponse<UserResponse>>> resultTarget) {
-        executeAsync(apiService.getAdminUsers(page, size, q, enabled, sortBy, direction), resultTarget);
+        executeAsync(apiService.getAdminUsers(request.toQueryMap()), resultTarget);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void getReportedReviews(int page, int size,
+    public void getReportedReviews(PageRequestDTO request,
                                     MutableLiveData<ApiResult<PagedResponse<ReportedReviewResponse>>> resultTarget) {
-        executeAsync(apiService.getReportedReviews(page, size), resultTarget);
+        executeAsync(apiService.getReportedReviews(request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -100,9 +102,9 @@ public class AdminRepositoryImp extends BaseRepository implements AdminRepositor
      * {@inheritDoc}
      */
     @Override
-    public void getDuplicateTagGroups(int page, int size,
+    public void getDuplicateTagGroups(PageRequestDTO request,
                                        MutableLiveData<ApiResult<PagedResponse<DuplicateTagGroupResponse>>> resultTarget) {
-        executeAsync(apiService.getDuplicateTagGroups(page, size), resultTarget);
+        executeAsync(apiService.getDuplicateTagGroups(request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -127,9 +129,9 @@ public class AdminRepositoryImp extends BaseRepository implements AdminRepositor
      * {@inheritDoc}
      */
     @Override
-    public void getAnnouncements(int page, int size,
+    public void getAnnouncements(PageRequestDTO request,
                                   MutableLiveData<ApiResult<PagedResponse<AnnouncementResponse>>> resultTarget) {
-        executeAsync(apiService.getAnnouncements(page, size), resultTarget);
+        executeAsync(apiService.getAnnouncements(request.toQueryMap()), resultTarget);
     }
 
     /**

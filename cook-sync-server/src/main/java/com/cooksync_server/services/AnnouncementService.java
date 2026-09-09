@@ -3,6 +3,7 @@ package com.cooksync_server.services;
 import java.util.Optional;
 
 import com.dtos.request.announcement.AnnouncementCreateRequestDTO;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.announcement.AnnouncementResponse;
 
@@ -30,11 +31,10 @@ public interface AnnouncementService {
      * Retrieves a paginated, newest-first list of every announcement, for the admin management
      * screen.
      *
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return page of AnnouncementResponse DTOs
      */
-    PagedResponse<AnnouncementResponse> getAll(int page, int size);
+    PagedResponse<AnnouncementResponse> getAll(PageRequestDTO request);
 
     /**
      * Deactivates an announcement so it stops being surfaced to users who haven't seen it yet.

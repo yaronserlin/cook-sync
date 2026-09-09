@@ -9,6 +9,9 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
 import com.dtos.request.review.ReportReviewRequestDTO;
 import com.dtos.request.review.ReviewRequestDTO;
@@ -44,24 +47,24 @@ public class RecipeRepositoryImp extends BaseRepository implements RecipeReposit
      * {@inheritDoc}
      */
     @Override
-    public void getPublicFeed(int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
-        executeAsync(apiService.getPublicFeed(page, size), resultTarget);
+    public void getPublicFeed(RecipeFeedRequestDTO request, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
+        executeAsync(apiService.getPublicFeed(request.toQueryMap()), resultTarget);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void searchRecipes(String query, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
-        executeAsync(apiService.searchRecipes(query, null, null, page, size), resultTarget);
+    public void searchRecipes(RecipeSearchRequestDTO request, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
+        executeAsync(apiService.searchRecipes(request.toQueryMap()), resultTarget);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void getRecipesByTag(String tagName, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
-        executeAsync(apiService.getRecipesByTag(tagName, page, size), resultTarget);
+    public void getRecipesByTag(String tagName, RecipeTagFilterRequestDTO request, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
+        executeAsync(apiService.getRecipesByTag(tagName, request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -93,7 +96,7 @@ public class RecipeRepositoryImp extends BaseRepository implements RecipeReposit
      */
     @Override
     public void getFavorites(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
-        fetchAsync(apiService::getFavorites, resultTarget);
+        fetchAsync(request -> apiService.getFavorites(request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -125,7 +128,7 @@ public class RecipeRepositoryImp extends BaseRepository implements RecipeReposit
      */
     @Override
     public void getAllPersonalNotes(String recipeId, MutableLiveData<ApiResult<List<NoteResponse>>> resultTarget) {
-        fetchAsync((page, size) -> apiService.getAllPersonalNotes(recipeId, page, size), resultTarget);
+        fetchAsync(request -> apiService.getAllPersonalNotes(recipeId, request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -152,7 +155,7 @@ public class RecipeRepositoryImp extends BaseRepository implements RecipeReposit
      */
     @Override
     public void getMyRecipes(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
-        fetchAsync(apiService::getMyRecipes, resultTarget);
+        fetchAsync(request -> apiService.getMyRecipes(request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -160,7 +163,7 @@ public class RecipeRepositoryImp extends BaseRepository implements RecipeReposit
      */
     @Override
     public void getPublicRecipesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
-        fetchAsync((page, size) -> apiService.getPublicUserRecipes(userId, page, size), resultTarget);
+        fetchAsync(request -> apiService.getPublicUserRecipes(userId, request.toQueryMap()), resultTarget);
     }
 
     /**
@@ -168,7 +171,7 @@ public class RecipeRepositoryImp extends BaseRepository implements RecipeReposit
      */
     @Override
     public void getPublicFavoritesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
-        fetchAsync((page, size) -> apiService.getPublicUserFavorites(userId, page, size), resultTarget);
+        fetchAsync(request -> apiService.getPublicUserFavorites(userId, request.toQueryMap()), resultTarget);
     }
 
     /**

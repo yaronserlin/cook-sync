@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
@@ -35,13 +36,12 @@ public class UnitServiceImp implements UnitService{
     /**
      * Retrieves all measurement units configured in the system.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return list of UnitResponse DTOs
      */
     @Transactional(readOnly = true)
-    public PagedResponse<UnitResponse> getAllUnits(int page, int size) {
-        return PagedResponseMapper.findAllPaged(unitRepository, page, size, UnitMapper::toResponse);
+    public PagedResponse<UnitResponse> getAllUnits(PageRequestDTO request) {
+        return PagedResponseMapper.findAllPaged(unitRepository, request.page(), request.size(), UnitMapper::toResponse);
     }
 
     /**

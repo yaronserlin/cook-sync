@@ -2,15 +2,15 @@ package com.cooksync_server.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cooksync_server.constants.PaginationDefaults;
 import com.cooksync_server.services.FavoriteService;
 import com.cooksync_server.services.RecipeService;
 import com.cooksync_server.services.UserProfileService;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -60,17 +60,15 @@ public class UserController {
      * if the target user has {@code showRecipesPublicly} disabled.
      *
      * @param id target user ID
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return response entity containing PagedResponse of RecipePreviewResponse DTOs
      */
     @GetMapping("/{id}/recipes")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getUserPublicRecipes(
             @PathVariable String id,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
+            @ModelAttribute PageRequestDTO request) {
         log.debug("Fetching public recipes for user ID: {}", id);
-        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser(id, page, size);
+        PagedResponse<RecipePreviewResponse> response = recipeService.getPublicRecipesByUser(id, request);
         return ResponseEntity.ok(ApiResponse.success(response, "User's public recipes retrieved successfully"));
     }
 
@@ -79,17 +77,15 @@ public class UserController {
      * Empty if the target user has {@code showFavoritesPublicly} disabled.
      *
      * @param id target user ID
-     * @param page zero-based page index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return response entity containing PagedResponse of RecipePreviewResponse DTOs
      */
     @GetMapping("/{id}/favorites")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getUserPublicFavorites(
             @PathVariable String id,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE) int page,
-            @RequestParam(defaultValue = PaginationDefaults.DEFAULT_PAGE_SIZE) int size) {
+            @ModelAttribute PageRequestDTO request) {
         log.debug("Fetching public favorites for user ID: {}", id);
-        PagedResponse<RecipePreviewResponse> response = favoriteService.getPublicFavoritesByUser(id, page, size);
+        PagedResponse<RecipePreviewResponse> response = favoriteService.getPublicFavoritesByUser(id, request);
         return ResponseEntity.ok(ApiResponse.success(response, "User's public favorites retrieved successfully"));
     }
 }

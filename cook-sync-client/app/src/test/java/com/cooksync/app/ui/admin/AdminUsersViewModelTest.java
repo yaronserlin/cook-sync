@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -17,6 +18,7 @@ import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.testutil.ApiResultAnswers;
+import com.dtos.request.admin.AdminUserQueryRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.user.UserResponse;
 
@@ -67,7 +69,7 @@ public class AdminUsersViewModelTest {
     @Test
     public void refreshUsers_error_postsErrorResult() {
         doAnswer(ApiResultAnswers.<PagedResponse<UserResponse>>error("network error"))
-                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+                .when(adminRepository).getUsers(argThat(r -> r.page() == 0 && r.size() == 20), any());
 
         viewModel.refreshUsers(null, null);
 
@@ -82,19 +84,19 @@ public class AdminUsersViewModelTest {
 
         viewModel.loadNextUsersPage();
 
-        verify(adminRepository, never()).getUsers(eq(1), eq(20), any(), any(), any(), any(), any());
+        verify(adminRepository, never()).getUsers(argThat(r -> r.page() == 1 && r.size() == 20), any());
     }
 
     @Test
     public void loadNextUsersPage_fetchesAndAppendsNextPage() {
         PagedResponse<UserResponse> firstPage = new PagedResponse<>(List.of(activeUser), 0, 20, 2, 2, false);
         doAnswer(ApiResultAnswers.success(firstPage))
-                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+                .when(adminRepository).getUsers(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.refreshUsers(null, null);
 
         PagedResponse<UserResponse> secondPage = new PagedResponse<>(List.of(suspendedUser), 1, 20, 2, 2, true);
         doAnswer(ApiResultAnswers.success(secondPage))
-                .when(adminRepository).getUsers(eq(1), eq(20), any(), any(), any(), any(), any());
+                .when(adminRepository).getUsers(argThat(r -> r.page() == 1 && r.size() == 20), any());
 
         viewModel.loadNextUsersPage();
 
@@ -109,7 +111,8 @@ public class AdminUsersViewModelTest {
 
         viewModel.toggleUsersSortDirection();
 
-        verify(adminRepository).getUsers(eq(0), eq(20), any(), any(), eq("createdAt"), eq("asc"), any());
+        verify(adminRepository).getUsers(argThat(r -> r.page() == 0 && r.size() == 20
+                && "createdAt".equals(r.sortBy()) && "asc".equals(r.direction())), any());
     }
 
     @Test
@@ -214,14 +217,14 @@ public class AdminUsersViewModelTest {
     private void loadOnePageContainingActiveUser() {
         PagedResponse<UserResponse> page = new PagedResponse<>(List.of(activeUser), 0, 20, 1, 1, true);
         doAnswer(ApiResultAnswers.success(page))
-                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+                .when(adminRepository).getUsers(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.refreshUsers(null, null);
     }
 
     private void loadOnePageContainingSuspendedUser() {
         PagedResponse<UserResponse> page = new PagedResponse<>(List.of(suspendedUser), 0, 20, 1, 1, true);
         doAnswer(ApiResultAnswers.success(page))
-                .when(adminRepository).getUsers(eq(0), eq(20), any(), any(), any(), any(), any());
+                .when(adminRepository).getUsers(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.refreshUsers(null, null);
     }
 }

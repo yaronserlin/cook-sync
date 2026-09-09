@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.tags.TagResponse;
@@ -31,13 +32,12 @@ public class TagServiceImp implements TagService{
     /**
      * Retrieves all tag entries configured in the system.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return list of TagResponse DTOs
      */
     @Transactional(readOnly = true)
-    public PagedResponse<TagResponse> getAllTags(int page, int size) {
-        return PagedResponseMapper.findAllPaged(tagRepository, page, size, TagMapper::toResponse);
+    public PagedResponse<TagResponse> getAllTags(PageRequestDTO request) {
+        return PagedResponseMapper.findAllPaged(tagRepository, request.page(), request.size(), TagMapper::toResponse);
     }
 
     /**

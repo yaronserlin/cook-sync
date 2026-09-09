@@ -1,5 +1,6 @@
 package com.cooksync_server.services;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
@@ -16,11 +17,10 @@ public interface UnitService {
     /**
      * Retrieves a paginated list of all measurement units configured in the system.
      *
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse of UnitResponse DTOs
      */
-    PagedResponse<UnitResponse> getAllUnits(int page, int size);
+    PagedResponse<UnitResponse> getAllUnits(PageRequestDTO request);
 
     /**
      * Creates a new measurement unit definition, ensuring code and name uniqueness.

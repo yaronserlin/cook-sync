@@ -3,7 +3,7 @@ package com.cooksync.app.ui.admin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -71,7 +71,7 @@ public class AdminReportsViewModelTest {
     @Test
     public void loadReportedReviews_error_postsErrorEvent() {
         doAnswer(ApiResultAnswers.<PagedResponse<ReportedReviewResponse>>error("network error"))
-                .when(adminRepository).getReportedReviews(eq(0), eq(20), any());
+                .when(adminRepository).getReportedReviews(argThat(r -> r.page() == 0 && r.size() == 20), any());
 
         viewModel.loadReportedReviews();
 
@@ -88,7 +88,7 @@ public class AdminReportsViewModelTest {
         viewModel.setReasonFilter("SPAM");
 
         assertEquals(List.of(spamReport), viewModel.getFilteredReports().getValue());
-        verify(adminRepository, never()).getReportedReviews(eq(1), anyInt(), any());
+        verify(adminRepository, never()).getReportedReviews(argThat(r -> r.page() == 1), any());
     }
 
     @Test
@@ -197,7 +197,7 @@ public class AdminReportsViewModelTest {
         PagedResponse<ReportedReviewResponse> page = new PagedResponse<>(
                 List.of(spamReport, abuseReportSameUser, otherUserReport), 0, 20, 3, 1, true);
         doAnswer(ApiResultAnswers.success(page))
-                .when(adminRepository).getReportedReviews(eq(0), eq(20), any());
+                .when(adminRepository).getReportedReviews(argThat(r -> r.page() == 0 && r.size() == 20), any());
         viewModel.loadReportedReviews();
     }
 }

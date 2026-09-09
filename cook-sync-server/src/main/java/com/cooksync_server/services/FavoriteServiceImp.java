@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.cooksync_server.constants.EntityNames;
@@ -85,17 +86,16 @@ public class FavoriteServiceImp implements FavoriteService{
      * Retrieves all recipe preview entries bookmarked as favorite by the user.
      *
      * @param userEmail authenticated user email address
-     * @param page page number
-     * @param size page size
+     * @param request pagination parameters
      * @return PagedResponse of RecipePreviewResponse DTOs with personal notes if present
      * @throws ResourceNotFoundException if no user with the given email exists
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> getUserFavorites(String userEmail, int page, int size) {
+    public PagedResponse<RecipePreviewResponse> getUserFavorites(String userEmail, PageRequestDTO request) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userEmail));
 
-        Page<FavoriteRecipe> favoritesPage = favoriteRepository.findByUserId(user.getId(), PageRequest.of(page, size));
+        Page<FavoriteRecipe> favoritesPage = favoriteRepository.findByUserId(user.getId(), PageRequest.of(request.page(), request.size()));
 
         return PagedResponseMapper.toPagedResponse(favoritesPage, fav -> {
             Optional<PersonalInstructionNote> note = personalInstructionNoteRepository
@@ -108,26 +108,25 @@ public class FavoriteServiceImp implements FavoriteService{
      * Retrieves the publicly visible favorites of a given user, for that user's public profile
      * page. Enforces the target's {@code showFavoritesPublicly} preference server-side (not just
      * trusting the client to withhold the call), returning an empty page rather than an error if
-     * the user opted out. Unlike {@link #getUserFavorites(String, int, int)}, this never attaches
-     * personal note data, since another user's private notes must stay hidden regardless of this
-     * setting.
+     * the user opted out. Unlike {@link #getUserFavorites(String, PageRequestDTO)}, this never
+     * attaches personal note data, since another user's private notes must stay hidden regardless
+     * of this setting.
      *
      * @param userId target user ID
-     * @param page page number
-     * @param size page size
+     * @param request pagination parameters
      * @return PagedResponse of RecipePreviewResponse DTOs, empty if the user opted out
      * @throws ResourceNotFoundException if no user with the given ID exists
      */
     @Transactional(readOnly = true)
-    public PagedResponse<RecipePreviewResponse> getPublicFavoritesByUser(String userId, int page, int size) {
+    public PagedResponse<RecipePreviewResponse> getPublicFavoritesByUser(String userId, PageRequestDTO request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(EntityNames.USER, userId));
 
         if (!user.isShowFavoritesPublicly()) {
-            return new PagedResponse<>(List.of(), page, size, 0, 0, true);
+            return new PagedResponse<>(List.of(), request.page(), request.size(), 0, 0, true);
         }
 
-        Page<FavoriteRecipe> favoritesPage = favoriteRepository.findByUserId(user.getId(), PageRequest.of(page, size));
+        Page<FavoriteRecipe> favoritesPage = favoriteRepository.findByUserId(user.getId(), PageRequest.of(request.page(), request.size()));
 
         return PagedResponseMapper.toPagedResponse(favoritesPage, fav -> RecipeMapper.toPreview(fav.getRecipe()));
     }

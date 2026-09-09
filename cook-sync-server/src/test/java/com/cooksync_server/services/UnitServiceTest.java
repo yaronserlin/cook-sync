@@ -24,6 +24,7 @@ import com.cooksync_server.exceptions.ResourceInUseException;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
 import com.cooksync_server.repositories.IngredientRepository;
 import com.cooksync_server.repositories.UnitRepository;
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.unit.UnitResponse;
@@ -59,7 +60,7 @@ class UnitServiceTest {
         Page<Unit> page = new PageImpl<>(java.util.List.of(sampleUnit), PageRequest.of(0, 10), 1);
         when(unitRepository.findAll(org.mockito.ArgumentMatchers.any(Pageable.class))).thenReturn(page);
 
-        PagedResponse<UnitResponse> response = unitService.getAllUnits(0, 10);
+        PagedResponse<UnitResponse> response = unitService.getAllUnits(new PageRequestDTO(0, 10));
 
         assertEquals(1, response.content().size());
         assertEquals("Gram", response.content().get(0).name());

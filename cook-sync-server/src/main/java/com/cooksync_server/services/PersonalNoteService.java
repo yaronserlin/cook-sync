@@ -1,5 +1,6 @@
 package com.cooksync_server.services;
 
+import com.dtos.request.common.PageRequestDTO;
 import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
@@ -41,12 +42,11 @@ public interface PersonalNoteService {
      *
      * @param recipeId target recipe ID
      * @param userEmail authenticated user email address
-     * @param page page number index
-     * @param size page size limit
+     * @param request pagination parameters
      * @return PagedResponse of NoteResponse DTOs
      * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no user matches {@code userEmail}
      */
-    PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, int page, int size);
+    PagedResponse<NoteResponse> getNotesForRecipe(String recipeId, String userEmail, PageRequestDTO request);
 
     /**
      * Deletes a personal note following author verification.

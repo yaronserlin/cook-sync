@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,8 @@ import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.testutil.ApiResultAnswers;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -78,7 +81,7 @@ public class SearchViewModelTest {
         FeedState.Success state = (FeedState.Success) viewModel.getFeedState().getValue();
         assertEquals(List.of(recipeOne), state.getRecipes());
         assertFalse(state.hasMore());
-        verify(recipeRepository, never()).getRecipesByTag(any(), any(Integer.class), any(Integer.class), any());
+        verify(recipeRepository, never()).getRecipesByTag(any(), any(), any());
     }
 
     @Test
@@ -90,7 +93,7 @@ public class SearchViewModelTest {
 
         FeedState.Success state = (FeedState.Success) viewModel.getFeedState().getValue();
         assertTrue(state.getRecipes().isEmpty());
-        verify(recipeRepository, times(1)).searchRecipes(any(), any(Integer.class), any(Integer.class), any());
+        verify(recipeRepository, times(1)).searchRecipes(any(), any());
     }
 
     @Test
@@ -100,8 +103,8 @@ public class SearchViewModelTest {
         viewModel.searchByTag("Vegan");
 
         assertEquals(Set.of("Vegan"), viewModel.getSelectedTags());
-        verify(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
-        verify(recipeRepository, never()).searchRecipes(any(), any(Integer.class), any(Integer.class), any());
+        verify(recipeRepository).getRecipesByTag(eq("Vegan"), argThat(r -> r.page() == 0 && r.size() == 10), any());
+        verify(recipeRepository, never()).searchRecipes(any(), any());
     }
 
     @Test
@@ -122,7 +125,7 @@ public class SearchViewModelTest {
 
         viewModel.search("pasta");
 
-        verify(recipeRepository).searchRecipes(eq("pasta"), eq(0), eq(10), any());
+        verify(recipeRepository).searchRecipes(argThat(r -> "pasta".equals(r.q()) && r.page() == 0 && r.size() == 10), any());
     }
 
     @Test
@@ -137,7 +140,7 @@ public class SearchViewModelTest {
         // ahead of recipeOne (2026-01-01) once both pages are merged.
         FeedState.Success state = (FeedState.Success) viewModel.getFeedState().getValue();
         assertEquals(List.of(recipeTwo, recipeOne), state.getRecipes());
-        verify(recipeRepository).searchRecipes(eq("pasta"), eq(1), eq(10), any());
+        verify(recipeRepository).searchRecipes(argThat(r -> "pasta".equals(r.q()) && r.page() == 1 && r.size() == 10), any());
     }
 
     @Test
@@ -147,7 +150,7 @@ public class SearchViewModelTest {
 
         viewModel.loadNextPage();
 
-        verify(recipeRepository, times(1)).searchRecipes(any(), any(Integer.class), any(Integer.class), any());
+        verify(recipeRepository, times(1)).searchRecipes(any(), any());
     }
 
     @Test
@@ -159,13 +162,13 @@ public class SearchViewModelTest {
 
         viewModel.loadNextPage();
 
-        verify(recipeRepository, times(1)).searchRecipes(any(), any(Integer.class), any(Integer.class), any());
+        verify(recipeRepository, times(1)).searchRecipes(any(), any());
     }
 
     @Test
     public void search_repositoryError_publishesFeedStateError() {
         doAnswer(ApiResultAnswers.<PagedResponse<RecipePreviewResponse>>error("Server unavailable"))
-                .when(recipeRepository).searchRecipes(eq("pasta"), eq(0), eq(10), any());
+                .when(recipeRepository).searchRecipes(argThat(r -> "pasta".equals(r.q()) && r.page() == 0 && r.size() == 10), any());
 
         viewModel.search("pasta");
 
@@ -177,7 +180,7 @@ public class SearchViewModelTest {
     @Test
     public void searchByTag_repositoryError_publishesFeedStateError() {
         doAnswer(ApiResultAnswers.<PagedResponse<RecipePreviewResponse>>error("Server unavailable"))
-                .when(recipeRepository).getRecipesByTag(eq("Vegan"), eq(0), eq(10), any());
+                .when(recipeRepository).getRecipesByTag(eq("Vegan"), argThat(r -> r.page() == 0 && r.size() == 10), any());
 
         viewModel.searchByTag("Vegan");
 
@@ -244,17 +247,19 @@ public class SearchViewModelTest {
         FeedState.Success state = (FeedState.Success) viewModel.getFeedState().getValue();
         assertEquals(List.of(recipeTwo, recipeOne), state.getRecipes());
         assertEquals("pasta", viewModel.getCurrentQuery());
-        verify(recipeRepository, times(1)).searchRecipes(any(), any(Integer.class), any(Integer.class), any());
+        verify(recipeRepository, times(1)).searchRecipes(any(), any());
     }
 
     private void stubSearch(String query, int pageNumber, PagedResponse<RecipePreviewResponse> response) {
         doAnswer(ApiResultAnswers.success(response))
-                .when(recipeRepository).searchRecipes(eq(query), eq(pageNumber), eq(10), any());
+                .when(recipeRepository).searchRecipes(
+                        argThat(r -> query.equals(r.q()) && r.page() == pageNumber && r.size() == 10), any());
     }
 
     private void stubTagBrowse(String tagName, int pageNumber, PagedResponse<RecipePreviewResponse> response) {
         doAnswer(ApiResultAnswers.success(response))
-                .when(recipeRepository).getRecipesByTag(eq(tagName), eq(pageNumber), eq(10), any());
+                .when(recipeRepository).getRecipesByTag(eq(tagName),
+                        argThat(r -> r.page() == pageNumber && r.size() == 10), any());
     }
 
     private PagedResponse<RecipePreviewResponse> page(List<RecipePreviewResponse> content, boolean last) {

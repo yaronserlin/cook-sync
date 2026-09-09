@@ -4,6 +4,9 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.domain.ApiResult;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
+import com.dtos.request.recipe.RecipeFeedRequestDTO;
+import com.dtos.request.recipe.RecipeSearchRequestDTO;
+import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -25,31 +28,27 @@ public interface RecipeRepository {
     /**
      * Fetches a paginated page of public recipes for the home discovery feed.
      *
-     * @param page page index (0-based)
-     * @param size number of items per page
+     * @param request the feed's pagination, sort, and facet-filter parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void getPublicFeed(int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
+    void getPublicFeed(RecipeFeedRequestDTO request, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
 
     /**
      * Searches for a page of public recipes matching a query.
      *
-     * @param query search text
-     * @param page page index (0-based)
-     * @param size number of items per page
+     * @param request the search's keyword/facet, pagination, and sort parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void searchRecipes(String query, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
+    void searchRecipes(RecipeSearchRequestDTO request, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
 
     /**
      * Fetches a page of public recipes filtered by a specific tag.
      *
      * @param tagName name of the tag
-     * @param page page index (0-based)
-     * @param size number of items per page
+     * @param request the browse's pagination, sort, and facet-filter parameters
      * @param resultTarget LiveData target to post the outcome
      */
-    void getRecipesByTag(String tagName, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
+    void getRecipesByTag(String tagName, RecipeTagFilterRequestDTO request, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
 
     /**
      * Fetches full details for a specific recipe.
