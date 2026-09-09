@@ -6,6 +6,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * Fetches a web page and reduces it to its main readable text — nav bars, scripts, styles, and
  * comments stripped out — before it's handed to {@link RecipeExtractionProvider}. Recipe pages
@@ -17,7 +19,10 @@ import org.springframework.stereotype.Component;
  * @since 05/09/2026
  */
 @Component
+@RequiredArgsConstructor
 public class WebPageTextExtractor {
+
+    private final SsrfGuard ssrfGuard;
 
     private static final int TIMEOUT_MS = 15_000;
     /** Recipe pages can be long; caps the text handed to the extraction prompt. */
@@ -39,6 +44,8 @@ public class WebPageTextExtractor {
      * @throws IOException if the page can't be fetched (network error, non-2xx status, timeout)
      */
     public PageContent fetchReadableContent(String url) throws IOException {
+        ssrfGuard.assertPubliclyRoutable(url);
+
         Document document = Jsoup.connect(url)
                 .userAgent(USER_AGENT)
                 .timeout(TIMEOUT_MS)

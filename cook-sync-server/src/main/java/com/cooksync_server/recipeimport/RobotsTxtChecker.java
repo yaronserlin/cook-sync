@@ -1,5 +1,6 @@
 package com.cooksync_server.recipeimport;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,9 +30,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RobotsTxtChecker {
 
     private static final int TIMEOUT_MS = 8_000;
+
+    private final SsrfGuard ssrfGuard;
 
     private final RestClient client = RestClient.builder()
             .requestFactory(timeoutRequestFactory())
@@ -42,10 +47,17 @@ public class RobotsTxtChecker {
      *
      * @param url the target recipe page URL
      * @return {@code true} if importing is allowed (no {@code robots.txt}, no matching
-     *         {@code Disallow} rule, or the check itself failed) — {@code false} only when a
-     *         {@code User-agent: *} block explicitly disallows this exact path
+     *         {@code Disallow} rule, or the robots.txt check itself failed) — {@code false} when a
+     *         {@code User-agent: *} block explicitly disallows this exact path, or when {@code url}
+     *         fails the {@link SsrfGuard} pre-check (non-https, or resolves to a non-public address)
      */
     public boolean isAllowed(String url) {
+        try {
+            ssrfGuard.assertPubliclyRoutable(url);
+        } catch (IOException e) {
+            log.warn("Refusing to check robots.txt for a non-public URL: {}", e.getMessage());
+            return false;
+        }
         try {
             URI uri = URI.create(url);
             URL robotsUrl = URI.create(uri.getScheme() + "://" + uri.getAuthority() + "/robots.txt").toURL();
