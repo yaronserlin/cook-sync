@@ -7,14 +7,16 @@ import com.dtos.response.ingredient.IngredientResponse;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.tags.TagResponse;
 import com.dtos.response.review.ReviewResponse;
-import com.dtos.response.user.UserResponse;
+import com.dtos.response.user.PublicUserProfileResponse;
 
 /**
  * Data Transfer Object representing complete recipe detail views.
- * Includes full author profile, structured description blocks, ingredient sets, step-by-step instructions, reviews, and cover image.
+ * Includes the author's public profile, structured description blocks, ingredient sets, step-by-step instructions, reviews, and cover image.
  *
  * @param id unique identifier of the recipe
- * @param createdBy user summary DTO of the recipe author
+ * @param createdBy the recipe author's public profile DTO — deliberately excludes fields
+ *                   (email, admin status, account status) not appropriate to disclose to a viewer
+ *                   who is not the author themself
  * @param title display title of the recipe
  * @param difficulty difficulty level classification
  * @param visibility visibility configuration state
@@ -46,7 +48,7 @@ import com.dtos.response.user.UserResponse;
  */
 public record RecipeResponse(
         String id,
-        UserResponse createdBy,
+        PublicUserProfileResponse createdBy,
         String title,
         String difficulty,
         String visibility,

@@ -53,7 +53,7 @@ public final class RecipeMapper {
 
         return new RecipeResponse(
                 recipe.getId(),
-                UserMapper.toResponse(recipe.getCreatedBy()),
+                UserMapper.toPublicProfileResponse(recipe.getCreatedBy()),
                 title.value(),
                 recipe.getDifficulty() == null ? null : recipe.getDifficulty().name(),
                 recipe.getVisibility() == null ? null : recipe.getVisibility().name(),
