@@ -2,6 +2,9 @@ package com.cooksync.app.data.repository.impl;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import com.cooksync.app.data.datasource.local.TokenStore;
 import com.cooksync.app.data.datasource.remote.ApiService;
 import com.cooksync.app.data.datasource.remote.RetrofitClient;
@@ -125,6 +128,7 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
     public void logout(MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
+            unregisterPushToken();
             ApiResult<Void> serverResult = executeCall(apiService.logout());
             if (serverResult instanceof ApiResult.Error<Void> error) {
                 android.util.Log.w("AuthRepositoryImp", "Server logout request failed: " + error.getMessage());
@@ -132,6 +136,21 @@ public class AuthRepositoryImp extends BaseRepository implements AuthRepository 
             SessionManager.getInstance().logout();
             resultTarget.postValue(new ApiResult.Success<>(null));
         });
+    }
+
+    /**
+     * Best-effort push-token unregistration before the session is cleared, so a signed-out
+     * (possibly shared/reset) device stops receiving this user's push notifications. Runs on the
+     * caller's background thread (blocking on the FCM token fetch via {@link Tasks#await}) and
+     * swallows any failure — a push-token hiccup must never block or fail the logout itself.
+     */
+    private void unregisterPushToken() {
+        try {
+            String pushToken = Tasks.await(FirebaseMessaging.getInstance().getToken());
+            executeCall(apiService.unregisterDevice(pushToken));
+        } catch (Exception e) {
+            android.util.Log.w("AuthRepositoryImp", "Push token unregister failed: " + e.getMessage());
+        }
     }
 
     /**
