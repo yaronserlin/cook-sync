@@ -134,20 +134,33 @@ public class RecipePublishManager {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    private final MediaRepository mediaRepository = new MediaRepositoryImp();
-    private final TagRepository tagRepository = new TagRepositoryImp();
-    private final RecipeRepository recipeRepository = new RecipeRepositoryImp();
+    private final MediaRepository mediaRepository;
+    private final TagRepository tagRepository;
+    private final RecipeRepository recipeRepository;
 
     private final MutableLiveData<PublishState> publishState = new MutableLiveData<>(PublishState.idle());
     private final MutableLiveData<Event<RecipeResponse>> recipePublishedEvent = new MutableLiveData<>();
 
-    private RecipePublishManager() {
+    /**
+     * Constructs the manager with its collaborating repositories injected, mirroring
+     * {@link com.cooksync.app.ui.base.ViewModelFactory}'s pattern so the wiring can be swapped
+     * out (e.g. for mocks in a test), rather than each repository being hard-constructed here.
+     * Package-private since only {@link #getInstance()} and tests in this package need it.
+     *
+     * @param mediaRepository the repository used for base-folder/signature lookups during upload
+     * @param tagRepository the repository used to create any newly-typed tags before publishing
+     * @param recipeRepository the repository used to create/update the recipe itself
+     */
+    RecipePublishManager(MediaRepository mediaRepository, TagRepository tagRepository, RecipeRepository recipeRepository) {
+        this.mediaRepository = mediaRepository;
+        this.tagRepository = tagRepository;
+        this.recipeRepository = recipeRepository;
     }
 
     /** @return process-wide singleton instance */
     public static synchronized RecipePublishManager getInstance() {
         if (instance == null) {
-            instance = new RecipePublishManager();
+            instance = new RecipePublishManager(new MediaRepositoryImp(), new TagRepositoryImp(), new RecipeRepositoryImp());
         }
         return instance;
     }
