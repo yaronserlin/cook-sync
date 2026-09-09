@@ -219,9 +219,13 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * Subscribes to every {@link SettingsViewModel} LiveData stream this screen reacts to:
-     * validation errors, the account-details fetch, the avatar upload/signature/update chain,
-     * and the email-change OTP dialog's request/resend/verify flow.
+     * Subscribes to every {@link SettingsViewModel} LiveData stream this screen reacts to.
+     * The account-details fetch, the avatar upload/signature/update chain, and the email-change
+     * OTP dialog's request/resend/verify flow are each large enough to be their own independent
+     * async flow, so each gets its own method ({@link #observeAccountLoad()},
+     * {@link #observeAvatarFlow()}, {@link #observeEmailChangeFlow()}); validation errors and the
+     * two single-observer flows (save, delete) stay here since splitting them out further would
+     * add indirection without separating anything actually independent.
      */
     private void setupObservers() {
         viewModel.getValidationError().observe(this, event -> {
@@ -229,6 +233,49 @@ public class AccountDetailsActivity extends BaseActivity {
             if (message != null) showError(message, footer);
         });
 
+        observeAccountLoad();
+        observeAvatarFlow();
+        observeEmailChangeFlow();
+
+        viewModel.getSaveChangesResult().observe(this, event -> {
+            ApiResult<Void> result = event.getContentIfNotHandled();
+            if (result == null) return;
+            if (result instanceof ApiResult.Success) {
+                loadedFirstName = etFirstName.getText().toString().trim();
+                loadedLastName = etLastName.getText().toString().trim();
+                loadedCity = etCity.getText().toString().trim();
+                loadedBio = etBio.getText().toString().trim();
+                loadedShowRecipesPublicly = cbShowRecipesPublicly.isChecked();
+                loadedShowFavoritesPublicly = cbShowFavoritesPublicly.isChecked();
+                etCurrentPassword.setText("");
+                etNewPassword.setText("");
+                etRepeatNewPassword.setText("");
+
+                Intent extras = new Intent();
+                extras.putExtra(SettingsActivity.EXTRA_PENDING_TOAST, getString(R.string.settings_updated));
+                Navigator.start(AccountDetailsActivity.this, SettingsActivity.class, extras);
+                finish();
+            } else if (result instanceof ApiResult.Error<Void> error) {
+                showError(error.getMessage(), footer);
+            }
+        });
+
+        viewModel.getDeleteAccountResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success) {
+                showSuccess(getString(R.string.account_details_deletion_requested), footer);
+            } else if (result instanceof ApiResult.Error<?> error) {
+                showError(error.getMessage(), footer);
+            }
+        });
+    }
+
+    /**
+     * Subscribes to the initial account-details fetch, pre-filling every field (and refreshing
+     * the saved-baseline values used to detect unsaved edits) once it resolves. Skips overwriting
+     * the avatar if a pick or clear is already pending locally, so a fetch that resolves after the
+     * user has already started editing doesn't clobber their in-progress change.
+     */
+    private void observeAccountLoad() {
         viewModel.getAccountDetailsResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<UserResponse> success) {
                 UserResponse data = success.getData();
@@ -253,7 +300,15 @@ public class AccountDetailsActivity extends BaseActivity {
                 showError(error.getMessage(), footer);
             }
         });
+    }
 
+    /**
+     * Subscribes to the avatar upload/signature/update chain: once a signed upload target is
+     * resolved, uploads the pending local photo to Cloudinary directly, then persists the
+     * resulting URL against the account; either step's failure re-renders the last-saved avatar
+     * so a failed change never leaves a stale local preview on screen.
+     */
+    private void observeAvatarFlow() {
         viewModel.getSignatureResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<CloudinarySignatureResponse> success && pendingAvatarUri != null) {
                 CloudinaryUploader.upload(this, pendingAvatarUri, viewModel.getPendingFolder(), viewModel.getPendingPublicId(), success.getData(), new CloudinaryUploader.Callback() {
@@ -288,7 +343,15 @@ public class AccountDetailsActivity extends BaseActivity {
                 showError(error.getMessage(), footer);
             }
         });
+    }
 
+    /**
+     * Subscribes to the email-change OTP dialog's request/resend/verify flow: opens the dialog
+     * once a code has actually been sent, keeps its "Resend" button's countdown in sync, and —
+     * once the entered code is verified — dismisses the dialog and continues the save that was
+     * gated behind it.
+     */
+    private void observeEmailChangeFlow() {
         viewModel.getRequestEmailChangeResult().observe(this, result -> {
             // Fires both for the initial request (dialog not yet open) and for a resend from
             // the OTP dialog's own button (dialog already open) — routed accordingly below so a
@@ -329,37 +392,6 @@ public class AccountDetailsActivity extends BaseActivity {
                 submitAccountChanges();
             } else if (result instanceof ApiResult.Error<?> error) {
                 showEmailOtpError(error.getMessage());
-            }
-        });
-
-        viewModel.getSaveChangesResult().observe(this, event -> {
-            ApiResult<Void> result = event.getContentIfNotHandled();
-            if (result == null) return;
-            if (result instanceof ApiResult.Success) {
-                loadedFirstName = etFirstName.getText().toString().trim();
-                loadedLastName = etLastName.getText().toString().trim();
-                loadedCity = etCity.getText().toString().trim();
-                loadedBio = etBio.getText().toString().trim();
-                loadedShowRecipesPublicly = cbShowRecipesPublicly.isChecked();
-                loadedShowFavoritesPublicly = cbShowFavoritesPublicly.isChecked();
-                etCurrentPassword.setText("");
-                etNewPassword.setText("");
-                etRepeatNewPassword.setText("");
-
-                Intent extras = new Intent();
-                extras.putExtra(SettingsActivity.EXTRA_PENDING_TOAST, getString(R.string.settings_updated));
-                Navigator.start(AccountDetailsActivity.this, SettingsActivity.class, extras);
-                finish();
-            } else if (result instanceof ApiResult.Error<Void> error) {
-                showError(error.getMessage(), footer);
-            }
-        });
-
-        viewModel.getDeleteAccountResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                showSuccess(getString(R.string.account_details_deletion_requested), footer);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), footer);
             }
         });
     }
