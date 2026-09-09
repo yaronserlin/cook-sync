@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.cooksync_server.entities.DeviceToken;
 import com.cooksync_server.entities.User;
 import com.cooksync_server.exceptions.ResourceNotFoundException;
+import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.cooksync_server.repositories.DeviceTokenRepository;
 import com.cooksync_server.repositories.UserRepository;
 
@@ -95,9 +96,36 @@ class DeviceTokenServiceTest {
     }
 
     @Test
-    void unregister_ShouldDeleteByPushToken() {
-        deviceTokenService.unregister("token-abc");
+    void unregister_ShouldDeleteByPushToken_WhenCallerOwnsIt() {
+        DeviceToken existing = DeviceToken.builder().id("dt-1").user(user).pushToken("token-abc").platform("ANDROID").build();
+        when(deviceTokenRepository.findByPushToken("token-abc")).thenReturn(Optional.of(existing));
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(user));
+
+        deviceTokenService.unregister("gordon@cooksync.com", "token-abc");
 
         verify(deviceTokenRepository).deleteByPushToken("token-abc");
+    }
+
+    @Test
+    void unregister_ShouldThrowUnauthorizedActionException_WhenCallerDoesNotOwnIt() {
+        User otherUser = User.builder().id("user-2").email("julia@cooksync.com").build();
+        DeviceToken existing = DeviceToken.builder().id("dt-1").user(otherUser).pushToken("token-abc").platform("ANDROID").build();
+        when(deviceTokenRepository.findByPushToken("token-abc")).thenReturn(Optional.of(existing));
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(user));
+
+        assertThrows(UnauthorizedActionException.class,
+                () -> deviceTokenService.unregister("gordon@cooksync.com", "token-abc"));
+
+        verify(deviceTokenRepository, never()).deleteByPushToken(any());
+    }
+
+    @Test
+    void unregister_ShouldThrowResourceNotFoundException_WhenTokenDoesNotExist() {
+        when(deviceTokenRepository.findByPushToken("token-missing")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> deviceTokenService.unregister("gordon@cooksync.com", "token-missing"));
+
+        verify(deviceTokenRepository, never()).deleteByPushToken(any());
     }
 }

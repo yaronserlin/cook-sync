@@ -58,7 +58,11 @@ public class DeviceTokenServiceImp implements DeviceTokenService {
 
     @Override
     @Transactional
-    public void unregister(String pushToken) {
+    public void unregister(String userEmail, String pushToken) {
+        OwnershipValidator.requireOwnedResource(
+                () -> deviceTokenRepository.findByPushToken(pushToken), EntityNames.DEVICE_TOKEN, pushToken,
+                dt -> dt.getUser().getId(), userRepository, userEmail,
+                "You are not allowed to unregister this device.");
         deviceTokenRepository.deleteByPushToken(pushToken);
     }
 }

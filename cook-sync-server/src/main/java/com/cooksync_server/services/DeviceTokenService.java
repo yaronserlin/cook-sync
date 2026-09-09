@@ -22,9 +22,11 @@ public interface DeviceTokenService {
     void register(String userEmail, String pushToken, String platform);
 
     /**
-     * Removes a device's push-token registration, e.g. on logout.
+     * Removes a device's push-token registration, e.g. on logout. Only the user the token is
+     * currently registered to (or an admin) may unregister it.
      *
+     * @param userEmail authenticated user email address of the caller
      * @param pushToken the device's FCM registration token
      */
-    void unregister(String pushToken);
+    void unregister(String userEmail, String pushToken);
 }

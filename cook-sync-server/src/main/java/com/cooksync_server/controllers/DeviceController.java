@@ -47,14 +47,17 @@ public class DeviceController {
     }
 
     /**
-     * Removes a device's push-notification token registration, e.g. on logout.
+     * Removes a device's push-notification token registration, e.g. on logout. Only the user the
+     * token is currently registered to (or an admin) may unregister it.
      *
      * @param pushToken the device's FCM registration token
+     * @param authentication active user authentication token
      * @return response entity acknowledging removal
      */
     @DeleteMapping("/{pushToken}")
-    public ResponseEntity<ApiResponse<Void>> unregisterDevice(@PathVariable String pushToken) {
-        deviceTokenService.unregister(pushToken);
+    public ResponseEntity<ApiResponse<Void>> unregisterDevice(
+            @PathVariable String pushToken, Authentication authentication) {
+        deviceTokenService.unregister(authentication.getName(), pushToken);
         return ResponseEntity.ok(ApiResponse.success(null, "Device unregistered successfully"));
     }
 }
