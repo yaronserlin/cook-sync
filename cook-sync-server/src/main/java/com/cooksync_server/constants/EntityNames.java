@@ -31,4 +31,6 @@ public final class EntityNames {
      * constants above centralize.
      */
     public static final String INGREDIENT = "Ingredient";
+
+    public static final String RECIPE_IMPORT_JOB = "RecipeImportJob";
 }

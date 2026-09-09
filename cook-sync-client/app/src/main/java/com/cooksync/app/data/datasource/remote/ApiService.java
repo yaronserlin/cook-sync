@@ -21,6 +21,7 @@ import com.dtos.request.note.NoteRequestDTO;
 import com.dtos.request.notification.NotificationPreferencesUpdateRequestDTO;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
+import com.dtos.request.recipeimport.RecipeImportStartRequestDTO;
 import com.dtos.request.review.ReportReviewRequestDTO;
 import com.dtos.request.review.ReviewRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
@@ -40,6 +41,7 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
+import com.dtos.response.recipeimport.RecipeImportJobResponse;
 import com.dtos.response.tags.TagResponse;
 import com.dtos.response.unit.UnitResponse;
 import com.dtos.response.user.PublicUserProfileResponse;
@@ -813,4 +815,23 @@ public interface ApiService {
      */
     @PUT("api/admin/app-config")
     Call<ApiResponse<AppConfigResponse>> updateAppConfig(@Body AppConfigUpdateRequestDTO request);
+
+    /**
+     * Starts a smart recipe-import job (web page or photo) and returns immediately with its
+     * initial (PENDING) status — extraction runs server-side in the background.
+     *
+     * @param request the import request
+     * @return call yielding the newly created job's status
+     */
+    @POST("api/recipe-imports")
+    Call<ApiResponse<RecipeImportJobResponse>> startRecipeImport(@Body RecipeImportStartRequestDTO request);
+
+    /**
+     * Fetches a recipe-import job's current status, for polling.
+     *
+     * @param jobId the job to look up
+     * @return call yielding the job's current status
+     */
+    @GET("api/recipe-imports/{jobId}")
+    Call<ApiResponse<RecipeImportJobResponse>> getRecipeImportStatus(@Path("jobId") String jobId);
 }

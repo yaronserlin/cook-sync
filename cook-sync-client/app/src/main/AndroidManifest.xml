@@ -74,6 +74,11 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".ui.recipe.importing.RecipeImportActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".ui.recipe.search.SearchActivity"
             android:exported="false"
             android:windowSoftInputMode="stateVisible" />

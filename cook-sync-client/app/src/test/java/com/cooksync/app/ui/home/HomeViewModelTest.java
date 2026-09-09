@@ -262,7 +262,7 @@ public class HomeViewModelTest {
         stubPublicFeed(0, page(List.of(recipeOne), true));
 
         recipePublishedEvent.setValue(new Event<>(
-                new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false)));
+                new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false, null, null)));
 
         verify(recipeRepository).getPublicFeed(eq(0), eq(10), any());
     }

@@ -131,4 +131,17 @@ public interface RecipeService {
      * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if the acting user is neither the recipe owner nor an administrator
      */
     void deleteRecipe(String recipeId, String userEmail);
+
+    /**
+     * Sets a recipe's source-attribution fields, shown as a small credit link on its detail
+     * screen. Used only by {@code RecipeImportServiceImp} immediately after creating a recipe
+     * from an imported web page/photo — not part of {@code RecipeCreateRequestDTO}, since a
+     * manually-created recipe never has attribution to set.
+     *
+     * @param recipeId target recipe ID
+     * @param sourceAttributionUrl the original page/photo this recipe was imported from
+     * @param sourceAttributionNote human-readable credit line paired with the URL
+     * @throws com.cooksync_server.exceptions.ResourceNotFoundException if no recipe with the given ID exists
+     */
+    void setSourceAttribution(String recipeId, String sourceAttributionUrl, String sourceAttributionNote);
 }

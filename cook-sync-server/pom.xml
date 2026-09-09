@@ -120,6 +120,15 @@
             <artifactId>firebase-admin</artifactId>
             <version>9.4.1</version>
         </dependency>
+
+        <!-- HTML parsing for recipe-import's web-page path: strips nav/script/style/ads from a
+             fetched page down to its main readable text before handing it to the extraction
+             LLM. -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.18.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

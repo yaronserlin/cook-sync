@@ -136,6 +136,16 @@ public class Recipe {
     @Builder.Default
     private List<DescriptionBlock> descriptionBlocks = new ArrayList<>();
 
+    /** Set only for a recipe created via {@code RecipeImportServiceImp} — the original page/photo
+     *  this recipe was extracted from, shown as a small credit link on the detail screen. */
+    @Column(name = "source_attribution_url", length = 2048)
+    private String sourceAttributionUrl;
+
+    /** Human-readable credit line paired with {@link #sourceAttributionUrl} (e.g. the source
+     *  site's domain), or {@code null} for a manually-created recipe. */
+    @Column(name = "source_attribution_note", length = 255)
+    private String sourceAttributionNote;
+
     /**
      * Initializes timestamps prior to persistence.
      */

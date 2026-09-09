@@ -62,7 +62,8 @@ public abstract class BaseRepository {
             Map.entry("OTP_EXPIRED", R.string.error_otp_expired),
             Map.entry("TOO_MANY_OTP_ATTEMPTS", R.string.error_too_many_otp_attempts),
             Map.entry("DATA_INTEGRITY_VIOLATION", R.string.error_resource_conflict),
-            Map.entry("INTERNAL_SERVER_ERROR", R.string.error_server)
+            Map.entry("INTERNAL_SERVER_ERROR", R.string.error_server),
+            Map.entry("RATE_LIMIT_EXCEEDED", R.string.error_rate_limit_exceeded)
     );
 
     /**
@@ -192,6 +193,7 @@ public abstract class BaseRepository {
             case 403 -> CookSyncApplication.getAppContext().getString(R.string.error_no_permission);
             case 404 -> CookSyncApplication.getAppContext().getString(R.string.error_not_found);
             case 409 -> CookSyncApplication.getAppContext().getString(R.string.error_resource_conflict);
+            case 429 -> CookSyncApplication.getAppContext().getString(R.string.error_rate_limit_exceeded);
             case 500 -> CookSyncApplication.getAppContext().getString(R.string.error_server);
             default -> CookSyncApplication.getAppContext().getString(R.string.error_unexpected, response.code());
         };

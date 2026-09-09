@@ -16,6 +16,8 @@ import com.cooksync.app.data.repository.MediaRepository;
 import com.cooksync.app.data.repository.impl.MediaRepositoryImp;
 import com.cooksync.app.data.repository.NotificationPreferencesRepository;
 import com.cooksync.app.data.repository.impl.NotificationPreferencesRepositoryImp;
+import com.cooksync.app.data.repository.RecipeImportRepository;
+import com.cooksync.app.data.repository.impl.RecipeImportRepositoryImp;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.impl.RecipeRepositoryImp;
 import com.cooksync.app.data.repository.TagRepository;
@@ -38,6 +40,7 @@ import com.cooksync.app.ui.home.HomeViewModel;
 import com.cooksync.app.ui.recipe.cooking.CookingModeViewModel;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailViewModel;
 import com.cooksync.app.ui.recipe.favorites.FavoritesViewModel;
+import com.cooksync.app.ui.recipe.importing.RecipeImportViewModel;
 import com.cooksync.app.ui.recipe.myrecipes.MyRecipesViewModel;
 import com.cooksync.app.ui.recipe.review.ReviewViewModel;
 import com.cooksync.app.ui.recipe.search.SearchViewModel;
@@ -68,6 +71,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final NotificationPreferencesRepository notificationPreferencesRepository;
     private final AnnouncementRepository announcementRepository;
     private final DeviceTokenRepository deviceTokenRepository;
+    private final RecipeImportRepository recipeImportRepository;
 
     /**
      * Constructs the factory, eagerly creating the shared repository instances it hands out to
@@ -83,6 +87,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         this.notificationPreferencesRepository = new NotificationPreferencesRepositoryImp();
         this.announcementRepository = new AnnouncementRepositoryImp();
         this.deviceTokenRepository = new DeviceTokenRepositoryImp();
+        this.recipeImportRepository = new RecipeImportRepositoryImp();
     }
 
     /**
@@ -141,6 +146,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new AdminAnnouncementsViewModel(adminRepository);
         } else if (modelClass.isAssignableFrom(AdminAppConfigViewModel.class)) {
             return (T) new AdminAppConfigViewModel(adminRepository);
+        } else if (modelClass.isAssignableFrom(RecipeImportViewModel.class)) {
+            return (T) new RecipeImportViewModel(recipeImportRepository, recipeRepository, mediaRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

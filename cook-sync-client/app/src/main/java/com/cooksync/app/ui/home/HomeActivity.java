@@ -188,7 +188,9 @@ public class HomeActivity extends BaseActivity {
                 Navigator.start(this, SearchActivity.newIntentWithFilters(this, viewModel)));
 
         findViewById(R.id.fab_add_recipe).setOnClickListener(v ->
-                Navigator.start(this, com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity.class));
+                com.cooksync.app.ui.common.AddRecipeEntryDialog.show(this,
+                        () -> Navigator.start(this, com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity.class),
+                        () -> Navigator.start(this, com.cooksync.app.ui.recipe.importing.RecipeImportActivity.class)));
 
         bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_home);
