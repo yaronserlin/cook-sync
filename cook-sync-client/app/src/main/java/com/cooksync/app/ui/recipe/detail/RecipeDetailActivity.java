@@ -33,7 +33,6 @@ import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
-import com.cooksync.app.util.CommitOnceGuard;
 import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
@@ -104,21 +103,11 @@ public class RecipeDetailActivity extends BaseActivity {
     private EditText etNote;
     private ImageButton btnNoteDelete;
 
-    /** Guards against a duplicate commit when both the save/delete icon tap and the resulting
-     *  focus-loss on {@link #etNote} fire for the same user gesture. Reset each time the note
-     *  editor opens. */
-    private final CommitOnceGuard noteEditGuard = new CommitOnceGuard();
-
     private MaterialButton btnEditRecipe;
     private boolean isFavorite = false;
-    private final List<ReviewResponse> allReviews = new ArrayList<>();
-    /** The review last optimistically removed by {@link #confirmDeleteReview}, restored if the
-     *  deferred delete fails server-side; {@code null} whenever no delete is in flight. */
-    private ReviewResponse pendingDeletedReview;
-    private final List<NoteResponse> currentNotes = new ArrayList<>();
+    private final ReviewsSectionController reviewsController = new ReviewsSectionController();
+    private RecipeNoteEditorController noteEditorController;
     private final Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new HashMap<>();
-    private Integer activeStarFilter = null;
-    private RecipeDetailViewModel.ReviewSort currentSort = RecipeDetailViewModel.ReviewSort.NEWEST;
     private boolean isInitialLoad = true;
 
     /** The recipe's own serving count, as authored; 0 until {@link #bindRecipe} has run once. */
@@ -147,6 +136,7 @@ public class RecipeDetailActivity extends BaseActivity {
         }
 
         viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(RecipeDetailViewModel.class);
+        noteEditorController = new RecipeNoteEditorController(viewModel);
 
         initViews();
         setupAdapters();
@@ -262,13 +252,13 @@ public class RecipeDetailActivity extends BaseActivity {
         });
 
         btnSortReviews.setOnClickListener(v -> {
-            currentSort = currentSort.next();
-            btnSortReviews.setText(sortLabel(currentSort));
+            reviewsController.advanceSort();
+            btnSortReviews.setText(sortLabel(reviewsController.getCurrentSort()));
             refreshReviewsDisplay();
         });
 
         findViewById(R.id.btn_clear_review_filter).setOnClickListener(v -> {
-            activeStarFilter = null;
+            reviewsController.clearStarFilter();
             refreshReviewsDisplay();
         });
     }
@@ -288,7 +278,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
             @Override
             public void onDeleteNote(InstructionResponse step) {
-                NoteResponse existing = viewModel.findStepNote(currentNotes, step.id());
+                NoteResponse existing = noteEditorController.getStepNote(step.id());
                 if (existing != null) viewModel.deleteNote(existing.id());
             }
         });
@@ -358,8 +348,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
         viewModel.getNotesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<NoteResponse>> success) {
-                currentNotes.clear();
-                currentNotes.addAll(success.getData());
+                noteEditorController.setNotes(success.getData());
                 renderRecipeNote();
                 renderStepNotes();
             }
@@ -377,9 +366,7 @@ public class RecipeDetailActivity extends BaseActivity {
         // success needs no signal since the review list already reflects it optimistically.
         viewModel.getReviewActionResult().observe(this, result -> {
             if (result instanceof ApiResult.Error<Void> error) {
-                if (pendingDeletedReview != null) {
-                    allReviews.add(pendingDeletedReview);
-                    pendingDeletedReview = null;
+                if (reviewsController.restorePendingDelete()) {
                     refreshReviewsDisplay();
                 }
                 showError(error.getMessage(), null);
@@ -411,15 +398,12 @@ public class RecipeDetailActivity extends BaseActivity {
         OrganicConfirmDialog.show(this, getString(R.string.dialog_delete_review_title),
                 getString(R.string.dialog_delete_review_message),
                 getString(R.string.action_delete), getString(R.string.action_cancel), true, () -> {
-                    pendingDeletedReview = review;
-                    allReviews.remove(review);
+                    reviewsController.markPendingDelete(review);
                     refreshReviewsDisplay();
                     viewModel.deleteReview(review.id());
                     OrganicToast.showWithAction(this, null, R.drawable.ic_delete,
                             getString(R.string.review_deleted), getString(R.string.action_undo), () -> {
-                        if (viewModel.undoDeleteReview(review.id())) {
-                            allReviews.add(review);
-                            pendingDeletedReview = null;
+                        if (viewModel.undoDeleteReview(review.id()) && reviewsController.restorePendingDelete()) {
                             refreshReviewsDisplay();
                         }
                     });
@@ -431,7 +415,7 @@ public class RecipeDetailActivity extends BaseActivity {
      * exists, or a dimmed "add a note" hint otherwise.
      */
     private void renderRecipeNote() {
-        NoteResponse note = viewModel.findRecipeNote(currentNotes);
+        NoteResponse note = noteEditorController.getRecipeNote();
         boolean hasNote = note != null;
         tvNote.setText(hasNote ? note.note() : getString(R.string.recipe_add_note_hint));
         tvNote.setAlpha(hasNote ? 1f : 0.7f);
@@ -442,14 +426,14 @@ public class RecipeDetailActivity extends BaseActivity {
      * pre-filling the {@link EditText} with the existing note text, if any.
      */
     private void openRecipeNoteEditor() {
-        NoteResponse existing = viewModel.findRecipeNote(currentNotes);
+        NoteResponse existing = noteEditorController.getRecipeNote();
         String text = existing != null ? existing.note() : "";
         etNote.setText(text);
         etNote.setSelection(text.length());
         groupNoteView.setVisibility(View.GONE);
         groupNoteEdit.setVisibility(View.VISIBLE);
         btnNoteDelete.setVisibility(existing != null ? View.VISIBLE : View.GONE);
-        noteEditGuard.reset();
+        noteEditorController.openEditor();
     }
 
     /**
@@ -464,14 +448,14 @@ public class RecipeDetailActivity extends BaseActivity {
     /**
      * Commits the recipe-wide note editor's current text. Called both from the explicit save
      * icon and from the {@link EditText} losing focus (i.e. the user taps outside it) — the
-     * {@link #noteEditGuard} makes whichever fires second a no-op, since tapping the
-     * save/delete icon itself blurs the field first. Only saves if the text is non-blank and
-     * actually changed.
+     * {@link RecipeNoteEditorController}'s commit guard makes whichever fires second a no-op,
+     * since tapping the save/delete icon itself blurs the field first. Only saves if the text
+     * is non-blank and actually changed.
      */
     private void commitRecipeNoteInline() {
-        if (!noteEditGuard.tryCommit()) return;
+        if (!noteEditorController.tryCommit()) return;
         String text = etNote.getText() == null ? "" : etNote.getText().toString().trim();
-        NoteResponse existing = viewModel.findRecipeNote(currentNotes);
+        NoteResponse existing = noteEditorController.getRecipeNote();
         String currentText = existing != null ? existing.note() : "";
         if (!text.isEmpty() && !Objects.equals(text, currentText)) {
             String recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
@@ -486,19 +470,20 @@ public class RecipeDetailActivity extends BaseActivity {
      * gesture.
      */
     private void deleteRecipeNoteInline() {
-        if (!noteEditGuard.tryCommit()) return;
-        NoteResponse existing = viewModel.findRecipeNote(currentNotes);
+        if (!noteEditorController.tryCommit()) return;
+        NoteResponse existing = noteEditorController.getRecipeNote();
         if (existing != null) viewModel.deleteNote(existing.id());
         closeRecipeNoteEditor();
     }
 
     /**
-     * Rebuilds the per-step note lookup from {@link #currentNotes} and pushes it to
-     * {@link #instructionAdapter}, so each instruction step shows its own note (if any).
+     * Rebuilds the per-step note lookup from {@link #noteEditorController}'s currently loaded
+     * notes and pushes it to {@link #instructionAdapter}, so each instruction step shows its
+     * own note (if any).
      */
     private void renderStepNotes() {
         Map<String, String> stepNotes = new HashMap<>();
-        for (NoteResponse note : currentNotes) {
+        for (NoteResponse note : noteEditorController.getNotes()) {
             if (note.instructionId() != null) stepNotes.put(note.instructionId(), note.note());
         }
         instructionAdapter.setNotes(stepNotes);
@@ -598,11 +583,8 @@ public class RecipeDetailActivity extends BaseActivity {
         instructionAdapter.setInstructions(sortedInstructions);
         tagAdapter.setTags(recipe.tags());
 
-        allReviews.clear();
-        if (recipe.reviews() != null) allReviews.addAll(recipe.reviews());
-        activeStarFilter = null;
-        currentSort = RecipeDetailViewModel.ReviewSort.NEWEST;
-        btnSortReviews.setText(sortLabel(currentSort));
+        reviewsController.setReviews(recipe.reviews());
+        btnSortReviews.setText(sortLabel(reviewsController.getCurrentSort()));
 
         bindRatingSummary(recipe);
         refreshReviewsDisplay();
@@ -630,7 +612,7 @@ public class RecipeDetailActivity extends BaseActivity {
                 startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))));
     }
 
-    /** Per-star review counts, index 1..5, recomputed each time {@link #allReviews} changes. */
+    /** Per-star review counts, index 1..5, recomputed each time the recipe's reviews change. */
     private int[] starCounts = new int[6];
 
     /**
@@ -659,9 +641,9 @@ public class RecipeDetailActivity extends BaseActivity {
         summaryRating.setText(viewModel.formatAverageRating(recipe.averageRating()));
         summaryStars.setText(viewModel.starsForRating(recipe.averageRating()));
 
-        starCounts = viewModel.getStarBreakdown(allReviews);
+        starCounts = viewModel.getStarBreakdown(reviewsController.getReviews());
 
-        int total = allReviews.size();
+        int total = reviewsController.getReviews().size();
         bindBarRow(R.id.bar_row_5, 5, total);
         bindBarRow(R.id.bar_row_4, 4, total);
         bindBarRow(R.id.bar_row_3, 3, total);
@@ -701,8 +683,9 @@ public class RecipeDetailActivity extends BaseActivity {
 
     /**
      * Wires the five star-value filter chips (5★..1★), each showing how many reviews carry
-     * that rating. Tapping a chip toggles {@link #activeStarFilter} down to that star (or
-     * clears it if already active), matching the design's "{{ rev.chips }}" row.
+     * that rating. Tapping a chip toggles {@link ReviewsSectionController#toggleStarFilter}
+     * down to that star (or clears it if already active), matching the design's
+     * "{{ rev.chips }}" row.
      */
     private void bindStarChips() {
         for (int star : STAR_VALUES) {
@@ -713,7 +696,7 @@ public class RecipeDetailActivity extends BaseActivity {
             label.setText(getString(R.string.star_chip_label_format, star));
             count.setText(String.valueOf(starCounts[star]));
             chip.setOnClickListener(v -> {
-                activeStarFilter = (activeStarFilter != null && activeStarFilter == star) ? null : star;
+                reviewsController.toggleStarFilter(star);
                 refreshReviewsDisplay();
             });
         }
@@ -721,6 +704,7 @@ public class RecipeDetailActivity extends BaseActivity {
     }
 
     private void updateStarChipHighlight() {
+        Integer activeStarFilter = reviewsController.getActiveStarFilter();
         for (int star : STAR_VALUES) {
             com.google.android.material.card.MaterialCardView chip = starChips.get(star);
             if (chip == null) continue;
@@ -735,14 +719,16 @@ public class RecipeDetailActivity extends BaseActivity {
     }
 
     /**
-     * Recomputes the displayed review list from {@link #allReviews}: applies
-     * {@link #activeStarFilter} (if any) then sorts per {@link #currentSort}, and updates the
+     * Recomputes the displayed review list from {@link #reviewsController}: applies its active
+     * star filter (if any) then sorts per its current sort order, and updates the
      * "N reviews · ..." summary label to match. Shows the empty state card in place of the list
      * when the active filter matches nothing.
      */
     private void refreshReviewsDisplay() {
         updateStarChipHighlight();
-        List<ReviewResponse> displayed = viewModel.getDisplayedReviews(allReviews, activeStarFilter, currentSort);
+        Integer activeStarFilter = reviewsController.getActiveStarFilter();
+        List<ReviewResponse> displayed = viewModel.getDisplayedReviews(
+                reviewsController.getReviews(), activeStarFilter, reviewsController.getCurrentSort());
         reviewAdapter.setReviews(displayed);
 
         reviewsSummaryLabel.setText(activeStarFilter == null
