@@ -14,13 +14,19 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 public interface CloudinaryService {
 
     /**
-     * Generates a signed upload signature payload for client direct uploads targeting a specific folder and public ID.
+     * Generates a signed upload signature payload for client direct uploads targeting a specific
+     * folder and public ID. {@code folder}, if given, must be the caller's own folder (as
+     * returned by {@link #buildUserFolder}) or a subfolder under it — this app has no legitimate
+     * use case for signing an upload into another user's folder or the shared root.
      *
-     * @param folder target folder path, or null for default
+     * @param folder target folder path, or null to default to the caller's own folder
      * @param publicId target asset public ID, or null for auto-generated
+     * @param userEmail the authenticated caller's email address, used to scope {@code folder}
      * @return CloudinarySignatureResponse DTO containing signature details and timestamp
+     * @throws com.cooksync_server.exceptions.auth.UnauthorizedActionException if {@code folder}
+     * is neither the caller's own folder nor a subfolder under it
      */
-    CloudinarySignatureResponse generateUploadSignature(String folder, String publicId);
+    CloudinarySignatureResponse generateUploadSignature(String folder, String publicId, String userEmail);
 
     /**
      * Returns the configured root Cloudinary folder for the active environment

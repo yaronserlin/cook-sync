@@ -5,6 +5,7 @@ import com.dtos.response.ApiResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,17 +28,20 @@ public class CloudinaryController {
     /**
      * Generates a signed upload signature payload for client-side direct media uploads.
      *
-     * @param folder target folder path the client intends to upload into, or {@code null} to
-     *               use the server-configured default
+     * @param folder target folder path the client intends to upload into — must be the caller's
+     *               own folder or a subfolder under it — or {@code null} to default to it
      * @param publicId target asset public ID the client intends to upload as, or {@code null}
      *                 to let Cloudinary auto-generate one
+     * @param authentication active user authentication token
      * @return response entity containing CloudinarySignatureResponse payload
      */
     @GetMapping("/signature")
     public ResponseEntity<ApiResponse<CloudinarySignatureResponse>> getSignature(
             @RequestParam(required = false) String folder,
-            @RequestParam(required = false) String publicId) {
-        CloudinarySignatureResponse response = cloudinaryService.generateUploadSignature(folder, publicId);
+            @RequestParam(required = false) String publicId,
+            Authentication authentication) {
+        CloudinarySignatureResponse response =
+                cloudinaryService.generateUploadSignature(folder, publicId, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(response, "Cloudinary signature generated"));
     }
 

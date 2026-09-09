@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.cooksync_server.exceptions.auth.UnauthorizedActionException;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,13 @@ public class CloudinaryServiceImp implements CloudinaryService {
      * {@inheritDoc}
      */
     @Override
-    public CloudinarySignatureResponse generateUploadSignature(String folder, String publicId) {
+    public CloudinarySignatureResponse generateUploadSignature(String folder, String publicId, String userEmail) {
         long timestamp = System.currentTimeMillis() / 1000;
-        String targetFolder = (folder == null || folder.isBlank()) ? baseFolder : folder;
+        String userFolder = buildUserFolder(userEmail, null);
+        String targetFolder = (folder == null || folder.isBlank()) ? userFolder : folder;
+        if (!targetFolder.equals(userFolder) && !targetFolder.startsWith(userFolder + "/")) {
+            throw new UnauthorizedActionException("You are not allowed to upload into this folder.");
+        }
 
         Map<String, Object> params = new java.util.HashMap<>();
         params.put("timestamp", timestamp);

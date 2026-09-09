@@ -75,7 +75,7 @@ class CloudinaryServiceTest {
      */
     @Test
     void generateUploadSignature_ShouldReturnValidSignatureResponse() {
-        CloudinarySignatureResponse response = cloudinaryService.generateUploadSignature(null, null);
+        CloudinarySignatureResponse response = cloudinaryService.generateUploadSignature(null, null, "user@example.com");
 
         assertNotNull(response);
         assertNotNull(response.signature());
@@ -139,14 +139,35 @@ class CloudinaryServiceTest {
         CloudinaryServiceImp service = new CloudinaryServiceImp(cloudinary);
         ReflectionTestUtils.setField(service, "baseFolder", "CookSyncApp");
 
-        CloudinarySignatureResponse response = service.generateUploadSignature("CustomFolder", null);
+        CloudinarySignatureResponse response = service.generateUploadSignature(
+                "CookSyncApp/user@example.com/CustomFolder", null, "user@example.com");
 
         Map<String, Object> expectedParams = new HashMap<>();
         expectedParams.put("timestamp", response.timestamp());
-        expectedParams.put("folder", "CustomFolder");
+        expectedParams.put("folder", "CookSyncApp/user@example.com/CustomFolder");
         String expectedSignature = cloudinary.apiSignRequest(expectedParams, "test-api-secret", 2);
 
         assertEquals(expectedSignature, response.signature());
+    }
+
+    /**
+     * Verifies that a {@code folder} outside the caller's own folder is rejected rather than
+     * signed, closing the IDOR that previously let any authenticated caller sign an upload into
+     * another user's folder (or the shared root) by simply naming it.
+     */
+    @Test
+    void generateUploadSignature_ShouldThrowUnauthorizedActionException_WhenFolderNotOwnedByCaller() {
+        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", "test-cloud-name",
+                "api_key", "test-api-key",
+                "api_secret", "test-api-secret",
+                "secure", true
+        ));
+        CloudinaryServiceImp service = new CloudinaryServiceImp(cloudinary);
+        ReflectionTestUtils.setField(service, "baseFolder", "CookSyncApp");
+
+        assertThrows(com.cooksync_server.exceptions.auth.UnauthorizedActionException.class,
+                () -> service.generateUploadSignature("CookSyncApp/other-user@example.com", null, "user@example.com"));
     }
 
     /**
@@ -165,11 +186,11 @@ class CloudinaryServiceTest {
         CloudinaryServiceImp service = new CloudinaryServiceImp(cloudinary);
         ReflectionTestUtils.setField(service, "baseFolder", "CookSyncApp");
 
-        CloudinarySignatureResponse response = service.generateUploadSignature(null, "custom-public-id");
+        CloudinarySignatureResponse response = service.generateUploadSignature(null, "custom-public-id", "user@example.com");
 
         Map<String, Object> expectedParams = new HashMap<>();
         expectedParams.put("timestamp", response.timestamp());
-        expectedParams.put("folder", "CookSyncApp");
+        expectedParams.put("folder", "CookSyncApp/user@example.com");
         expectedParams.put("public_id", "custom-public-id");
         String expectedSignature = cloudinary.apiSignRequest(expectedParams, "test-api-secret", 2);
 
