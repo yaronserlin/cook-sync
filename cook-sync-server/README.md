@@ -67,6 +67,7 @@ Environment variables are read via `application.properties`, which also auto-loa
 | `CORS_ALLOWED_ORIGINS` | No (defaults to `*` in `dev`, closed in `prod`) | Comma-separated allowed origins. Irrelevant to the Android client — CORS is a browser-only mechanism, not enforced by Retrofit/OkHttp — so this only matters if a browser-based client is ever added |
 | `PORT` | No (defaults to `8080`) | Port the server listens on |
 | `SPRING_PROFILES_ACTIVE` | No (no default — see below) | `dev` or `prod` (see below); combine with `prodSeeder` (e.g. `prod,prodSeeder`) to also run `ProductionSeeder` on that boot |
+| `PROD_SEEDER_CREATOR_PASSWORD` | Only when `ProductionSeeder` actually runs (no insecure fallback — it throws rather than seed a hardcoded password) | Initial password for the one-off seeded creator account (`gaya@cooksync.com`) |
 
 Schema is managed entirely by Flyway (`src/main/resources/db/migration/V1__init_schema.sql`).
 
