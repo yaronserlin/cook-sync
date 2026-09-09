@@ -71,7 +71,7 @@ public class AdminController {
      * @return response entity containing PagedResponse of UserResponse DTOs
      */
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getAllUsers(@ModelAttribute AdminUserQueryRequestDTO request) {
+    public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> getAllUsers(@Valid @ModelAttribute AdminUserQueryRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.success(adminService.getAllUsers(request), "Users retrieved successfully"));
     }
 

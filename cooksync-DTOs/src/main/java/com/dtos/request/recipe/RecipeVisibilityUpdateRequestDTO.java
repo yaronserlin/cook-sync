@@ -1,6 +1,7 @@
 package com.dtos.request.recipe;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * Data Transfer Object for changing only a recipe's visibility, without
@@ -13,6 +14,8 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record RecipeVisibilityUpdateRequestDTO(
         @NotBlank(message = "Visibility is required (PUBLIC, PRIVATE)")
+        @Pattern(regexp = "PUBLIC|PRIVATE", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "Visibility must be PUBLIC or PRIVATE")
         String visibility
 ) {
 }

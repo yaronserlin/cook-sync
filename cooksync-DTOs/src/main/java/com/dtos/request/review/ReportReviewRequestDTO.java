@@ -2,6 +2,7 @@ package com.dtos.request.review;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data Transfer Object for submitting moderation reports against user reviews.
@@ -18,6 +19,7 @@ public record ReportReviewRequestDTO(
         @Pattern(regexp = "SPAM|ABUSE|OFF_TOPIC", message = "Reason must be SPAM, ABUSE, or OFF_TOPIC")
         String reason,
 
+        @Size(max = 2000, message = "Comment must be at most 2000 characters")
         String comment
 ) {
 }

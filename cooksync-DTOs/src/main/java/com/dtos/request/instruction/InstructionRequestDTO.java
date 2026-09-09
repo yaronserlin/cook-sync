@@ -2,6 +2,7 @@ package com.dtos.request.instruction;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,14 +28,17 @@ public record InstructionRequestDTO(
         int stepNumber,
 
         @NotBlank(message = "Description is required")
+        @Size(max = 5000, message = "Description must be at most 5000 characters")
         String description,
 
         boolean hasTimer,
 
+        @Positive(message = "Timer duration must be a positive number of seconds")
         Integer timeSeconds,
 
         List<UUID> ingredientIds,
 
+        @Size(max = 2048, message = "Image URL must be at most 2048 characters")
         String imageUrl
 ) {
 }

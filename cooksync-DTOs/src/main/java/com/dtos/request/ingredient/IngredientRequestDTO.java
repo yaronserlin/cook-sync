@@ -1,7 +1,6 @@
 package com.dtos.request.ingredient;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 /**
@@ -14,7 +13,7 @@ import jakarta.validation.constraints.Positive;
  *              linked to it once persisted
  * @param name the ingredient display name, must not be blank
  * @param quantity the ingredient numeric amount, must be a positive number
- * @param unitId the unique identifier of the measurement unit, must not be null
+ * @param unitId the unique identifier of the measurement unit, must not be blank
  * @author Yaron Serlin
  * @version 1.0
  * @since 02/08/2026
@@ -28,7 +27,7 @@ public record IngredientRequestDTO(
         @Positive(message = "Quantity must be a positive number")
         double quantity,
 
-        @NotNull(message = "Unit ID is required")
+        @NotBlank(message = "Unit ID is required")
         String unitId
 ) {
 }

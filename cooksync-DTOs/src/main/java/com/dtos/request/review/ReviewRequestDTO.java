@@ -4,6 +4,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data Transfer Object for creating or updating a user recipe review.
@@ -23,8 +24,10 @@ public record ReviewRequestDTO(
         Double rating,
 
         @NotBlank(message = "Review title is required")
+        @Size(max = 200, message = "Review title must be at most 200 characters")
         String title,
 
+        @Size(max = 5000, message = "Review comment must be at most 5000 characters")
         String comment
 ) {
 }

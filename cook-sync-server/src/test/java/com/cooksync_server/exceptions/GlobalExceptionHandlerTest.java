@@ -87,6 +87,18 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleIllegalArgument_ShouldReturn400Payload() {
+        IllegalArgumentException ex = new IllegalArgumentException("Difficulty must be EASY, MEDIUM, or HARD");
+        ResponseEntity<ApiResponse<ApiErrorResponse>> response = exceptionHandler.handleIllegalArgument(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().success());
+        ApiErrorResponse error = (ApiErrorResponse) response.getBody().error();
+        assertEquals("INVALID_ARGUMENT", error.errorCode());
+    }
+
+    @Test
     void handleGenericException_ShouldSanitize500Message() {
         RuntimeException ex = new RuntimeException("Test unhandled server exception");
         ResponseEntity<ApiResponse<ApiErrorResponse>> response = exceptionHandler.handleGenericException(ex);

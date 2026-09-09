@@ -3,6 +3,10 @@ package com.dtos.request.recipe;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.dtos.request.common.PaginationDefaults;
+
+import jakarta.validation.constraints.Pattern;
+
 /**
  * Data Transfer Object bundling the public recipe feed's pagination, sort, and facet-filter
  * parameters. Bound server-side from query parameters via {@code @ModelAttribute} on
@@ -21,24 +25,24 @@ import java.util.Map;
 public record RecipeFeedRequestDTO(
         Integer page,
         Integer size,
+
+        @Pattern(regexp = "newest|rating|fastest", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "sortBy must be newest, rating, or fastest")
         String sortBy,
+
+        @Pattern(regexp = "EASY|MEDIUM|HARD", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "Difficulty must be EASY, MEDIUM, or HARD")
         String difficulty,
+
         Double minRating
 ) {
-    private static final int DEFAULT_PAGE = 0;
-    private static final int DEFAULT_SIZE = 20;
-
     /**
      * Normalizes an omitted {@code page}/{@code size} query parameter (bound as {@code null}) to
-     * this request's default.
+     * this request's default, via {@link PaginationDefaults}.
      */
     public RecipeFeedRequestDTO {
-        if (page == null) {
-            page = DEFAULT_PAGE;
-        }
-        if (size == null) {
-            size = DEFAULT_SIZE;
-        }
+        page = PaginationDefaults.normalizePage(page);
+        size = PaginationDefaults.normalizeSize(size);
     }
 
     /**

@@ -3,6 +3,11 @@ package com.dtos.request.recipe;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.dtos.request.common.PaginationDefaults;
+
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 /**
  * Data Transfer Object bundling the recipe catalog search's keyword/facet, pagination, and sort
  * parameters. Bound server-side from query parameters via {@code @ModelAttribute} on
@@ -22,29 +27,34 @@ import java.util.Map;
  * @since 09/09/2026
  */
 public record RecipeSearchRequestDTO(
+        @Size(max = 200, message = "Search query must be at most 200 characters")
         String q,
+
+        @Size(max = 200, message = "Author filter must be at most 200 characters")
         String author,
+
+        @Size(max = 200, message = "Ingredient filter must be at most 200 characters")
         String ingredient,
+
+        @Pattern(regexp = "newest|rating|fastest", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "sortBy must be newest, rating, or fastest")
         String sortBy,
+
+        @Pattern(regexp = "EASY|MEDIUM|HARD", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "Difficulty must be EASY, MEDIUM, or HARD")
         String difficulty,
+
         Double minRating,
         Integer page,
         Integer size
 ) {
-    private static final int DEFAULT_PAGE = 0;
-    private static final int DEFAULT_SIZE = 20;
-
     /**
      * Normalizes an omitted {@code page}/{@code size} query parameter (bound as {@code null}) to
-     * this request's default.
+     * this request's default, via {@link PaginationDefaults}.
      */
     public RecipeSearchRequestDTO {
-        if (page == null) {
-            page = DEFAULT_PAGE;
-        }
-        if (size == null) {
-            size = DEFAULT_SIZE;
-        }
+        page = PaginationDefaults.normalizePage(page);
+        size = PaginationDefaults.normalizeSize(size);
     }
 
     /**

@@ -51,7 +51,7 @@ public class RecipeController {
      * @return response entity containing PagedResponse of RecipePreviewResponse DTOs
      */
     @GetMapping("/paged")
-    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getAllRecipesPaged(@ModelAttribute RecipeFeedRequestDTO request) {
+    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getAllRecipesPaged(@Valid @ModelAttribute RecipeFeedRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.success(recipeService.getAllRecipesPaged(request), "Recipes retrieved successfully"));
     }
 
@@ -75,7 +75,7 @@ public class RecipeController {
      * @return response entity containing search result list of RecipePreviewResponse DTOs
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(@ModelAttribute RecipeSearchRequestDTO request) {
+    public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> searchRecipes(@Valid @ModelAttribute RecipeSearchRequestDTO request) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.searchRecipes(request);
         return ResponseEntity.ok(ApiResponse.success(recipes, "Search completed"));
     }
@@ -91,7 +91,7 @@ public class RecipeController {
     @GetMapping("/tag/{tagName}")
     public ResponseEntity<ApiResponse<PagedResponse<RecipePreviewResponse>>> getRecipesByTag(
             @PathVariable String tagName,
-            @ModelAttribute RecipeTagFilterRequestDTO request) {
+            @Valid @ModelAttribute RecipeTagFilterRequestDTO request) {
         PagedResponse<RecipePreviewResponse> recipes = recipeService.findRecipesByTag(tagName, request);
         return ResponseEntity.ok(ApiResponse.success(recipes, "Recipes retrieved by tag"));
     }

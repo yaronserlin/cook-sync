@@ -208,6 +208,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles IllegalArgumentException and responds with HTTP 400 BAD_REQUEST. Defense in depth
+     * for request fields not (or not yet) covered by a DTO-level {@code @Pattern}/{@code @Valid}
+     * constraint but still fed into an unguarded {@code Enum.valueOf(...)} or an explicit
+     * same-value check downstream (e.g. recipe {@code difficulty}/{@code visibility} on
+     * unauthenticated search/feed endpoints, or {@code AdminServiceImp#mergeTags} rejecting equal
+     * source/target tag IDs) — without this handler, those fall through to the generic 500
+     * handler below for what is really a client input error.
+     *
+     * @param ex target exception instance
+     * @return response entity containing formatted error payload
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<ApiErrorResponse>> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("Invalid request argument: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", "INVALID_ARGUMENT", ex.getMessage());
+    }
+
+    /**
      * Fallback exception handler catching uncaught exceptions and returning HTTP 500.
      * Sanitizes response message to avoid leaking internal trace or implementation details.
      *
