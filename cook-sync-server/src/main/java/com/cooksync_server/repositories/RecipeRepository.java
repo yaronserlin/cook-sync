@@ -42,6 +42,17 @@ public interface RecipeRepository extends JpaRepository<Recipe, String>, JpaSpec
     boolean existsByTitle(String title);
 
     /**
+     * Retrieves the recipe with the given exact title, used by
+     * {@link com.cooksync_server.config.ProductionSeeder} to look up an already-seeded recipe
+     * (new or pre-existing) by title so carried-over activity data can be attached to it despite
+     * the seeded entity getting a freshly generated ID.
+     *
+     * @param title exact recipe title to search for
+     * @return an optional containing the matching recipe, or empty if none has that title
+     */
+    Optional<Recipe> findByTitle(String title);
+
+    /**
      * Retrieves all recipes authored by a specific user account ID.
      *
      * @param userId unique user identifier

@@ -33,6 +33,17 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
     Page<Review> findByRecipeIdAndHiddenFalseOrderByCreatedAtDesc(String recipeId, Pageable pageable);
 
     /**
+     * Checks whether a user has already reviewed a specific recipe, used by
+     * {@link com.cooksync_server.config.ProductionSeeder} to avoid seeding a duplicate review on
+     * repeated runs.
+     *
+     * @param userId target user ID
+     * @param recipeId target recipe ID
+     * @return {@code true} if a review by that user on that recipe already exists
+     */
+    boolean existsByUserIdAndRecipeId(String userId, String recipeId);
+
+    /**
      * Retrieves reports still awaiting administrative moderation: flagged as reported and not
      * already hidden. Excluding hidden reviews means a report resolves itself the moment its
      * review is hidden by any means — most notably {@link #setHiddenByUserId}, called when an

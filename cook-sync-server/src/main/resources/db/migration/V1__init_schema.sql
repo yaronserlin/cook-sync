@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     cook_time_minutes INT NOT NULL,
     servings INT NOT NULL,
     review_count INT NOT NULL DEFAULT 0,
+    source_locale VARCHAR(10) NOT NULL DEFAULT 'en',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL,
     CONSTRAINT fk_recipes_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS units (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     code VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL UNIQUE,
+    name_plural VARCHAR(255) NOT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -167,18 +169,6 @@ CREATE TABLE IF NOT EXISTS description_blocks (
     CONSTRAINT fk_desc_blocks_recipe FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- password_reset_tokens and email_change_tokens intentionally have no FK to
--- users and no explicit charset/collation, so both tables adopt whichever
--- defaults users.id ends up with on any given deployment target. Both hold
--- only short-lived OTP state (rows are deleted the moment they're consumed
--- and otherwise expire in minutes), so the missing ON DELETE CASCADE costs
--- nothing: AccountDeletionService#purgeAccountImmediately deletes them
--- explicitly before removing the user. user_id is UNIQUE (enforcing the
--- one-active-token-per-user invariant the services already maintain via
--- deleteByUserId-before-insert) and the implicit index it creates keeps
--- PasswordResetTokenRepository/EmailChangeTokenRepository's findByUserId and
--- deleteByUserId paths indexed despite the missing foreign key.
-
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL UNIQUE,
@@ -209,9 +199,6 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
     attempt_count INT NOT NULL DEFAULT 0
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-ALTER TABLE recipes
-ADD COLUMN source_locale VARCHAR(10) NOT NULL DEFAULT 'en';
-
 CREATE TABLE IF NOT EXISTS content_translations (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
     entity_type VARCHAR(40) NOT NULL,
@@ -225,6 +212,16 @@ CREATE TABLE IF NOT EXISTS content_translations (
         entity_id,
         locale
     )
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS translation_memory (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    text_hash VARCHAR(64) NOT NULL,
+    locale VARCHAR(10) NOT NULL,
+    value TEXT NOT NULL,
+    source VARCHAR(20) NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT uk_translation_memory_target UNIQUE (text_hash, locale)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS device_tokens (
@@ -275,5 +272,3 @@ CREATE TABLE IF NOT EXISTS app_config (
     updated_at DATETIME NOT NULL,
     CONSTRAINT fk_app_config_updated_by FOREIGN KEY (updated_by) REFERENCES users (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-ALTER TABLE units ADD COLUMN name_plural VARCHAR(255) NOT NULL;
