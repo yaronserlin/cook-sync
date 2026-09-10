@@ -24,7 +24,7 @@ final class SeedDatabaseReset {
      */
     static void truncateAllTables(JdbcTemplate jdbcTemplate) {
         String[] tables = {
-            "recipe_import_job_images", "recipe_import_jobs", "device_tokens",
+            "device_tokens",
             "announcement_dismissals", "notification_preferences", "content_translations",
             "password_reset_tokens", "email_change_tokens", "pending_registrations",
             "app_config", "system_announcements", "users", "recipes", "units",
