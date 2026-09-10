@@ -1,15 +1,14 @@
 package com.cooksync_server.translation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.cooksync_server.translation.TranslationProvider.TranslationResult;
@@ -17,12 +16,14 @@ import com.cooksync_server.translation.TranslationProvider.TranslationResult;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 /**
- * Unit test suite for {@link MyMemoryTranslationProvider}: the pure logic (inferring the source
- * language from the app's Hebrew/English-only target locales, splitting text that exceeds
- * MyMemory's 500-byte-per-query cap into chunks that each stay within budget) plus
- * {@link MyMemoryTranslationProvider#translate}'s retry/partial-failure behavior, exercised
- * against a fake {@link MyMemoryTranslationProvider.ChunkTranslator} rather than a real HTTP call
- * (no HTTP-mocking dependency exists in this project).
+ * Unit test suite for {@link MyMemoryTranslationProvider}: the pure logic
+ * (inferring the source language from the app's Hebrew/English-only target
+ * locales, splitting text that exceeds MyMemory's 500-byte-per-query cap into
+ * chunks that each stay within budget) plus
+ * {@link MyMemoryTranslationProvider#translate}'s retry/partial-failure
+ * behavior, exercised against a fake
+ * {@link MyMemoryTranslationProvider.ChunkTranslator} rather than a real HTTP
+ * call (no HTTP-mocking dependency exists in this project).
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -46,38 +47,35 @@ class MyMemoryTranslationProviderTest {
     }
 
     @Test
-    void translate_retriesOnce_beforeGivingUpOnAChunk() {
+    void translate_retriesOnce_thenReturnsOriginalChunk_afterTranslationFails() {
         AtomicInteger callCount = new AtomicInteger();
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> {
-            if (callCount.getAndIncrement() == 0) {
-                return null;
-            }
-            return "translated";
+            callCount.incrementAndGet();
+            return null;
         });
 
         Optional<TranslationResult> result = provider.translate("hello", "he");
 
         assertTrue(result.isPresent());
-        assertEquals("translated", result.get().value());
-        assertTrue(result.get().complete());
+        assertEquals("hello", result.get().value());
+        assertFalse(result.get().complete());
         assertEquals(2, callCount.get());
     }
 
     @Test
-    void translate_retriesOnce_afterAnException_beforeGivingUpOnAChunk() {
+    void translate_retriesOnce_thenReturnsOriginalChunk_afterTranslationException() {
         AtomicInteger callCount = new AtomicInteger();
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> {
-            if (callCount.getAndIncrement() == 0) {
-                throw new RuntimeException("connection reset");
-            }
-            return "translated";
+            callCount.incrementAndGet();
+            throw new RuntimeException("connection reset");
         });
 
         Optional<TranslationResult> result = provider.translate("hello", "he");
 
         assertTrue(result.isPresent());
-        assertEquals("translated", result.get().value());
-        assertTrue(result.get().complete());
+        assertEquals("hello", result.get().value());
+        assertFalse(result.get().complete());
+        assertEquals(2, callCount.get());
     }
 
     @Test
@@ -91,8 +89,8 @@ class MyMemoryTranslationProviderTest {
         assertEquals(2, MyMemoryTranslationProvider.chunk(text, 480).size(),
                 "test setup expects exactly two chunks; adjust sentence length if this fails");
 
-        MyMemoryTranslationProvider provider = providerWith((chunk, source, target) ->
-                chunk.contains("Alpha") ? "ALPHA-TRANSLATED" : null);
+        MyMemoryTranslationProvider provider = providerWith((chunk, source, target)
+                -> chunk.contains("Alpha") ? "ALPHA-TRANSLATED" : null);
 
         Optional<TranslationResult> result = provider.translate(text, "he");
 
@@ -104,12 +102,54 @@ class MyMemoryTranslationProviderTest {
     }
 
     @Test
-    void translate_returnsEmpty_whenEveryChunkFails() {
+    void translate_returnsOriginalText_andStopsAfterThreeConsecutiveChunkFailures() {
+        String sentence = "Failure word ".repeat(28).trim() + " end.";
+        String text = String.join(" ", sentence, sentence, sentence, sentence);
+        assertEquals(4, MyMemoryTranslationProvider.chunk(text, 480).size(),
+                "test setup expects four chunks; adjust sentence length if this fails");
+        AtomicInteger callCount = new AtomicInteger();
+        MyMemoryTranslationProvider provider = providerWith((chunk, source, target) -> {
+            callCount.incrementAndGet();
+            return null;
+        });
+
+        Optional<TranslationResult> result = provider.translate(text, "he");
+
+        assertTrue(result.isPresent());
+        assertEquals(text, result.get().value());
+        assertFalse(result.get().complete());
+        assertEquals(6, callCount.get(),
+                "three failed chunks should each use the initial attempt and one retry");
+    }
+
+    @Test
+    void translate_stopsAcrossSeparateCalls_afterThreeConsecutiveChunkFailures() {
+        AtomicInteger callCount = new AtomicInteger();
+        MyMemoryTranslationProvider provider = providerWith((chunk, source, target) -> {
+            callCount.incrementAndGet();
+            return null;
+        });
+
+        provider.translate("first", "he");
+        provider.translate("second", "he");
+        Optional<TranslationResult> thirdResult = provider.translate("third", "he");
+        Optional<TranslationResult> fourthResult = provider.translate("fourth", "he");
+
+        assertEquals("third", thirdResult.orElseThrow().value());
+        assertEquals("fourth", fourthResult.orElseThrow().value());
+        assertEquals(6, callCount.get(),
+                "the fourth call must not contact MyMemory after three failed chunks");
+    }
+
+    @Test
+    void translate_returnsOriginalText_whenEveryChunkFails() {
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> null);
 
         Optional<TranslationResult> result = provider.translate("hello", "he");
 
-        assertTrue(result.isEmpty());
+        assertTrue(result.isPresent());
+        assertEquals("hello", result.get().value());
+        assertFalse(result.get().complete());
     }
 
     @Test

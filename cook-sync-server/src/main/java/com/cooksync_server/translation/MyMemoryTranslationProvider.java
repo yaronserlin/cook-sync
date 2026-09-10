@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,22 +23,28 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * {@link TranslationProvider} backed by the free MyMemory Translation API
- * (https://mymemory.translated.net) — no account/API key required, so this is the
- * {@code @Primary} bean over {@link UnavailableTranslationProvider} unconditionally rather than
- * behind a paid-quota profile switch.
+ * (https://mymemory.translated.net) — no account/API key required, so this is
+ * the {@code @Primary} bean over {@link UnavailableTranslationProvider}
+ * unconditionally rather than behind a paid-quota profile switch.
  *
- * <p>The app only ever asks for Hebrew or English (see {@code doc/vision/02-auto-translation.md}
- * — additional languages are explicitly out of scope), so the source language is inferred as
- * "the other one of the pair" rather than threaded through {@link TranslationProvider}'s
+ * <p>
+ * The app only ever asks for Hebrew or English (see
+ * {@code doc/vision/02-auto-translation.md} — additional languages are
+ * explicitly out of scope), so the source language is inferred as "the other
+ * one of the pair" rather than threaded through {@link TranslationProvider}'s
  * two-argument signature, which this class does not change.</p>
  *
- * <p>MyMemory caps a single {@code q} query at 500 UTF-8 bytes; recipe instructions/descriptions
- * routinely exceed that (observed up to ~1.5KB in the seed data), so {@link #translate} splits
- * long text into sentence-sized chunks and translates each independently via {@link #chunkTranslator}
- * (a real HTTP call in production, swappable for a fake in tests). Each chunk gets one retry
- * before being considered failed; a chunk that still fails keeps its original-language text in
- * place rather than aborting the whole translation, and the overall result is marked
- * {@link TranslationResult#complete()} {@code false} so callers know not to cache it.</p>
+ * <p>
+ * MyMemory caps a single {@code q} query at 500 UTF-8 bytes; recipe
+ * instructions/descriptions routinely exceed that (observed up to ~1.5KB in the
+ * seed data), so {@link #translate} splits long text into sentence-sized chunks
+ * and translates each independently via {@link #chunkTranslator} (a real HTTP
+ * call in production, swappable for a fake in tests). Each chunk gets one retry
+ * before being considered failed; after three consecutive failed chunks across
+ * provider calls the provider stops and returns original text, while isolated
+ * failures keep their original-language text in place. The overall result is
+ * marked {@link TranslationResult#complete()} {@code false} so callers know not
+ * to cache it.</p>
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -49,19 +56,29 @@ import lombok.extern.slf4j.Slf4j;
 public class MyMemoryTranslationProvider implements TranslationProvider {
 
     private static final int TIMEOUT_MS = 4000;
-    /** Kept safely under MyMemory's documented 500-byte-per-query cap. */
+    /**
+     * Kept safely under MyMemory's documented 500-byte-per-query cap.
+     */
     private static final int MAX_QUERY_BYTES = 480;
-    /** One initial attempt plus one retry before a chunk is considered failed. */
+    /**
+     * One initial attempt plus one retry before a chunk is considered failed.
+     */
     private static final int MAX_ATTEMPTS_PER_CHUNK = 2;
+    /**
+     * Stop spending requests when the provider is failing consistently.
+     */
+    private static final int MAX_CONSECUTIVE_FAILED_CHUNKS = 3;
 
     private final RestClient client;
     private final ChunkTranslator chunkTranslator;
     private final Counter quotaExhaustedCounter;
+    private final AtomicInteger consecutiveFailedChunks = new AtomicInteger();
 
     /**
-     * Optional contact email sent as MyMemory's {@code de} parameter, which raises the free
-     * daily quota from 5,000 to 50,000 characters — no signup, just an address they can reach in
-     * case of trouble. Defaults to blank (anonymous, lower-quota) usage.
+     * Optional contact email sent as MyMemory's {@code de} parameter, which
+     * raises the free daily quota from 5,000 to 50,000 characters — no signup,
+     * just an address they can reach in case of trouble. Defaults to blank
+     * (anonymous, lower-quota) usage.
      */
     @Value("${TRANSLATION_CONTACT_EMAIL:}")
     private String contactEmail;
@@ -78,11 +95,13 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
 
     /**
      * Test-only constructor that swaps the real HTTP call for a caller-supplied
-     * {@link ChunkTranslator}, since {@link #client} makes a real network request with no
-     * HTTP-mocking dependency available in this project.
+     * {@link ChunkTranslator}, since {@link #client} makes a real network
+     * request with no HTTP-mocking dependency available in this project.
      *
-     * @param meterRegistry meter registry the quota-exhaustion counter is registered against
-     * @param chunkTranslator fake chunk-translation function for the test to control
+     * @param meterRegistry meter registry the quota-exhaustion counter is
+     * registered against
+     * @param chunkTranslator fake chunk-translation function for the test to
+     * control
      */
     MyMemoryTranslationProvider(MeterRegistry meterRegistry, ChunkTranslator chunkTranslator) {
         this.client = null;
@@ -111,6 +130,9 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
             boolean anyChunkSucceeded = false;
             boolean everyChunkSucceeded = true;
             for (String piece : chunk(text, MAX_QUERY_BYTES)) {
+                if (consecutiveFailedChunks.get() >= MAX_CONSECUTIVE_FAILED_CHUNKS) {
+                    return Optional.of(new TranslationResult(text, false));
+                }
                 String translated = translateChunkWithRetry(piece, sourceLocale, targetLocale);
                 if (!result.isEmpty()) {
                     result.append(' ');
@@ -118,16 +140,23 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
                 if (translated != null) {
                     result.append(translated);
                     anyChunkSucceeded = true;
+                    consecutiveFailedChunks.set(0);
                 } else {
                     // Keep the chunk's original-language text in place rather than dropping it, so a
                     // partially-translated result still reads as the complete recipe, just mixed-language.
                     result.append(piece);
                     everyChunkSucceeded = false;
+                    int failedChunks = consecutiveFailedChunks.incrementAndGet();
+                    if (failedChunks >= MAX_CONSECUTIVE_FAILED_CHUNKS) {
+                        log.warn("MyMemory translation failed for {} consecutive chunks across provider calls; "
+                                + "using original text", failedChunks);
+                        return Optional.of(new TranslationResult(text, false));
+                    }
                 }
             }
 
             if (!anyChunkSucceeded) {
-                return Optional.empty();
+                return Optional.of(new TranslationResult(text, false));
             }
             return Optional.of(new TranslationResult(result.toString(), everyChunkSucceeded));
         } catch (RuntimeException e) {
@@ -142,8 +171,8 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     }
 
     /**
-     * Translates one chunk, retrying once (transient network hiccups/rate-limit blips are the
-     * likely failure mode for a single chunk out of several) before giving up on it.
+     * Translates one chunk, retrying once before falling back to the original
+     * chunk.
      *
      * @param text the chunk to translate
      * @param sourceLocale the inferred source language
@@ -166,14 +195,16 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     }
 
     /**
-     * Translates one chunk (already within MyMemory's byte limit) via a single GET request. This
-     * is the production {@link ChunkTranslator}; see the test-only constructor for how tests
-     * substitute a fake instead of making a real HTTP call.
+     * Translates one chunk (already within MyMemory's byte limit) via a single
+     * GET request. This is the production {@link ChunkTranslator}; see the
+     * test-only constructor for how tests substitute a fake instead of making a
+     * real HTTP call.
      *
      * @param text the chunk to translate
      * @param sourceLocale the inferred source language
      * @param targetLocale the requested target language
-     * @return the translated chunk, or {@code null} if MyMemory returned no usable result
+     * @return the translated chunk, or {@code null} if MyMemory returned no
+     * usable result
      */
     private String translateChunkViaHttp(String text, String sourceLocale, String targetLocale) {
         MyMemoryResponse response = client.get()
@@ -204,11 +235,12 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     }
 
     /**
-     * Infers the source language from the requested target, since this app only ever translates
-     * between Hebrew and English.
+     * Infers the source language from the requested target, since this app only
+     * ever translates between Hebrew and English.
      *
      * @param targetLocale the requested target language tag
-     * @return {@code "en"} or {@code "he"}, or {@code null} if {@code targetLocale} is neither
+     * @return {@code "en"} or {@code "he"}, or {@code null} if
+     * {@code targetLocale} is neither
      */
     static String inferSourceLocale(String targetLocale) {
         if (targetLocale == null) {
@@ -216,21 +248,25 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
         }
         String normalized = "iw".equalsIgnoreCase(targetLocale) ? "he" : targetLocale.toLowerCase(Locale.ROOT);
         return switch (normalized) {
-            case "he" -> "en";
-            case "en" -> "he";
-            default -> null;
+            case "he" ->
+                "en";
+            case "en" ->
+                "he";
+            default ->
+                null;
         };
     }
 
     /**
-     * Splits {@code text} into the fewest ordered chunks whose UTF-8 byte length each stays
-     * within {@code maxBytes}, breaking on sentence boundaries where possible and falling back to
-     * word boundaries for a single sentence that alone exceeds the budget.
+     * Splits {@code text} into the fewest ordered chunks whose UTF-8 byte
+     * length each stays within {@code maxBytes}, breaking on sentence
+     * boundaries where possible and falling back to word boundaries for a
+     * single sentence that alone exceeds the budget.
      *
      * @param text the full text to split
      * @param maxBytes the per-chunk byte budget
-     * @return the ordered chunks; concatenating them with single spaces reconstructs the text
-     *         (modulo whitespace normalization)
+     * @return the ordered chunks; concatenating them with single spaces
+     * reconstructs the text (modulo whitespace normalization)
      */
     static List<String> chunk(String text, int maxBytes) {
         List<String> chunks = new ArrayList<>();
@@ -286,27 +322,35 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     }
 
     /**
-     * Seam over the single-chunk HTTP call, extracted so tests can inject a fake instead of
-     * hitting the real MyMemory API (no HTTP-mocking dependency exists in this project).
+     * Seam over the single-chunk HTTP call, extracted so tests can inject a
+     * fake instead of hitting the real MyMemory API (no HTTP-mocking dependency
+     * exists in this project).
      */
     @FunctionalInterface
     interface ChunkTranslator {
+
         /**
          * @param text the chunk to translate
          * @param sourceLocale the inferred source language
          * @param targetLocale the requested target language
-         * @return the translated chunk, or {@code null} if no usable translation was returned
+         * @return the translated chunk, or {@code null} if no usable
+         * translation was returned
          */
         String translate(String text, String sourceLocale, String targetLocale);
     }
 
-    /** Shape of MyMemory's JSON response, deserialized for the fields this class actually uses. */
+    /**
+     * Shape of MyMemory's JSON response, deserialized for the fields this class
+     * actually uses.
+     */
     private record MyMemoryResponse(
             @JsonProperty("responseData") ResponseData responseData,
             @JsonProperty("responseStatus") int responseStatus,
             @JsonProperty("quotaFinished") boolean quotaFinished) {
+
     }
 
     private record ResponseData(@JsonProperty("translatedText") String translatedText) {
+
     }
 }
