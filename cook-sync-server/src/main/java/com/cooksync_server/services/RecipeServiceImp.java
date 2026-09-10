@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cooksync_server.constants.EntityNames;
+import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.DescriptionBlock;
 import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Instruction;
@@ -38,6 +39,7 @@ import com.cooksync_server.repositories.ReviewReportRepository;
 import com.cooksync_server.repositories.TagRepository;
 import com.cooksync_server.repositories.UnitRepository;
 import com.cooksync_server.repositories.UserRepository;
+import com.cooksync_server.translation.SourceLocaleDetector;
 import com.dtos.request.ingredient.IngredientRequestDTO;
 import com.dtos.request.instruction.InstructionRequestDTO;
 import com.dtos.request.common.PageRequestDTO;
@@ -78,6 +80,7 @@ public class RecipeServiceImp implements RecipeService{
     private final PersonalInstructionNoteRepository personalInstructionNoteRepository;
     private final ReviewReportRepository reviewReportRepository;
     private final CloudinaryService cloudinaryService;
+    private final TranslationCacheInvalidator translationCacheInvalidator;
 
     /**
      * Retrieves paginated slice of public recipes for feed infinite scrolling.
@@ -227,6 +230,7 @@ public class RecipeServiceImp implements RecipeService{
                 .reviewCount(0)
                 .build();
         applyRecipeFields(recipe, request);
+        recipe.setSourceLocale(SourceLocaleDetector.detect(sourceLocaleSignals(request)));
 
         Recipe savedRecipe = recipeRepository.save(recipe);
 
@@ -258,7 +262,30 @@ public class RecipeServiceImp implements RecipeService{
 
         List<String> oldImageUrls = RecipeImageUtils.extractAllImageUrls(recipe);
 
+        String oldTitle = recipe.getTitle();
+        String oldDescription = recipe.getDescription();
+        Set<String> oldIngredientNames = recipe.getIngredients().stream()
+                .map(Ingredient::getName).collect(Collectors.toSet());
+        Set<String> oldInstructionTexts = recipe.getInstructions().stream()
+                .map(Instruction::getDescription).collect(Collectors.toSet());
+        List<String> oldIngredientIds = recipe.getIngredients().stream()
+                .map(Ingredient::getId).filter(java.util.Objects::nonNull).toList();
+        List<String> oldInstructionIds = recipe.getInstructions().stream()
+                .map(Instruction::getId).filter(java.util.Objects::nonNull).toList();
+        List<String> oldDescriptionBlockIds = recipe.getDescriptionBlocks().stream()
+                .map(DescriptionBlock::getId).filter(java.util.Objects::nonNull).toList();
+
         applyRecipeFields(recipe, request);
+
+        boolean titleChanged = !java.util.Objects.equals(oldTitle, recipe.getTitle());
+        boolean descriptionChanged = !java.util.Objects.equals(oldDescription, recipe.getDescription());
+        boolean ingredientsChanged = !oldIngredientNames.equals(
+                request.ingredients().stream().map(IngredientRequestDTO::name).collect(Collectors.toSet()));
+        boolean instructionsChanged = !oldInstructionTexts.equals(
+                request.instructions().stream().map(InstructionRequestDTO::description).collect(Collectors.toSet()));
+        if (titleChanged || descriptionChanged || ingredientsChanged || instructionsChanged) {
+            recipe.setSourceLocale(SourceLocaleDetector.detect(sourceLocaleSignals(request)));
+        }
 
         Map<String, Ingredient> tmpIdToIngredient = new HashMap<>();
         recipe.getIngredients().clear();
@@ -275,6 +302,21 @@ public class RecipeServiceImp implements RecipeService{
                 .toList();
 
         cloudinaryService.deleteImages(removedImageUrls);
+
+        // Ingredients, instructions, and description blocks are always fully replaced above
+        // (cascade orphanRemoval clears and rebuilds them with new generated ids on every edit),
+        // so their old translation cache rows are orphaned regardless of whether the text itself
+        // changed and must be invalidated unconditionally. Title/description keep the recipe's
+        // stable id, so those are only invalidated when their text actually changed.
+        if (titleChanged) {
+            translationCacheInvalidator.invalidate(ContentTranslation.EntityType.RECIPE_TITLE, recipeId);
+        }
+        if (descriptionChanged) {
+            translationCacheInvalidator.invalidate(ContentTranslation.EntityType.RECIPE_DESCRIPTION, recipeId);
+        }
+        translationCacheInvalidator.invalidateAll(ContentTranslation.EntityType.INGREDIENT_NAME, oldIngredientIds);
+        translationCacheInvalidator.invalidateAll(ContentTranslation.EntityType.INSTRUCTION_TEXT, oldInstructionIds);
+        translationCacheInvalidator.invalidateAll(ContentTranslation.EntityType.RECIPE_DESCRIPTION_BLOCK, oldDescriptionBlockIds);
 
         return RecipeMapper.toResponse(recipeRepository.save(recipe));
     }
@@ -349,7 +391,25 @@ public class RecipeServiceImp implements RecipeService{
         recipe.setTags(fetchTags(request.tagIds()));
     }
 
-    /** 
+    /**
+     * Builds the priority-ordered text signals {@link SourceLocaleDetector} inspects to determine
+     * a recipe's {@code sourceLocale}: the title first (most likely to be decisive and cheapest
+     * to check), then the description, then every ingredient name and instruction step, so a
+     * blank/ambiguous title or description still resolves correctly from the recipe's body text.
+     *
+     * @param request the recipe creation/update request to derive signals from
+     * @return the signals, in detection priority order
+     */
+    private List<String> sourceLocaleSignals(RecipeCreateRequestDTO request) {
+        List<String> signals = new java.util.ArrayList<>();
+        signals.add(request.title());
+        signals.add(deriveDescription(request.descriptionBlocks()));
+        request.ingredients().forEach(ingredient -> signals.add(ingredient.name()));
+        request.instructions().forEach(instruction -> signals.add(instruction.description()));
+        return signals;
+    }
+
+    /**
      * @param visibility
      * @return Visibility
      */

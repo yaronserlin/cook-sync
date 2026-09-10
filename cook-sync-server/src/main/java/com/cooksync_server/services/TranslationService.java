@@ -1,12 +1,19 @@
 package com.cooksync_server.services;
 
+import java.util.Optional;
+
 import com.cooksync_server.entities.ContentTranslation;
+import com.cooksync_server.entities.TranslationMemory;
 import com.cooksync_server.repositories.ContentTranslationRepository;
+import com.cooksync_server.repositories.TranslationMemoryRepository;
 import com.cooksync_server.translation.TranslationProvider;
+import com.cooksync_server.translation.TranslationProvider.TranslationResult;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -40,8 +47,10 @@ import lombok.RequiredArgsConstructor;
 public class TranslationService {
 
     private final ContentTranslationRepository translationRepository;
+    private final TranslationMemoryRepository translationMemoryRepository;
     private final TranslationProvider provider;
     private final TranslationCacheWriter cacheWriter;
+    private final MeterRegistry meterRegistry;
 
     /**
      * Resolves one field's display value for the current request's locale.
@@ -61,25 +70,64 @@ public class TranslationService {
             return new TranslatedText(original, false);
         }
 
-        return translationRepository.findByEntityTypeAndEntityIdAndLocale(entityType, entityId, requestLocale)
-                .map(cached -> new TranslatedText(cached.getValue(), cached.getSource() == ContentTranslation.Source.MACHINE))
+        Optional<ContentTranslation> cached = translationRepository
+                .findByEntityTypeAndEntityIdAndLocale(entityType, entityId, requestLocale);
+        resultCounter("translation.cache.lookup", cached.isPresent() ? "hit" : "miss").increment();
+        return cached
+                .map(c -> new TranslatedText(c.getValue(), c.getSource() == ContentTranslation.Source.MACHINE))
                 .orElseGet(() -> translateOnDemand(entityType, entityId, original, requestLocale));
     }
 
+    /**
+     * Handles an entity-cache miss: first checks the text-hash-keyed shared
+     * {@link TranslationMemory} (a dedup layer independent of which entity {@code original} came
+     * from), and only calls {@link #provider} if that also misses. A shared-memory hit is copied
+     * into the entity cache so this same entity's next request skips both lookups. A
+     * <em>partial</em> provider result (some but not all chunks translated, see
+     * {@link TranslationResult#complete()}) is returned to this request but never persisted —
+     * caching a permanently mixed-language value would be worse than retrying on the next
+     * request.
+     */
     private TranslatedText translateOnDemand(ContentTranslation.EntityType entityType, String entityId,
                                               String original, String requestLocale) {
+        String textHash = TranslationTextHasher.hash(original);
+
+        Optional<TranslationMemory> shared = translationMemoryRepository.findByTextHashAndLocale(textHash, requestLocale);
+        resultCounter("translation.memory.lookup", shared.isPresent() ? "hit" : "miss").increment();
+        if (shared.isPresent()) {
+            TranslationMemory memory = shared.get();
+            cacheWriter.copyToEntityCache(entityType, entityId, requestLocale, memory.getValue(), memory.getSource());
+            return new TranslatedText(memory.getValue(), memory.getSource() == ContentTranslation.Source.MACHINE);
+        }
+
         return provider.translate(original, requestLocale)
-                .map(value -> {
-                    cacheWriter.save(ContentTranslation.builder()
-                            .entityType(entityType)
-                            .entityId(entityId)
-                            .locale(requestLocale)
-                            .value(value)
-                            .source(ContentTranslation.Source.MACHINE)
-                            .build());
-                    return new TranslatedText(value, true);
+                .map(result -> {
+                    if (result.complete()) {
+                        outcomeCounter("success");
+                        cacheWriter.save(ContentTranslation.builder()
+                                .entityType(entityType)
+                                .entityId(entityId)
+                                .locale(requestLocale)
+                                .value(result.value())
+                                .source(ContentTranslation.Source.MACHINE)
+                                .build(), textHash);
+                    } else {
+                        outcomeCounter("partial");
+                    }
+                    return new TranslatedText(result.value(), true);
                 })
-                .orElseGet(() -> new TranslatedText(original, false));
+                .orElseGet(() -> {
+                    outcomeCounter("failure");
+                    return new TranslatedText(original, false);
+                });
+    }
+
+    private Counter resultCounter(String name, String result) {
+        return meterRegistry.counter(name, "result", result);
+    }
+
+    private void outcomeCounter(String outcome) {
+        meterRegistry.counter("translation.provider.calls", "outcome", outcome).increment();
     }
 
     /**

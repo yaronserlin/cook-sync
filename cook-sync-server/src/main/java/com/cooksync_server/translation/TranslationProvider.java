@@ -20,9 +20,24 @@ public interface TranslationProvider {
      *
      * @param text the source-language text to translate
      * @param targetLocale IETF language tag to translate into, e.g. {@code "he"}
-     * @return the translated text, or empty if this provider has no translation available
-     *         (not configured, request failed, or timed out) — never throws for that case, so
-     *         callers can fall back to the original text without surfacing an error to the user
+     * @return a {@link TranslationResult}, or empty if this provider has no translation available
+     *         at all (not configured, request failed, or timed out) — never throws for that
+     *         case, so callers can fall back to the original text without surfacing an error to
+     *         the user
      */
-    Optional<String> translate(String text, String targetLocale);
+    Optional<TranslationResult> translate(String text, String targetLocale);
+
+    /**
+     * The outcome of a translate attempt for text that may have needed to be split into multiple
+     * chunks (see {@code MyMemoryTranslationProvider}'s 500-byte query cap). A result can be
+     * usable ({@code value} is populated) while still incomplete, when only some chunks
+     * succeeded — callers should serve an incomplete result to the current request but must not
+     * cache it, since the untranslated chunks it contains would otherwise be served forever.
+     *
+     * @param value the best available translated text — fully translated when {@code complete}
+     *              is {@code true}, otherwise a mix of translated and original-language chunks
+     * @param complete whether every chunk of {@code text} was successfully translated
+     */
+    record TranslationResult(String value, boolean complete) {
+    }
 }

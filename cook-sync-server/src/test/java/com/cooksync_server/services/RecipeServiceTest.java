@@ -12,7 +12,9 @@ import com.dtos.request.recipe.RecipeFeedRequestDTO;
 import com.dtos.request.recipe.RecipeSearchRequestDTO;
 import com.dtos.request.recipe.RecipeTagFilterRequestDTO;
 import com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO;
+import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.DescriptionBlock;
+import com.cooksync_server.entities.Ingredient;
 import com.cooksync_server.entities.Instruction;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.RecipeImage;
@@ -83,6 +85,8 @@ class RecipeServiceTest {
     private PersonalInstructionNoteRepository personalInstructionNoteRepository;
     @Mock
     private ReviewReportRepository reviewReportRepository;
+    @Mock
+    private TranslationCacheInvalidator translationCacheInvalidator;
 
     @InjectMocks
     private RecipeServiceImp recipeService;
@@ -236,6 +240,44 @@ class RecipeServiceTest {
     }
 
     @Test
+    void createRecipe_ShouldDetectEnglishSourceLocale_WhenTextIsEnglish() {
+        IngredientRequestDTO ingredientDto = new IngredientRequestDTO("tmp-1", "Flour", 200, "unit-1");
+        InstructionRequestDTO instructionDto = new InstructionRequestDTO(1, "Mix ingredients", false, null, List.of(), null);
+        RecipeCreateRequestDTO request = new RecipeCreateRequestDTO(
+                "New Recipe", "medium", "PUBLIC", 10, 20, 4,
+                List.of(), List.of(ingredientDto), List.of(instructionDto), null, List.of());
+
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(recipeRepository.save(any(Recipe.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(unitRepository.findAllById(any())).thenReturn(List.of(Unit.builder().id("unit-1").code("g").name("Gram").build()));
+
+        recipeService.createRecipe(request, "gordon@cooksync.com");
+
+        ArgumentCaptor<Recipe> captor = ArgumentCaptor.forClass(Recipe.class);
+        verify(recipeRepository).save(captor.capture());
+        assertEquals("en", captor.getValue().getSourceLocale());
+    }
+
+    @Test
+    void createRecipe_ShouldDetectHebrewSourceLocale_WhenTextIsHebrew() {
+        IngredientRequestDTO ingredientDto = new IngredientRequestDTO("tmp-1", "קמח", 200, "unit-1");
+        InstructionRequestDTO instructionDto = new InstructionRequestDTO(1, "לערבב", false, null, List.of(), null);
+        RecipeCreateRequestDTO request = new RecipeCreateRequestDTO(
+                "מתכון חדש", "medium", "PUBLIC", 10, 20, 4,
+                List.of(), List.of(ingredientDto), List.of(instructionDto), null, List.of());
+
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(recipeRepository.save(any(Recipe.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(unitRepository.findAllById(any())).thenReturn(List.of(Unit.builder().id("unit-1").code("g").name("Gram").build()));
+
+        recipeService.createRecipe(request, "gordon@cooksync.com");
+
+        ArgumentCaptor<Recipe> captor = ArgumentCaptor.forClass(Recipe.class);
+        verify(recipeRepository).save(captor.capture());
+        assertEquals("he", captor.getValue().getSourceLocale());
+    }
+
+    @Test
     void createRecipe_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
         RecipeCreateRequestDTO request = new RecipeCreateRequestDTO(
                 "New Recipe", "easy", "PUBLIC", 10, 20, 4,
@@ -335,6 +377,88 @@ class RecipeServiceTest {
         assertTrue(removedImageUrls.contains("http://img/old-block.jpg"));
 
         verify(recipeRepository).save(recipeToUpdate);
+    }
+
+    @Test
+    void updateRecipe_ShouldInvalidateTitleAndDescriptionTranslationCache_WhenTheyChange() {
+        Recipe recipeToUpdate = Recipe.builder()
+                .id("recipe-100")
+                .title("Old Title")
+                .description("Old description")
+                .createdBy(sampleUser)
+                .difficulty(Recipe.Difficulty.EASY)
+                .visibility(Recipe.Visibility.PUBLIC)
+                .prepTimeMinutes(10)
+                .cookTimeMinutes(10)
+                .servings(2)
+                .build();
+
+        Unit sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").build();
+        RecipeCreateRequestDTO updateRequest = new RecipeCreateRequestDTO(
+                "New Title", "MEDIUM", "PUBLIC", 15, 20, 3,
+                List.of(), List.of(new IngredientRequestDTO(null, "Salt", 5, "unit-1")),
+                List.of(new InstructionRequestDTO(1, "New step", false, null, List.of(), null)),
+                null, List.of(new DescriptionBlockDTO("TEXT", "New description", null, null, false)));
+
+        when(recipeRepository.findById("recipe-100")).thenReturn(Optional.of(recipeToUpdate));
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(unitRepository.findAllById(any())).thenReturn(List.of(sampleUnit));
+        when(recipeRepository.save(any(Recipe.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        recipeService.updateRecipe("recipe-100", updateRequest, "gordon@cooksync.com");
+
+        verify(translationCacheInvalidator).invalidate(ContentTranslation.EntityType.RECIPE_TITLE, "recipe-100");
+        verify(translationCacheInvalidator).invalidate(ContentTranslation.EntityType.RECIPE_DESCRIPTION, "recipe-100");
+    }
+
+    @Test
+    void updateRecipe_ShouldAlwaysInvalidateIngredientInstructionAndDescriptionBlockCache_OnEveryEdit() {
+        Recipe recipeToUpdate = Recipe.builder()
+                .id("recipe-100")
+                .title("Same Title")
+                .description("Same description")
+                .sourceLocale("he")
+                .createdBy(sampleUser)
+                .difficulty(Recipe.Difficulty.EASY)
+                .visibility(Recipe.Visibility.PUBLIC)
+                .prepTimeMinutes(10)
+                .cookTimeMinutes(10)
+                .servings(2)
+                .build();
+        Unit sampleUnit = Unit.builder().id("unit-1").code("g").name("Gram").build();
+        recipeToUpdate.getIngredients().add(Ingredient.builder()
+                .id("ing-old").recipe(recipeToUpdate).name("Salt")
+                .quantity(java.math.BigDecimal.ONE).unit(sampleUnit).build());
+        recipeToUpdate.getInstructions().add(Instruction.builder()
+                .id("inst-old").recipe(recipeToUpdate).stepNumber(1).description("Same step").build());
+        recipeToUpdate.getDescriptionBlocks().add(DescriptionBlock.builder()
+                .id("block-old").recipe(recipeToUpdate).type(DescriptionBlock.BlockType.TEXT)
+                .text("Same description").sortOrder(0).build());
+
+        // Same title/description/ingredient/instruction text as the existing recipe — only
+        // servings changes (2 -> 6) — so title/description invalidation and source-locale
+        // re-detection should both be skipped, but the always-replaced child entities'
+        // translation cache rows must still be invalidated since their ids are gone regardless.
+        RecipeCreateRequestDTO updateRequest = new RecipeCreateRequestDTO(
+                "Same Title", "EASY", "PUBLIC", 10, 10, 6,
+                List.of(), List.of(new IngredientRequestDTO(null, "Salt", 1, "unit-1")),
+                List.of(new InstructionRequestDTO(1, "Same step", false, null, List.of(), null)),
+                null, List.of(new DescriptionBlockDTO("TEXT", "Same description", null, null, false)));
+
+        when(recipeRepository.findById("recipe-100")).thenReturn(Optional.of(recipeToUpdate));
+        when(userRepository.findByEmail("gordon@cooksync.com")).thenReturn(Optional.of(sampleUser));
+        when(unitRepository.findAllById(any())).thenReturn(List.of(sampleUnit));
+        when(recipeRepository.save(any(Recipe.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        recipeService.updateRecipe("recipe-100", updateRequest, "gordon@cooksync.com");
+
+        verify(translationCacheInvalidator, never()).invalidate(ContentTranslation.EntityType.RECIPE_TITLE, "recipe-100");
+        verify(translationCacheInvalidator, never()).invalidate(ContentTranslation.EntityType.RECIPE_DESCRIPTION, "recipe-100");
+        verify(translationCacheInvalidator).invalidateAll(ContentTranslation.EntityType.INGREDIENT_NAME, List.of("ing-old"));
+        verify(translationCacheInvalidator).invalidateAll(ContentTranslation.EntityType.INSTRUCTION_TEXT, List.of("inst-old"));
+        verify(translationCacheInvalidator).invalidateAll(ContentTranslation.EntityType.RECIPE_DESCRIPTION_BLOCK, List.of("block-old"));
+        assertEquals("he", recipeToUpdate.getSourceLocale(),
+                "source locale must not be re-detected when no translatable text actually changed");
     }
 
     @Test

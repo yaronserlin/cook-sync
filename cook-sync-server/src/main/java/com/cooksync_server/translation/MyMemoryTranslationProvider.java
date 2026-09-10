@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -30,11 +33,14 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>MyMemory caps a single {@code q} query at 500 UTF-8 bytes; recipe instructions/descriptions
  * routinely exceed that (observed up to ~1.5KB in the seed data), so {@link #translate} splits
- * long text into sentence-sized chunks, translates each, and rejoins them — failing the whole
- * call (rather than returning a partially-translated result) if any chunk fails.</p>
+ * long text into sentence-sized chunks and translates each independently via {@link #chunkTranslator}
+ * (a real HTTP call in production, swappable for a fake in tests). Each chunk gets one retry
+ * before being considered failed; a chunk that still fails keeps its original-language text in
+ * place rather than aborting the whole translation, and the overall result is marked
+ * {@link TranslationResult#complete()} {@code false} so callers know not to cache it.</p>
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 05/09/2026
  */
 @Slf4j
@@ -45,11 +51,12 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     private static final int TIMEOUT_MS = 4000;
     /** Kept safely under MyMemory's documented 500-byte-per-query cap. */
     private static final int MAX_QUERY_BYTES = 480;
+    /** One initial attempt plus one retry before a chunk is considered failed. */
+    private static final int MAX_ATTEMPTS_PER_CHUNK = 2;
 
-    private final RestClient client = RestClient.builder()
-            .baseUrl("https://api.mymemory.translated.net")
-            .requestFactory(timeoutRequestFactory())
-            .build();
+    private final RestClient client;
+    private final ChunkTranslator chunkTranslator;
+    private final Counter quotaExhaustedCounter;
 
     /**
      * Optional contact email sent as MyMemory's {@code de} parameter, which raises the free
@@ -59,8 +66,38 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     @Value("${TRANSLATION_CONTACT_EMAIL:}")
     private String contactEmail;
 
+    @Autowired
+    public MyMemoryTranslationProvider(MeterRegistry meterRegistry) {
+        this.client = RestClient.builder()
+                .baseUrl("https://api.mymemory.translated.net")
+                .requestFactory(timeoutRequestFactory())
+                .build();
+        this.chunkTranslator = this::translateChunkViaHttp;
+        this.quotaExhaustedCounter = registerQuotaExhaustedCounter(meterRegistry);
+    }
+
+    /**
+     * Test-only constructor that swaps the real HTTP call for a caller-supplied
+     * {@link ChunkTranslator}, since {@link #client} makes a real network request with no
+     * HTTP-mocking dependency available in this project.
+     *
+     * @param meterRegistry meter registry the quota-exhaustion counter is registered against
+     * @param chunkTranslator fake chunk-translation function for the test to control
+     */
+    MyMemoryTranslationProvider(MeterRegistry meterRegistry, ChunkTranslator chunkTranslator) {
+        this.client = null;
+        this.chunkTranslator = chunkTranslator;
+        this.quotaExhaustedCounter = registerQuotaExhaustedCounter(meterRegistry);
+    }
+
+    private static Counter registerQuotaExhaustedCounter(MeterRegistry meterRegistry) {
+        return Counter.builder("translation.provider.quota.exhausted")
+                .tag("provider", "mymemory")
+                .register(meterRegistry);
+    }
+
     @Override
-    public Optional<String> translate(String text, String targetLocale) {
+    public Optional<TranslationResult> translate(String text, String targetLocale) {
         if (text == null || text.isBlank()) {
             return Optional.empty();
         }
@@ -71,32 +108,74 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
 
         try {
             StringBuilder result = new StringBuilder();
-            for (String chunk : chunk(text, MAX_QUERY_BYTES)) {
-                String translated = translateChunk(chunk, sourceLocale, targetLocale);
-                if (translated == null) {
-                    return Optional.empty();
-                }
+            boolean anyChunkSucceeded = false;
+            boolean everyChunkSucceeded = true;
+            for (String piece : chunk(text, MAX_QUERY_BYTES)) {
+                String translated = translateChunkWithRetry(piece, sourceLocale, targetLocale);
                 if (!result.isEmpty()) {
                     result.append(' ');
                 }
-                result.append(translated);
+                if (translated != null) {
+                    result.append(translated);
+                    anyChunkSucceeded = true;
+                } else {
+                    // Keep the chunk's original-language text in place rather than dropping it, so a
+                    // partially-translated result still reads as the complete recipe, just mixed-language.
+                    result.append(piece);
+                    everyChunkSucceeded = false;
+                }
             }
-            return Optional.of(result.toString());
+
+            if (!anyChunkSucceeded) {
+                return Optional.empty();
+            }
+            return Optional.of(new TranslationResult(result.toString(), everyChunkSucceeded));
         } catch (RuntimeException e) {
-            log.warn("MyMemory translation failed (target locale {}): {}", targetLocale, e.getMessage());
+            // Belt-and-braces fallback for anything outside translateChunkWithRetry's own
+            // per-chunk try/catch (e.g. a future bug in chunk()'s text processing) — this
+            // provider must never surface an exception to the caller, only ever an empty result,
+            // matching this codebase's fail-soft translation philosophy (original text beats a
+            // broken screen).
+            log.warn("MyMemory translation failed unexpectedly (target locale {}): {}", targetLocale, e.getMessage());
             return Optional.empty();
         }
     }
 
     /**
-     * Translates one chunk (already within MyMemory's byte limit) via a single GET request.
+     * Translates one chunk, retrying once (transient network hiccups/rate-limit blips are the
+     * likely failure mode for a single chunk out of several) before giving up on it.
+     *
+     * @param text the chunk to translate
+     * @param sourceLocale the inferred source language
+     * @param targetLocale the requested target language
+     * @return the translated chunk, or {@code null} if every attempt failed
+     */
+    private String translateChunkWithRetry(String text, String sourceLocale, String targetLocale) {
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS_PER_CHUNK; attempt++) {
+            try {
+                String translated = chunkTranslator.translate(text, sourceLocale, targetLocale);
+                if (translated != null) {
+                    return translated;
+                }
+            } catch (RuntimeException e) {
+                log.warn("MyMemory chunk translation attempt {}/{} failed (target locale {}): {}",
+                        attempt, MAX_ATTEMPTS_PER_CHUNK, targetLocale, e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Translates one chunk (already within MyMemory's byte limit) via a single GET request. This
+     * is the production {@link ChunkTranslator}; see the test-only constructor for how tests
+     * substitute a fake instead of making a real HTTP call.
      *
      * @param text the chunk to translate
      * @param sourceLocale the inferred source language
      * @param targetLocale the requested target language
      * @return the translated chunk, or {@code null} if MyMemory returned no usable result
      */
-    private String translateChunk(String text, String sourceLocale, String targetLocale) {
+    private String translateChunkViaHttp(String text, String sourceLocale, String targetLocale) {
         MyMemoryResponse response = client.get()
                 .uri(uriBuilder -> {
                     uriBuilder.path("/get")
@@ -117,6 +196,7 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
             return null;
         }
         if (response.quotaFinished()) {
+            quotaExhaustedCounter.increment();
             log.warn("MyMemory's free daily quota is exhausted - translations will fall back to "
                     + "source text until it resets. Set TRANSLATION_CONTACT_EMAIL for a higher quota.");
         }
@@ -203,6 +283,21 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
         factory.setConnectTimeout(TIMEOUT_MS);
         factory.setReadTimeout(TIMEOUT_MS);
         return factory;
+    }
+
+    /**
+     * Seam over the single-chunk HTTP call, extracted so tests can inject a fake instead of
+     * hitting the real MyMemory API (no HTTP-mocking dependency exists in this project).
+     */
+    @FunctionalInterface
+    interface ChunkTranslator {
+        /**
+         * @param text the chunk to translate
+         * @param sourceLocale the inferred source language
+         * @param targetLocale the requested target language
+         * @return the translated chunk, or {@code null} if no usable translation was returned
+         */
+        String translate(String text, String sourceLocale, String targetLocale);
     }
 
     /** Shape of MyMemory's JSON response, deserialized for the fields this class actually uses. */

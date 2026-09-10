@@ -1,6 +1,7 @@
 package com.cooksync_server.repositories;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -55,4 +56,33 @@ public interface ContentTranslationRepository extends JpaRepository<ContentTrans
             @Param("value") String value,
             @Param("source") String source,
             @Param("updatedAt") LocalDateTime updatedAt);
+
+    /**
+     * Deletes every cached translation (in any locale) for one field of one entity, so a stale
+     * or orphaned translation is never served after the source text changes or the entity itself
+     * is replaced.
+     *
+     * @param entityType the translatable field
+     * @param entityId id of the entity that field belongs to
+     * @return the number of rows deleted
+     */
+    @Modifying
+    @Query("DELETE FROM ContentTranslation ct WHERE ct.entityType = :entityType AND ct.entityId = :entityId")
+    long deleteByEntityTypeAndEntityId(
+            @Param("entityType") ContentTranslation.EntityType entityType, @Param("entityId") String entityId);
+
+    /**
+     * Bulk variant of {@link #deleteByEntityTypeAndEntityId} for the common case of invalidating
+     * many entities of the same field type at once (e.g. every ingredient replaced by a recipe
+     * edit) in a single statement, rather than the per-entity SELECT-then-remove a derived
+     * {@code deleteBy...} method (with no {@code @Query}) would otherwise issue.
+     *
+     * @param entityType the translatable field
+     * @param entityIds ids of the entities that field belongs to
+     * @return the number of rows deleted
+     */
+    @Modifying
+    @Query("DELETE FROM ContentTranslation ct WHERE ct.entityType = :entityType AND ct.entityId IN :entityIds")
+    long deleteByEntityTypeAndEntityIdIn(
+            @Param("entityType") ContentTranslation.EntityType entityType, @Param("entityIds") Collection<String> entityIds);
 }
