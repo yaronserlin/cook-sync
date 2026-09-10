@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+# Cancel a still-running run for the same ref when a newer push arrives, so an older,
+# superseded build can never win the race to publish the "latest-apk" rolling release
+# after a newer one has already published (which would also mean an older versionCode
+# overwriting a newer one).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   server:
     name: Server tests (Maven)
@@ -100,6 +108,9 @@ jobs:
 
       - name: Build release APK
         working-directory: cook-sync-client
+        env:
+          # Always-increasing per this workflow; read as versionCode in app/build.gradle.kts.
+          VERSION_CODE: ${{ github.run_number }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --console=plain

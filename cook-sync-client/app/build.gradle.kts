@@ -25,6 +25,19 @@ if (keystorePropertiesFile.exists()) {
     hasReleaseKeystore = storeFilePath != null && rootProject.file(storeFilePath).exists()
 }
 
+// versionCode must strictly increase across every APK ever published (Android rejects
+// installing one with an equal/lower code as a downgrade). CI supplies the workflow's
+// run number, which only ever goes up; local/dev builds fall back to 1.
+val appVersionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
+
+// versionName is the human-facing label: MAJOR.MINOR is bumped by hand in gradle.properties
+// when a release is worth calling out, independent of versionCode. The build number is
+// appended only for traceability (which CI build produced this APK) - it plays no part in
+// Android's install/upgrade logic, so it does not need to reset when MAJOR.MINOR changes.
+val versionMajor = project.property("versionMajor") as String
+val versionMinor = project.property("versionMinor") as String
+val appVersionName = "$versionMajor.$versionMinor (build $appVersionCode)"
+
 android {
     namespace = "com.cooksync.app"
     compileSdk {
@@ -37,8 +50,8 @@ android {
         applicationId = "com.cooksync.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         resValue("string", "app_name", "CookSync")
 
