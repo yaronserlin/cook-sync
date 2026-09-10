@@ -52,18 +52,6 @@ public class GlobalExceptionHandler {
      * @param ex target exception instance
      * @return response entity containing formatted error payload
      */
-    /**
-     * Handles RateLimitExceededException and responds with HTTP 429 TOO_MANY_REQUESTS.
-     *
-     * @param ex target exception instance
-     * @return response entity containing formatted error payload
-     */
-    @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<ApiResponse<ApiErrorResponse>> handleRateLimitExceeded(RateLimitExceededException ex) {
-        log.warn("Rate limit exceeded: {}", ex.getMessage());
-        return buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", "RATE_LIMIT_EXCEEDED", ex.getMessage());
-    }
-
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<ApiErrorResponse>> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
         log.warn("Resource already exists: {}", ex.getMessage());

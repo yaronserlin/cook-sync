@@ -210,9 +210,7 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 ALTER TABLE recipes
-ADD COLUMN source_locale VARCHAR(10) NOT NULL DEFAULT 'en',
-ADD COLUMN source_attribution_url VARCHAR(2048) NULL,
-ADD COLUMN source_attribution_note VARCHAR(255) NULL;
+ADD COLUMN source_locale VARCHAR(10) NOT NULL DEFAULT 'en';
 
 CREATE TABLE IF NOT EXISTS content_translations (
     id VARCHAR(36) NOT NULL PRIMARY KEY,
@@ -279,26 +277,3 @@ CREATE TABLE IF NOT EXISTS app_config (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 ALTER TABLE units ADD COLUMN name_plural VARCHAR(255) NOT NULL;
-
-CREATE TABLE IF NOT EXISTS recipe_import_jobs (
-    id VARCHAR(36) NOT NULL PRIMARY KEY,
-    user_id VARCHAR(36) NOT NULL,
-    source_type VARCHAR(16) NOT NULL,
-    source_url VARCHAR(2048) NULL,
-    status VARCHAR(16) NOT NULL,
-    error_message VARCHAR(1024) NULL,
-    result_recipe_id VARCHAR(36) NULL,
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    CONSTRAINT fk_recipe_import_jobs_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_recipe_import_jobs_recipe FOREIGN KEY (result_recipe_id) REFERENCES recipes (id) ON DELETE SET NULL,
-    INDEX idx_recipe_import_jobs_user_created (user_id, created_at)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS recipe_import_job_images (
-    id VARCHAR(36) NOT NULL PRIMARY KEY,
-    job_id VARCHAR(36) NOT NULL,
-    image_url VARCHAR(2048) NOT NULL,
-    sort_order INT NOT NULL,
-    CONSTRAINT fk_recipe_import_job_images_job FOREIGN KEY (job_id) REFERENCES recipe_import_jobs (id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

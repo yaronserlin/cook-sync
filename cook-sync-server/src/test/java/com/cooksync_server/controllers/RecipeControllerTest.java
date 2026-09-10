@@ -101,7 +101,7 @@ class RecipeControllerTest {
     void getRecipeById_ShouldReturnOk_WhenRecipeExists() throws Exception {
         RecipeResponse response = new RecipeResponse("recipe-1", null, "Pasta", "EASY", "PUBLIC",
                 10, 20, 2, 0, null, List.of(), "2026-08-01T00:00:00Z", null, List.of(), java.util.Set.of(),
-                List.of(), null, List.of(), false, null, null);
+                List.of(), null, List.of(), false);
         when(recipeService.getRecipeById("recipe-1")).thenReturn(response);
 
         mockMvc.perform(get("/api/recipes/recipe-1"))
@@ -125,7 +125,7 @@ class RecipeControllerTest {
         RecipeCreateRequestDTO request = validCreateRequest();
         RecipeResponse response = new RecipeResponse("recipe-1", null, "Pasta", "EASY", "PUBLIC",
                 10, 20, 2, 0, null, List.of(), "2026-08-01T00:00:00Z", null, List.of(), java.util.Set.of(),
-                List.of(), null, List.of(), false, null, null);
+                List.of(), null, List.of(), false);
         when(recipeService.createRecipe(any(RecipeCreateRequestDTO.class), eq("chef@example.com"))).thenReturn(response);
 
         mockMvc.perform(post("/api/recipes")
@@ -209,7 +209,7 @@ class RecipeControllerTest {
         RecipeCreateRequestDTO request = validCreateRequest();
         RecipeResponse response = new RecipeResponse("recipe-1", null, "Pasta", "EASY", "PUBLIC",
                 10, 20, 2, 0, null, List.of(), "2026-08-01T00:00:00Z", null, List.of(), java.util.Set.of(),
-                List.of(), null, List.of(), false, null, null);
+                List.of(), null, List.of(), false);
         when(recipeService.updateRecipe(eq("recipe-1"), any(RecipeCreateRequestDTO.class), eq("chef@example.com")))
                 .thenReturn(response);
 
@@ -255,7 +255,7 @@ class RecipeControllerTest {
         RecipeVisibilityUpdateRequestDTO request = new RecipeVisibilityUpdateRequestDTO("PRIVATE");
         RecipeResponse response = new RecipeResponse("recipe-1", null, "Pasta", "EASY", "PRIVATE",
                 10, 20, 2, 0, null, List.of(), "2026-08-01T00:00:00Z", null, List.of(), java.util.Set.of(),
-                List.of(), null, List.of(), false, null, null);
+                List.of(), null, List.of(), false);
         when(recipeService.updateVisibility(eq("recipe-1"), any(RecipeVisibilityUpdateRequestDTO.class), eq("chef@example.com")))
                 .thenReturn(response);
 

@@ -32,7 +32,5 @@ public final class EntityNames {
      */
     public static final String INGREDIENT = "Ingredient";
 
-    public static final String RECIPE_IMPORT_JOB = "RecipeImportJob";
-
     public static final String DEVICE_TOKEN = "DeviceToken";
 }

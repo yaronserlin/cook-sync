@@ -70,9 +70,7 @@ public final class RecipeMapper {
                 mapInstructions(recipe),
                 primaryImageUrl,
                 blocks,
-                isMachineTranslated,
-                recipe.getSourceAttributionUrl(),
-                recipe.getSourceAttributionNote()
+                isMachineTranslated
         );
     }
 

@@ -6,8 +6,8 @@ package com.cooksync.app.data.datasource.remote;
  * {@link RecipeApiService}, {@link TagApiService}, {@link UnitApiService},
  * {@link FavoriteApiService}, {@link NoteApiService}, {@link ReviewApiService},
  * {@link AdminApiService}, {@link DeviceApiService}, {@link AnnouncementApiService},
- * {@link NotificationPreferencesApiService}, {@link AppConfigApiService}, and
- * {@link RecipeImportApiService} — so each area's endpoints and Javadoc live in a focused file.
+ * {@link NotificationPreferencesApiService}, and {@link AppConfigApiService} — so each area's
+ * endpoints and Javadoc live in a focused file.
  * {@link RetrofitClient} still builds a single dynamic proxy implementing all of them via
  * {@code Retrofit.create(ApiService.class)}, so every existing caller keeps working unchanged.
  *
@@ -28,6 +28,5 @@ public interface ApiService extends
         DeviceApiService,
         AnnouncementApiService,
         NotificationPreferencesApiService,
-        AppConfigApiService,
-        RecipeImportApiService {
+        AppConfigApiService {
 }

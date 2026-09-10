@@ -80,7 +80,6 @@ public class RecipeDetailActivity extends BaseActivity {
     private TextView title;
     private TextView kicker;
     private TextView machineTranslatedBadge;
-    private TextView sourceAttribution;
     private TextView rating;
     private TextView reviewCount;
     private TextView prepTime;
@@ -176,7 +175,6 @@ public class RecipeDetailActivity extends BaseActivity {
         title = findViewById(R.id.detail_title);
         kicker = findViewById(R.id.detail_kicker);
         machineTranslatedBadge = findViewById(R.id.detail_machine_translated_badge);
-        sourceAttribution = findViewById(R.id.detail_source_attribution);
         rating = findViewById(R.id.detail_rating);
         reviewCount = findViewById(R.id.detail_review_count);
         prepTime = findViewById(R.id.detail_prep_time);
@@ -536,7 +534,6 @@ public class RecipeDetailActivity extends BaseActivity {
 
         title.setText(recipe.title());
         machineTranslatedBadge.setVisibility(recipe.isMachineTranslated() ? View.VISIBLE : View.GONE);
-        bindSourceAttribution(recipe);
         rating.setText(viewModel.formatAverageRating(recipe.averageRating()));
         reviewCount.setText(getString(R.string.review_count_format, recipe.reviewCount()));
         prepTime.setText(getString(R.string.time_format_short, recipe.prepTimeMinutes()));
@@ -588,28 +585,6 @@ public class RecipeDetailActivity extends BaseActivity {
 
         bindRatingSummary(recipe);
         refreshReviewsDisplay();
-    }
-
-    /**
-     * Shows a tappable source-credit line for a recipe imported from a web page (Phase 4's
-     * smart import), opening {@code sourceAttributionUrl} in the browser when tapped. Hidden
-     * entirely for recipes with no attribution, i.e. every manually authored recipe.
-     *
-     * @param recipe the recipe detail to render the attribution for
-     */
-    private void bindSourceAttribution(RecipeResponse recipe) {
-        String url = recipe.sourceAttributionUrl();
-        if (url == null || url.isBlank()) {
-            sourceAttribution.setVisibility(View.GONE);
-            return;
-        }
-        String note = recipe.sourceAttributionNote();
-        sourceAttribution.setText(note != null && !note.isBlank()
-                ? getString(R.string.recipe_source_attribution_format, note)
-                : url);
-        sourceAttribution.setVisibility(View.VISIBLE);
-        sourceAttribution.setOnClickListener(v ->
-                startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))));
     }
 
     /** Per-star review counts, index 1..5, recomputed each time the recipe's reviews change. */

@@ -37,11 +37,6 @@ import com.dtos.response.user.PublicUserProfileResponse;
  *                            by on-demand machine translation rather than the recipe's own
  *                            authored text or a human-reviewed translation — surfaced so the
  *                            client can show an "auto-translated" indicator
- * @param sourceAttributionUrl the original page/photo this recipe was imported from, or
- *                             {@code null} for a manually-created recipe
- * @param sourceAttributionNote human-readable credit line paired with
- *                              {@code sourceAttributionUrl} (e.g. the source site's domain), or
- *                              {@code null} for a manually-created recipe
  * @author Yaron Serlin
  * @version 1.2
  * @since 02/08/2026
@@ -65,8 +60,6 @@ public record RecipeResponse(
         List<InstructionResponse> instructions,
         String primaryImageUrl,
         List<DescriptionBlockDTO> descriptionBlocks,
-        boolean isMachineTranslated,
-        String sourceAttributionUrl,
-        String sourceAttributionNote
+        boolean isMachineTranslated
 ) {
 }

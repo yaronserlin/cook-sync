@@ -28,8 +28,5 @@ public final class UiTimingConstants {
     /** Minimum milliseconds between successive login or registration submit attempts. */
     public static final long SUBMIT_COOLDOWN_MS = 2000L;
 
-    /** How often the client polls a recipe-import job's status while it's still PENDING/PROCESSING. */
-    public static final long RECIPE_IMPORT_POLL_INTERVAL_MS = 2500L;
-
     private UiTimingConstants() {}
 }

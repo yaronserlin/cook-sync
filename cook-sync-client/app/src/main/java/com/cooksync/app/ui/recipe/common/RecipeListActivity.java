@@ -123,10 +123,7 @@ public abstract class RecipeListActivity extends BaseActivity {
     private void setupCreateRecipeFab() {
         fabAddRecipe = findViewById(R.id.fab_add_recipe);
         fabAddRecipe.setVisibility(View.VISIBLE);
-        fabAddRecipe.setOnClickListener(v ->
-                com.cooksync.app.ui.common.AddRecipeEntryDialog.show(this,
-                        () -> Navigator.start(this, AddRecipeWizardActivity.class),
-                        () -> Navigator.start(this, com.cooksync.app.ui.recipe.importing.RecipeImportActivity.class)));
+        fabAddRecipe.setOnClickListener(v -> Navigator.start(this, AddRecipeWizardActivity.class));
     }
 
     private void setupBottomNav() {

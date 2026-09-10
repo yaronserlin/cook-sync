@@ -214,7 +214,7 @@ public class MyRecipesViewModelTest {
         stubMyRecipes(List.of(recipeOne));
         viewModel.loadMyRecipes();
         viewModel.toggleVisibility(recipeOne);
-        RecipeResponse response = new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false, null, null);
+        RecipeResponse response = new RecipeResponse(null, null, null, null, null, 0, 0, 0, 0, null, null, null, null, null, null, null, null, null, false);
         doAnswer(ApiResultAnswers.success(response))
                 .when(recipeRepository).updateRecipeVisibility(eq("recipe-1"), eq("PRIVATE"), any());
 

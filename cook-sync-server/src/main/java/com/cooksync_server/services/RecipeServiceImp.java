@@ -331,18 +331,6 @@ public class RecipeServiceImp implements RecipeService{
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Transactional
-    public void setSourceAttribution(String recipeId, String sourceAttributionUrl, String sourceAttributionNote) {
-        Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new ResourceNotFoundException(EntityNames.RECIPE, recipeId));
-        recipe.setSourceAttributionUrl(sourceAttributionUrl);
-        recipe.setSourceAttributionNote(sourceAttributionNote);
-        recipeRepository.save(recipe);
-    }
-
-    /**
      * Applies a recipe request's scalar attributes and tag set onto a recipe entity. Shared by
      * {@link #createRecipe} and {@link #updateRecipe} since both derive the same fields from the
      * same request DTO shape, differing only in whether the entity is new or already persisted.
