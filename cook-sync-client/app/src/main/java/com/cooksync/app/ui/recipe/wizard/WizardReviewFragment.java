@@ -26,7 +26,6 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Wizard step 4: a read-only summary of the draft and a readiness checklist covering every
@@ -257,13 +256,21 @@ public class WizardReviewFragment extends Fragment {
     }
 
     /**
-     * Title-cases a raw difficulty value for display (e.g. "EASY" → "Easy").
+     * Resolves a raw difficulty value to its localized display label (e.g. {@code "EASY"} →
+     * "Easy" in English, "קלה" in Hebrew), reusing the same localized strings the difficulty
+     * filter chips already use rather than title-casing the raw English server value.
      *
-     * @param difficulty the raw difficulty value, or {@code null}/empty if unset
-     * @return a display-friendly capitalized version, or {@code "—"} if unset
+     * @param difficulty the raw difficulty value, or {@code null}/empty if not yet chosen
+     * @return the localized label, or {@code "—"} if unset
      */
     private String humanDifficulty(String difficulty) {
         if (difficulty == null || difficulty.isEmpty()) return "—";
-        return difficulty.substring(0, 1) + difficulty.substring(1).toLowerCase(Locale.ROOT);
+        if (DomainValues.DIFFICULTY_MEDIUM.equalsIgnoreCase(difficulty)) {
+            return getString(R.string.filter_difficulty_medium);
+        }
+        if (DomainValues.DIFFICULTY_HARD.equalsIgnoreCase(difficulty)) {
+            return getString(R.string.filter_difficulty_hard);
+        }
+        return getString(R.string.filter_difficulty_easy);
     }
 }

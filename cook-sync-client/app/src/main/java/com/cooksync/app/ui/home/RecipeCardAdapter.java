@@ -15,6 +15,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.util.GlideUtils;
 import com.cooksync.app.util.RecipeFilterUtils;
+import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
 import java.util.HashSet;
@@ -103,7 +104,7 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
         holder.title.setText(recipe.title());
         holder.author.setText(recipe.authorName());
         holder.blurb.setText(recipe.description());
-        holder.difficulty.setText(recipe.difficulty());
+        holder.difficulty.setText(resolveDifficultyLabel(recipe.difficulty()));
         holder.rating.setText(RecipeFilterUtils.formatRating(recipe.averageRating()));
         holder.time.setText(holder.itemView.getContext().getString(R.string.time_format, RecipeFilterUtils.totalTimeMinutes(recipe)));
 
@@ -123,6 +124,26 @@ public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, Recipe
                 listener.onFavoriteClick(recipe.id(), isFavorite);
             }
         });
+    }
+
+    /**
+     * Resolves a recipe's difficulty value to its localized string resource, so a Hebrew-locale
+     * device sees a translated label instead of the raw {@code EASY}/{@code MEDIUM}/{@code HARD}
+     * value {@link RecipePreviewResponse#difficulty()} carries verbatim from the server.
+     *
+     * @param difficulty the raw difficulty value from {@link RecipePreviewResponse#difficulty()}
+     * @return the localized string resource id for {@code difficulty}; defaults to the "easy"
+     *         label for any unrecognized value (the server only ever sends one of the three
+     *         known values, validated at request time)
+     */
+    private static int resolveDifficultyLabel(String difficulty) {
+        if (DomainValues.DIFFICULTY_MEDIUM.equalsIgnoreCase(difficulty)) {
+            return R.string.filter_difficulty_medium;
+        }
+        if (DomainValues.DIFFICULTY_HARD.equalsIgnoreCase(difficulty)) {
+            return R.string.filter_difficulty_hard;
+        }
+        return R.string.filter_difficulty_easy;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
