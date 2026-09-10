@@ -25,3 +25,5 @@ doc/**
 output/**
 cooksync-javadoc.zip
 cooksync-javadoc/**
+cook-sync-server/src/main/java/com/cooksync_server/config/ProductionSeeder.java
+
