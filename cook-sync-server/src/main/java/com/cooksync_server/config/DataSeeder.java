@@ -1,6 +1,7 @@
 package com.cooksync_server.config;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +10,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.springframework.boot.CommandLineRunner;
@@ -17,9 +25,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.cooksync_server.entities.DescriptionBlock;
 import com.cooksync_server.entities.FavoriteRecipe;
 import com.cooksync_server.entities.Ingredient;
@@ -45,14 +55,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Data Seeder component for initializing the database under the 'seed' active profile.
- * Populates 30 authentic culinary recipes, realistic user profiles, detailed step instructions with
- * timers, reviews, favorites, and personal notes. When Cloudinary credentials
- * ({@code CLOUDINARY_CLOUD_NAME}/{@code CLOUDINARY_API_KEY}/{@code CLOUDINARY_API_SECRET}) are
- * configured, every referenced media asset (avatars, recipe covers, step photos) is uploaded to
- * Cloudinary; otherwise the seeder detects the missing credentials up front, skips upload
- * attempts entirely, and seeds using the original stock image URLs directly, so the app runs
- * without a Cloudinary account.
+ * Data Seeder component for initializing the database under the 'seed' active
+ * profile. Populates 30 authentic culinary recipes, realistic user profiles,
+ * detailed step instructions with timers, reviews, favorites, and personal
+ * notes. When Cloudinary credentials
+ * ({@code CLOUDINARY_CLOUD_NAME}/{@code CLOUDINARY_API_KEY}/{@code CLOUDINARY_API_SECRET})
+ * are configured, every referenced media asset (avatars, recipe covers, step
+ * photos) is uploaded to Cloudinary; otherwise the seeder detects the missing
+ * credentials up front, skips upload attempts entirely, and seeds using the
+ * original stock image URLs directly, so the app runs without a Cloudinary
+ * account.
  *
  * @author Yaron Serlin
  * @version 2.0
@@ -63,6 +75,25 @@ import lombok.extern.slf4j.Slf4j;
 @Profile("seed")
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
+
+    /**
+     * The only Cloudinary base folder this seeder is ever allowed to wipe —
+     * matching {@code cloudinary.upload.base-folder} in
+     * {@code application-dev.properties}. {@link #clearDatabase} refuses to
+     * delete anything if the configured base folder doesn't match this exactly,
+     * so a misconfigured/missing "dev" profile (which would otherwise fall back
+     * to {@code application.properties}'s "cooksync-prod") can never cause this
+     * seed-only component to delete production Cloudinary media.
+     */
+    private static final String DELETABLE_CLOUDINARY_FOLDER = "cooksync-dev";
+
+    /**
+     * Ceiling on how long {@link #buildRecipesConcurrently} waits for a
+     * single recipe's build (its several Cloudinary uploads) to finish,
+     * before treating it as stuck and failing loudly instead of hanging the
+     * background seeder thread forever.
+     */
+    private static final Duration RECIPE_BUILD_TIMEOUT = Duration.ofMinutes(2);
 
     private final TagRepository tagRepository;
     private final UnitRepository unitRepository;
@@ -76,20 +107,45 @@ public class DataSeeder implements CommandLineRunner {
     private final JdbcTemplate jdbcTemplate;
     private final CloudinaryService cloudinaryService;
     private final Cloudinary cloudinary;
+    private final HebrewTranslationSeeder hebrewTranslationSeeder;
+    private final PlatformTransactionManager transactionManager;
 
-    /** In-memory cache of remote image URL -> Cloudinary secure URL to prevent redundant uploads. */
+    /**
+     * In-memory cache of remote image URL -> Cloudinary secure URL to prevent
+     * redundant uploads.
+     */
     private final Map<String, String> cloudinaryCache = new ConcurrentHashMap<>();
 
     /**
-     * Entry point invoked by Spring Boot on startup under the "seed" profile. Wipes and
-     * repopulates the entire schema with the full demo dataset (units, tags, users, recipes,
-     * reviews, favorites, personal notes), uploading every referenced image to Cloudinary along
-     * the way.
+     * Entry point invoked by Spring Boot on startup under the "seed" profile.
+     * Wipes the schema and seeds users on the startup thread, then returns
+     * immediately so the application finishes starting (server up, ready to
+     * accept requests) without waiting on the much slower remainder of the
+     * demo dataset. Everything else (units, tags, recipes, reviews,
+     * favorites, personal notes) is seeded, in its own transaction, on a
+     * background thread — see {@link #seedRemainingData}.
+     * <p>
+     * {@code clearDatabase()} and {@code seedUsers()} are wrapped in one
+     * {@link TransactionTemplate} so a failure in {@code seedUsers()} rolls
+     * its inserts back, but note this is <em>not</em> full atomicity: the
+     * {@code TRUNCATE TABLE} statements in {@link SeedDatabaseReset} commit
+     * immediately and unconditionally on MySQL/InnoDB regardless of the
+     * surrounding transaction, so a failure here still leaves the schema
+     * truncated rather than restored to its pre-run state. That's an
+     * accepted, self-healing risk for a dev-only seed profile — the next
+     * "seed" run truncates again before reseeding — not something this
+     * method attempts to fully guard against.
+     * <p>
+     * {@code backgroundSeeder} is deliberately a plain, non-daemon
+     * {@link Thread} rather than a daemon one: if application shutdown ever
+     * races with it (e.g. a SIGTERM mid-seed), a non-daemon thread failing
+     * because its {@code DataSource} was torn down produces a logged
+     * exception via {@link #seedRemainingData}'s catch block, whereas a
+     * daemon thread would simply be killed without any log at all.
      *
      * @param args command-line arguments, unused
      */
     @Override
-    @Transactional
     public void run(String... args) {
         if (isCloudinaryConfigured()) {
             log.info(">>> Starting database reset and realistic seeding with Cloudinary media upload...");
@@ -98,24 +154,55 @@ public class DataSeeder implements CommandLineRunner {
                     + "Seeding will use the original stock image URLs directly, skipping upload.");
         }
 
-        clearDatabase();
-        List<Unit> units = seedUnits();
-        List<Tag> tags = seedTags();
-        List<User> users = seedUsers();
-        List<Recipe> recipes = seedRecipes(users, units, tags);
-        seedReviews(recipes, users);
-        seedFavorites(recipes, users);
-        seedPersonalNotes(recipes, users);
+        List<User> users = new TransactionTemplate(transactionManager).execute(status -> {
+            clearDatabase();
+            return seedUsers();
+        });
 
-        log.info(">>> Database reset and seeding completed successfully. Total recipes seeded: {}", recipes.size());
+        log.info(">>> Users seeded; server is starting up. Seeding remaining demo data in the background...");
+
+        Thread backgroundSeeder = new Thread(() -> seedRemainingData(users), "data-seeder-background");
+        backgroundSeeder.start();
     }
 
     /**
-     * Reports whether real Cloudinary credentials are present. When they are not (e.g. local
-     * development or CI without a Cloudinary account), the seeder skips upload attempts entirely
-     * rather than making network calls that are guaranteed to fail.
+     * Seeds everything besides users (units, tags, catalog translations,
+     * recipes, recipe title translations, reviews, favorites, personal
+     * notes) in a single transaction, separate from the one {@link #run}
+     * uses to seed users. Runs on a background thread so the slow part of
+     * seeding — Cloudinary uploads for every recipe/step image — never
+     * blocks application startup; see the call site in {@link #run}.
      *
-     * @return {@code true} if cloud name, API key, and API secret are all non-blank
+     * @param users the already-committed seeded users to assign as recipe
+     * authors, reviewers, and note/favorite owners
+     */
+    private void seedRemainingData(List<User> users) {
+        try {
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+                List<Unit> units = seedUnits();
+                List<Tag> tags = seedTags();
+                hebrewTranslationSeeder.seedCatalogTranslations(tags, units);
+                List<Recipe> recipes = seedRecipes(users, units, tags);
+                hebrewTranslationSeeder.seedRecipeTitleTranslations(recipes);
+                seedReviews(recipes, users);
+                seedFavorites(recipes, users);
+                seedPersonalNotes(recipes, users);
+
+                log.info(">>> Database reset and seeding completed successfully. Total recipes seeded: {}", recipes.size());
+            });
+        } catch (Exception e) {
+            log.error(">>> Background seeding failed; database is left with users only (no recipes/catalog data).", e);
+        }
+    }
+
+    /**
+     * Reports whether real Cloudinary credentials are present. When they are
+     * not (e.g. local development or CI without a Cloudinary account), the
+     * seeder skips upload attempts entirely rather than making network calls
+     * that are guaranteed to fail.
+     *
+     * @return {@code true} if cloud name, API key, and API secret are all
+     * non-blank
      */
     private boolean isCloudinaryConfigured() {
         return cloudinary != null
@@ -125,11 +212,18 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Uploads a remote image URL to Cloudinary and returns the generated secure Cloudinary URL.
-     * If Cloudinary is not configured or the upload fails, gracefully falls back to the original URL.
+     * Uploads a remote image URL to Cloudinary and returns the generated secure
+     * Cloudinary URL. If Cloudinary is not configured or the upload fails,
+     * gracefully falls back to the original URL. Cache lookup-and-populate is
+     * done via {@link Map#computeIfAbsent}, which computes atomically per key
+     * — safe now that recipes (and therefore their uploads) build
+     * concurrently across many threads, unlike a separate contains-then-put
+     * pair which could otherwise let two threads race on the same key.
      *
      * @param imageUrl original image HTTP URL
-     * @param folder Cloudinary target folder (e.g., "[baseFolder]/[userEmail]/avatar", "[baseFolder]/[userEmail]/[recipeTitle]")
+     * @param folder Cloudinary target folder (e.g.,
+     * "[baseFolder]/[userEmail]/avatar",
+     * "[baseFolder]/[userEmail]/[recipeTitle]")
      * @param publicId exact Cloudinary public ID name
      * @return Cloudinary secure URL or fallback original URL
      */
@@ -138,10 +232,19 @@ public class DataSeeder implements CommandLineRunner {
             return imageUrl;
         }
         String cacheKey = folder + "/" + publicId + ":" + imageUrl;
-        if (cloudinaryCache.containsKey(cacheKey)) {
-            return cloudinaryCache.get(cacheKey);
-        }
+        return cloudinaryCache.computeIfAbsent(cacheKey, key -> performCloudinaryUpload(imageUrl, folder, publicId));
+    }
 
+    /**
+     * Performs the actual Cloudinary upload call for {@link #uploadToCloudinary},
+     * gracefully falling back to the original URL on failure.
+     *
+     * @param imageUrl original image HTTP URL
+     * @param folder Cloudinary target folder
+     * @param publicId exact Cloudinary public ID name
+     * @return the uploaded secure URL, or {@code imageUrl} unchanged on failure
+     */
+    private String performCloudinaryUpload(String imageUrl, String folder, String publicId) {
         try {
             Map<String, Object> options = new HashMap<>();
             options.put("folder", folder);
@@ -154,7 +257,6 @@ public class DataSeeder implements CommandLineRunner {
             String secureUrl = (String) uploadResult.get("secure_url");
             if (secureUrl != null && !secureUrl.isBlank()) {
                 log.info("Uploaded to Cloudinary: [{}] -> [{}] (Folder: {}, PublicID: {})", imageUrl, secureUrl, folder, publicId);
-                cloudinaryCache.put(cacheKey, secureUrl);
                 return secureUrl;
             }
         } catch (Exception e) {
@@ -162,21 +264,79 @@ public class DataSeeder implements CommandLineRunner {
                     imageUrl, folder, publicId, e.getMessage());
         }
 
-        cloudinaryCache.put(cacheKey, imageUrl);
         return imageUrl;
     }
 
     /**
-     * Wipes every table this seeder repopulates, via {@link SeedDatabaseReset}, so each seeding
-     * run starts from a clean, deterministic schema state.
+     * Wipes every table this seeder repopulates, via {@link SeedDatabaseReset},
+     * and every Cloudinary asset uploaded by a previous seeding run, so each
+     * run starts from a clean, deterministic state on both sides rather than
+     * accumulating orphaned media in Cloudinary run after run. The Cloudinary
+     * cleanup runs synchronously (see {@link #deleteCloudinaryFolderSync}, not
+     * {@link CloudinaryService#deleteFolder}'s normal {@code @Async} path) and
+     * completes before this method returns, so the fresh avatar uploads
+     * {@link #seedUsers} performs right afterward, into that same folder
+     * tree, can never race a still-in-flight delete-by-prefix call.
      */
     private void clearDatabase() {
         log.info(">>> Clearing existing database tables...");
         SeedDatabaseReset.truncateAllTables(jdbcTemplate);
+
+        if (isCloudinaryConfigured()) {
+            String baseFolder = cloudinaryService.getBaseFolder();
+            if (isDeletableCloudinaryFolder(baseFolder)) {
+                log.info(">>> Clearing existing Cloudinary media under folder '{}'...", baseFolder);
+                deleteCloudinaryFolderSync(baseFolder);
+            } else {
+                log.warn(">>> Skipping Cloudinary cleanup: configured base folder is '{}', not the "
+                        + "expected dev folder '{}'. Refusing to delete a non-dev Cloudinary folder.",
+                        baseFolder, DELETABLE_CLOUDINARY_FOLDER);
+            }
+        }
     }
 
     /**
-     * Seeds the fixed catalog of measurement units used by the sample recipes below.
+     * Reports whether {@code baseFolder} is the one Cloudinary folder this
+     * seeder is ever allowed to wipe — see {@link #DELETABLE_CLOUDINARY_FOLDER}.
+     * Extracted as its own pure predicate so this safety-critical check can be
+     * unit-tested directly, without needing to mock the seeder's full
+     * dependency graph just to exercise it.
+     *
+     * @param baseFolder the configured Cloudinary base folder to check
+     * @return {@code true} only if {@code baseFolder} exactly equals
+     * {@link #DELETABLE_CLOUDINARY_FOLDER}
+     */
+    static boolean isDeletableCloudinaryFolder(String baseFolder) {
+        return DELETABLE_CLOUDINARY_FOLDER.equals(baseFolder);
+    }
+
+    /**
+     * Deletes every resource under {@code folderPath} and the folder record
+     * itself, synchronously — unlike {@link CloudinaryService#deleteFolder},
+     * which is {@code @Async} so that request-handling callers (e.g. account
+     * deletion) don't block a user-facing transaction on the Cloudinary
+     * round-trip. This seeder needs the opposite: {@link #clearDatabase} must
+     * not return, and {@link #seedUsers} must not start uploading fresh
+     * avatars into this same folder tree, until the deletion has actually
+     * finished — otherwise a slow {@code deleteResourcesByPrefix} sweep could
+     * still be running when a brand-new upload lands under the same prefix
+     * and delete it out from under the freshly-seeded user.
+     *
+     * @param folderPath the Cloudinary folder to wipe
+     */
+    private void deleteCloudinaryFolderSync(String folderPath) {
+        try {
+            cloudinary.api().deleteResourcesByPrefix(folderPath + "/", ObjectUtils.emptyMap());
+            cloudinary.api().deleteFolder(folderPath, ObjectUtils.emptyMap());
+            log.info("Successfully deleted Cloudinary folder: {}", folderPath);
+        } catch (Exception e) {
+            log.warn("Failed to delete Cloudinary folder {}: {}", folderPath, e.getMessage());
+        }
+    }
+
+    /**
+     * Seeds the fixed catalog of measurement units used by the sample recipes
+     * below.
      *
      * @return the persisted unit entities
      */
@@ -203,9 +363,9 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Seeds the fixed catalog of recipe tags, including a handful of deliberate near-duplicate
-     * (space- vs. hyphen-separated) variants so the admin duplicate-tag detection and merge
-     * tools have real groups to exercise.
+     * Seeds the fixed catalog of recipe tags, including a handful of deliberate
+     * near-duplicate (space- vs. hyphen-separated) variants so the admin
+     * duplicate-tag detection and merge tools have real groups to exercise.
      *
      * @return the persisted tag entities
      */
@@ -245,8 +405,9 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Seeds the fixed catalog of sample user accounts (including one admin), uploading a stock
-     * avatar image to Cloudinary for each one via {@link #uploadToCloudinary(String, String, String)}.
+     * Seeds the fixed catalog of sample user accounts (including one admin),
+     * uploading a stock avatar image to Cloudinary for each one via
+     * {@link #uploadToCloudinary(String, String, String)}.
      *
      * @return the persisted user entities
      */
@@ -254,21 +415,21 @@ public class DataSeeder implements CommandLineRunner {
         log.info(">>> Seeding users and uploading avatar media to Cloudinary...");
 
         String[] rawAvatars = {
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
-                "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80"
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80"
         };
 
         List<User> initialUsers = List.of(
@@ -336,8 +497,9 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Indexes seeded tags by name, so recipe-seeding code can look one up by its literal name
-     * instead of tracking each {@link Tag} entity's generated ID by hand.
+     * Indexes seeded tags by name, so recipe-seeding code can look one up by
+     * its literal name instead of tracking each {@link Tag} entity's generated
+     * ID by hand.
      *
      * @param tags the seeded tag entities to index
      * @return the tags keyed by {@link Tag#getName()}
@@ -347,8 +509,9 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Indexes seeded units by their lowercased code, so recipe-seeding code can look one up by
-     * its literal code instead of tracking each {@link Unit} entity's generated ID by hand.
+     * Indexes seeded units by their lowercased code, so recipe-seeding code can
+     * look one up by its literal code instead of tracking each {@link Unit}
+     * entity's generated ID by hand.
      *
      * @param units the seeded unit entities to index
      * @return the units keyed by their lowercased {@link Unit#getCode()}
@@ -358,13 +521,16 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Looks up a seeded unit by its code, falling back to {@code "piece"} (and, if that is also
-     * unavailable, to an arbitrary seeded unit) so a typo or omission in the hardcoded sample
-     * recipe data below never crashes the seeding run.
+     * Looks up a seeded unit by its code, falling back to {@code "piece"} (and,
+     * if that is also unavailable, to an arbitrary seeded unit) so a typo or
+     * omission in the hardcoded sample recipe data below never crashes the
+     * seeding run.
      *
      * @param unitMap the seeded units, as built by {@link #getUnitMap(List)}
-     * @param code the unit code to look up, or {@code null} to use the {@code "piece"} fallback directly
-     * @return the matching unit, the {@code "piece"} fallback, or an arbitrary seeded unit if neither is found
+     * @param code the unit code to look up, or {@code null} to use the
+     * {@code "piece"} fallback directly
+     * @return the matching unit, the {@code "piece"} fallback, or an arbitrary
+     * seeded unit if neither is found
      */
     private Unit getUnit(Map<String, Unit> unitMap, String code) {
         if (code == null) {
@@ -382,13 +548,19 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Seeds a fixed catalog of 30 fully-populated sample recipes — each with ingredients,
-     * instruction steps (some with timers), tags, and Cloudinary-hosted cover/gallery images —
-     * spread across the seeded sample users as authors.
+     * Seeds a fixed catalog of 30 fully-populated sample recipes — each with
+     * ingredients, instruction steps (some with timers), tags, and
+     * Cloudinary-hosted cover/gallery images — spread across the seeded sample
+     * users as authors. Each recipe is built (including its Cloudinary
+     * uploads) on its own virtual thread via {@link #buildRecipesConcurrently},
+     * since {@link #createRecipe} does no persistence itself — every recipe
+     * is saved together in one batch afterward, back on the calling thread.
      *
      * @param users the seeded user entities to assign as recipe authors
-     * @param units the seeded unit entities, indexed via {@link #getUnitMap(List)} for ingredient lookups
-     * @param tags the seeded tag entities, indexed via {@link #getTagMap(List)} for recipe tagging
+     * @param units the seeded unit entities, indexed via
+     * {@link #getUnitMap(List)} for ingredient lookups
+     * @param tags the seeded tag entities, indexed via {@link #getTagMap(List)}
+     * for recipe tagging
      * @return the persisted recipe entities
      */
     private List<Recipe> seedRecipes(List<User> users, List<Unit> units, List<Tag> tags) {
@@ -397,9 +569,9 @@ public class DataSeeder implements CommandLineRunner {
         Map<String, Tag> tagMap = getTagMap(tags);
         Map<String, Unit> unitMap = getUnitMap(units);
 
-        List<Recipe> recipeList = new ArrayList<>();
+        List<Callable<Recipe>> recipeBuilders = new ArrayList<>();
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Classic Spaghetti Carbonara",
                 "Authentic Roman pasta Carbonara made with crispy guanciale, egg yolks, freshly grated Pecorino Romano cheese, and cracked black pepper.",
                 Recipe.Difficulty.MEDIUM, 10, 15, 2, users.get(0),
@@ -421,7 +593,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Authentic Middle Eastern Shakshuka",
                 "Poached eggs in a rich simmered tomato, bell pepper, and garlic sauce spiced with cumin and smoked paprika, topped with crumbled feta.",
                 Recipe.Difficulty.EASY, 10, 20, 3, users.get(13),
@@ -444,7 +616,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Japanese Chicken Teriyaki Bowl",
                 "Pan-seared tender chicken thighs glazed in a sticky homemade teriyaki sauce, served over fluffy steamed rice with steamed broccoli.",
                 Recipe.Difficulty.EASY, 15, 15, 2, users.get(4),
@@ -467,7 +639,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Authentic Mexican Beef Birria Tacos",
                 "Slow-braised tender shredded beef in rich guajillo-ancho chili broth, stuffed into corn tortillas with melted Oaxaca cheese and seared crispy.",
                 Recipe.Difficulty.HARD, 30, 150, 4, users.get(11),
@@ -489,7 +661,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Creamy Tuscan Garlic Chicken",
                 "Golden pan-seared chicken breasts simmered in a velvety garlic cream sauce enriched with sun-dried tomatoes and fresh spinach.",
                 Recipe.Difficulty.MEDIUM, 15, 20, 4, users.get(0),
@@ -510,7 +682,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Fresh Greek Salad with Feta & Olives",
                 "Crisp cucumbers, ripe vine tomatoes, red onion, Kalamata olives, and a slab of creamy Greek feta tossed in extra virgin olive oil and oregano.",
                 Recipe.Difficulty.EASY, 15, 0, 2, users.get(3),
@@ -532,7 +704,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Japanese Matcha Soufflé Pancakes",
                 "Ultra tall, airy, pillowy soufflé pancakes infused with premium Uji matcha powder, served with whipped cream and maple syrup.",
                 Recipe.Difficulty.HARD, 20, 15, 2, users.get(5),
@@ -553,7 +725,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Classic French Onion Soup",
                 "Deeply caramelized yellow onions simmered in beef broth and wine, topped with toasted baguette slices and melted Gruyère cheese.",
                 Recipe.Difficulty.MEDIUM, 20, 50, 4, users.get(2),
@@ -574,7 +746,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Gourmet Avocado Toast with Poached Egg",
                 "Artisan toasted sourdough spread with smashed lemon avocado, topped with a runny poached egg, radishes, and red pepper flakes.",
                 Recipe.Difficulty.EASY, 10, 5, 1, users.get(3),
@@ -596,7 +768,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Crispy Lemon Garlic Roasted Salmon",
                 "Oven-roasted salmon fillets with a golden garlic butter crust, fresh dill, and roasted asparagus spears.",
                 Recipe.Difficulty.EASY, 10, 15, 2, users.get(7),
@@ -617,7 +789,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Authentic Thai Green Chicken Curry",
                 "A fragrant coconut milk curry with tender chicken strips, Thai eggplant, bamboo shoots, and fresh sweet Thai basil leaves.",
                 Recipe.Difficulty.MEDIUM, 20, 20, 4, users.get(4),
@@ -639,7 +811,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Classic French Beef Bourguignon",
                 "Julia Child's iconic French stew featuring tender beef chuck braised slow in red Burgundy wine with pearl onions, bacon lardons, and mushrooms.",
                 Recipe.Difficulty.HARD, 35, 180, 6, users.get(2),
@@ -660,7 +832,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Berry Acai Smoothie Bowl",
                 "Thick vibrant frozen acai and wild berry blend topped with chia seeds, sliced bananas, toasted coconut flakes, and crunchy granola.",
                 Recipe.Difficulty.EASY, 10, 0, 1, users.get(3),
@@ -682,7 +854,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Gourmet Double Cheeseburger with Secret Sauce",
                 "Two crispy smashed beef patties, melted American cheese, caramelized onions, pickles, and tangy homemade burger sauce on toasted brioche.",
                 Recipe.Difficulty.EASY, 15, 10, 1, users.get(9),
@@ -703,7 +875,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Creamy Wild Mushroom Risotto",
                 "Slow-stirred Italian Arborio rice cooked in savory vegetable stock, finished with sautéed porcini mushrooms, butter, and Parmigiano-Reggiano.",
                 Recipe.Difficulty.MEDIUM, 15, 30, 4, users.get(14),
@@ -724,7 +896,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Spanish Seafood Paella",
                 "Traditional Valencian saffron rice studded with jumbo shrimp, mussels, calamari rings, red bell peppers, and peas.",
                 Recipe.Difficulty.HARD, 25, 35, 6, users.get(7),
@@ -746,7 +918,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Decadent Chocolate Molten Lava Cake",
                 "Rich dark chocolate cakes baked with a warm, gooey liquid chocolate center, dusted with powdered sugar and vanilla ice cream.",
                 Recipe.Difficulty.MEDIUM, 15, 12, 2, users.get(5),
@@ -767,7 +939,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Crispy Falafel Pita Pocket with Tahini",
                 "Golden crispy chickpea falafel stuffed into warm fluffy pita bread with Israeli diced salad, pickles, and rich garlic tahini drizzle.",
                 Recipe.Difficulty.MEDIUM, 25, 15, 3, users.get(13),
@@ -789,7 +961,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Traditional Vietnamese Beef Pho",
                 "A aromatic 12-hour spiced beef bone broth poured over rice noodles, thinly sliced raw eye round beef, fresh basil, and bean sprouts.",
                 Recipe.Difficulty.HARD, 30, 240, 4, users.get(4),
@@ -813,7 +985,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Classic Chicken Caesar Salad",
                 "Crisp Romaine lettuce hearts tossed in creamy anchovy-garlic Caesar dressing, crunchy garlic sourdough croutons, shaved Parmesan, and grilled chicken.",
                 Recipe.Difficulty.EASY, 15, 10, 2, users.get(10),
@@ -834,7 +1006,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Authentic Indian Butter Chicken",
                 "Tender spiced yogurt-marinated chicken pieces simmered in a rich tomato, cream, butter, and garam masala sauce with warm naan bread.",
                 Recipe.Difficulty.MEDIUM, 25, 25, 4, users.get(6),
@@ -857,7 +1029,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Mediterranean Grilled Chicken Souvlaki",
                 "Skewered tender lemon-herb marinated chicken grilled over flames, served with cool cucumber tzatziki sauce and fluffy pita.",
                 Recipe.Difficulty.EASY, 20, 15, 3, users.get(0),
@@ -880,7 +1052,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Authentic Italian Margherita Pizza",
                 "Classic Neapolitan thin-crust pizza topped with San Marzano tomato sauce, fresh mozzarella di bufala, and fragrant sweet basil leaves.",
                 Recipe.Difficulty.MEDIUM, 30, 10, 2, users.get(14),
@@ -901,7 +1073,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Crispy Tofu Buddha Bowl with Peanut Dressing",
                 "Pan-crisped sesame tofu cubes served over quinoa with purple cabbage, edamame, shredded carrots, and creamy peanut ginger sauce.",
                 Recipe.Difficulty.EASY, 15, 15, 2, users.get(3),
@@ -925,7 +1097,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Savoyard Potato Tartiflette",
                 "A decadent French Alpine casserole of sliced potatoes, smoky bacon lardons, and caramelized onions smothered in melted Reblochon cheese.",
                 Recipe.Difficulty.MEDIUM, 20, 40, 4, users.get(2),
@@ -946,7 +1118,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Homemade New York Style Cheesecake",
                 "Dense, ultra-cremy baked cheesecake with a buttery Graham cracker crust, baked slowly and topped with fresh raspberry coulis.",
                 Recipe.Difficulty.HARD, 30, 60, 8, users.get(5),
@@ -969,7 +1141,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Authentic Mexican Huevos Rancheros",
                 "Warm corn tortillas topped with fried sunny-side-up eggs, homemade roasted tomato ranchero salsa, refried beans, and avocado.",
                 Recipe.Difficulty.EASY, 15, 15, 2, users.get(11),
@@ -991,7 +1163,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Creamy Tomato Soup & Crispy Grilled Cheese",
                 "Rich roasted tomato basil soup served alongside a golden, buttery sourdough grilled cheese sandwich oozing with melted cheddar.",
                 Recipe.Difficulty.EASY, 15, 20, 2, users.get(8),
@@ -1013,7 +1185,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Spicy Seared Ahi Tuna Poke Bowl",
                 "Sesame-crusted seared Ahi tuna over sushi rice with mango, cucumber, edamame, avocado, and spicy sriracha mayo drizzle.",
                 Recipe.Difficulty.MEDIUM, 20, 5, 2, users.get(7),
@@ -1035,7 +1207,7 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
-        recipeList.add(createRecipe(
+        recipeBuilders.add(() -> createRecipe(
                 "Cinnamon Roll French Toast Bake",
                 "Fluffy brioche cube casserole soaked in cinnamon egg custard, baked golden, and topped with cream cheese glaze and toasted pecans.",
                 Recipe.Difficulty.EASY, 20, 35, 6, users.get(5),
@@ -1058,16 +1230,76 @@ public class DataSeeder implements CommandLineRunner {
                 )
         ));
 
+        List<Recipe> recipeList = buildRecipesConcurrently(recipeBuilders);
         return recipeRepository.saveAll(recipeList);
     }
 
     /**
-     * Builds an (unsaved) ingredient entity for a seeded recipe; persisted later via
-     * {@code Recipe}'s cascading save in {@link #seedRecipes(List, List, List)}.
+     * Runs each recipe-building task on its own virtual thread — one thread
+     * per recipe, as {@link #createRecipe} only builds an in-memory entity
+     * graph and never touches the database itself — so the slow part (each
+     * recipe's several Cloudinary uploads) happens in parallel instead of
+     * one recipe at a time. Every recipe is still persisted together
+     * afterward, back on the calling thread, inside the single transaction
+     * {@link #seedRemainingData} already holds.
+     *
+     * @param recipeBuilders one {@link Callable} per recipe, as assembled by
+     * {@link #seedRecipes}
+     * @return the built (not yet persisted) recipe entities, in the same
+     * order as {@code recipeBuilders}
+     */
+    private List<Recipe> buildRecipesConcurrently(List<Callable<Recipe>> recipeBuilders) {
+        log.info(">>> Building {} recipes concurrently, one thread per recipe...", recipeBuilders.size());
+
+        List<Recipe> recipeList = new ArrayList<>(recipeBuilders.size());
+        List<Future<Recipe>> futures = new ArrayList<>(recipeBuilders.size());
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (Callable<Recipe> builder : recipeBuilders) {
+                futures.add(executor.submit(builder));
+            }
+            for (Future<Recipe> future : futures) {
+                recipeList.add(future.get(RECIPE_BUILD_TIMEOUT.toSeconds(), TimeUnit.SECONDS));
+            }
+        } catch (InterruptedException e) {
+            cancelRemaining(futures);
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while building seeded recipes concurrently", e);
+        } catch (ExecutionException e) {
+            cancelRemaining(futures);
+            throw new IllegalStateException("Failed to build a seeded recipe", e.getCause());
+        } catch (TimeoutException e) {
+            cancelRemaining(futures);
+            throw new IllegalStateException("Timed out after " + RECIPE_BUILD_TIMEOUT
+                    + " waiting for a recipe to finish building (likely a stuck Cloudinary upload)", e);
+        }
+
+        return recipeList;
+    }
+
+    /**
+     * Cancels every not-yet-completed future so a failure or timeout on one
+     * recipe doesn't leave {@link #buildRecipesConcurrently} waiting on the
+     * remaining in-flight Cloudinary uploads before it can report the
+     * failure — fail fast instead of fail slow.
+     *
+     * @param futures the recipe-build tasks submitted so far
+     */
+    private static void cancelRemaining(List<Future<Recipe>> futures) {
+        for (Future<Recipe> future : futures) {
+            future.cancel(true);
+        }
+    }
+
+    /**
+     * Builds an (unsaved) ingredient entity for a seeded recipe; persisted
+     * later via {@code Recipe}'s cascading save in
+     * {@link #seedRecipes(List, List, List)}.
      *
      * @param name the ingredient display name
-     * @param qtyStr the ingredient quantity, as a decimal string parsed into a {@link BigDecimal}
-     * @param unit the resolved measurement unit, typically via {@link #getUnit(Map, String)}; a {@code null} is logged but tolerated
+     * @param qtyStr the ingredient quantity, as a decimal string parsed into a
+     * {@link BigDecimal}
+     * @param unit the resolved measurement unit, typically via
+     * {@link #getUnit(Map, String)}; a {@code null} is logged but tolerated
      * @return the built (not yet persisted) ingredient entity
      */
     private Ingredient createIng(String name, String qtyStr, Unit unit) {
@@ -1082,17 +1314,21 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Builds an in-memory instruction-step descriptor for a seeded recipe, later converted into a
-     * persisted {@code Instruction} entity by {@link #createRecipe} once the parent recipe and
-     * its ingredient list both exist.
+     * Builds an in-memory instruction-step descriptor for a seeded recipe,
+     * later converted into a persisted {@code Instruction} entity by
+     * {@link #createRecipe} once the parent recipe and its ingredient list both
+     * exist.
      *
      * @param stepNum the 1-based sequential position of the step
      * @param desc the step's instruction text
      * @param hasTimer whether the step requires a countdown timer
-     * @param timeSec the timer duration in seconds, or {@code null} if {@code hasTimer} is {@code false}
-     * @param imgUrl an illustrative image URL to upload for this step, or {@code null} for none
-     * @param linkedIngIndices 0-based indices into the recipe's ingredient list identifying which
-     *                         ingredients this step uses, or none if the step uses no ingredients
+     * @param timeSec the timer duration in seconds, or {@code null} if
+     * {@code hasTimer} is {@code false}
+     * @param imgUrl an illustrative image URL to upload for this step, or
+     * {@code null} for none
+     * @param linkedIngIndices 0-based indices into the recipe's ingredient list
+     * identifying which ingredients this step uses, or none if the step uses no
+     * ingredients
      * @return the built step descriptor
      */
     private InstructionStepData createStep(int stepNum, String desc, boolean hasTimer, Integer timeSec, String imgUrl, Integer... linkedIngIndices) {
@@ -1101,42 +1337,55 @@ public class DataSeeder implements CommandLineRunner {
 
     /**
      * In-memory descriptor for one seeded recipe's instruction step, built by
-     * {@link #createStep} and consumed by {@link #createRecipe} to construct the persisted
-     * {@code Instruction} entity once the parent recipe's ingredient indices can be resolved.
+     * {@link #createStep} and consumed by {@link #createRecipe} to construct
+     * the persisted {@code Instruction} entity once the parent recipe's
+     * ingredient indices can be resolved.
      *
      * @param stepNumber the 1-based sequential position of the step
      * @param description the step's instruction text
      * @param hasTimer whether the step requires a countdown timer
-     * @param timeSeconds the timer duration in seconds, or {@code null} if {@code hasTimer} is {@code false}
-     * @param imageUrl an illustrative image URL to upload for this step, or {@code null} for none
-     * @param linkedIngredientIndices 0-based indices into the recipe's ingredient list identifying this step's ingredients
+     * @param timeSeconds the timer duration in seconds, or {@code null} if
+     * {@code hasTimer} is {@code false}
+     * @param imageUrl an illustrative image URL to upload for this step, or
+     * {@code null} for none
+     * @param linkedIngredientIndices 0-based indices into the recipe's
+     * ingredient list identifying this step's ingredients
      */
-    private record InstructionStepData(int stepNumber, String description, boolean hasTimer, Integer timeSeconds, String imageUrl, List<Integer> linkedIngredientIndices) {}
+    private record InstructionStepData(int stepNumber, String description, boolean hasTimer, Integer timeSeconds, String imageUrl, List<Integer> linkedIngredientIndices) {
+
+    }
 
     /**
-     * Builds, wires, and persists a complete Recipe entity: uploads its cover/description images
-     * to Cloudinary, attaches its ingredients and instruction steps (resolving each step's
-     * ingredient links by index into {@code ingredients}), builds its description blocks, and
-     * assembles its recipe-image gallery from {@code primaryCoverUrl} and {@code extraGalleryUrls}.
+     * Builds, wires, and persists a complete Recipe entity: uploads its
+     * cover/description images to Cloudinary, attaches its ingredients and
+     * instruction steps (resolving each step's ingredient links by index into
+     * {@code ingredients}), builds its description blocks, and assembles its
+     * recipe-image gallery from {@code primaryCoverUrl} and
+     * {@code extraGalleryUrls}.
      *
      * @param title the recipe's display title
-     * @param description the recipe's flat description text, also used as the first description block
+     * @param description the recipe's flat description text, also used as the
+     * first description block
      * @param difficulty the recipe's skill difficulty level
      * @param prepTime preparation duration in minutes
      * @param cookTime active cooking duration in minutes
      * @param servings recommended serving yield count
      * @param creator the seeded user to set as the recipe's author
      * @param tags the seeded tag entities to associate with the recipe
-     * @param primaryCoverUrl the source URL uploaded as the recipe's cover image and description image
-     * @param extraGalleryUrls additional source URLs uploaded as non-primary gallery images
-     * @param ingredients the recipe's ingredient entities, as built by {@link #createIng}
-     * @param stepDataList the recipe's instruction steps, as built by {@link #createStep}
+     * @param primaryCoverUrl the source URL uploaded as the recipe's cover
+     * image and description image
+     * @param extraGalleryUrls additional source URLs uploaded as non-primary
+     * gallery images
+     * @param ingredients the recipe's ingredient entities, as built by
+     * {@link #createIng}
+     * @param stepDataList the recipe's instruction steps, as built by
+     * {@link #createStep}
      * @return the persisted recipe entity
      */
     private Recipe createRecipe(String title, String description, Recipe.Difficulty difficulty,
-                                int prepTime, int cookTime, int servings, User creator, List<Tag> tags,
-                                String primaryCoverUrl, List<String> extraGalleryUrls,
-                                List<Ingredient> ingredients, List<InstructionStepData> stepDataList) {
+            int prepTime, int cookTime, int servings, User creator, List<Tag> tags,
+            String primaryCoverUrl, List<String> extraGalleryUrls,
+            List<Ingredient> ingredients, List<InstructionStepData> stepDataList) {
 
         String userId = creator.getId();
         String recipeTitle = title.replaceAll("[^a-zA-Z0-9_-]", "_");
@@ -1244,12 +1493,13 @@ public class DataSeeder implements CommandLineRunner {
         return recipe;
     }
 
-    /** 
-     * Seeds a varied, mostly-positive spread of reviews across every recipe (skewed 50% 5-star,
-     * 40% 4-star, 10% 3-star, as a real recipe app's published catalog would trend), plus two
-     * deliberately reported reviews to exercise the admin moderation queue. Recomputes each
-     * recipe's denormalized rating stats via {@link #recalculateRecipeStats(List, List)} once
-     * all reviews are saved.
+    /**
+     * Seeds a varied, mostly-positive spread of reviews across every recipe
+     * (skewed 50% 5-star, 40% 4-star, 10% 3-star, as a real recipe app's
+     * published catalog would trend), plus two deliberately reported reviews to
+     * exercise the admin moderation queue. Recomputes each recipe's
+     * denormalized rating stats via {@link #recalculateRecipeStats(List, List)}
+     * once all reviews are saved.
      *
      * @param recipes the seeded recipes to attach reviews to
      * @param users the seeded users to attribute reviews to
@@ -1259,32 +1509,32 @@ public class DataSeeder implements CommandLineRunner {
         List<Review> reviews = new ArrayList<>();
 
         String[] fiveStarComments = {
-                "Absolutely incredible recipe! The flavors were so rich and perfectly balanced.",
-                "Tried this for dinner tonight and it turned out restaurant quality!",
-                "The sauce turned out so glossy and rich. Saved to my favorites!",
-                "Made this three times already this month, my family can't get enough.",
-                "Followed it exactly and it came out perfect on the first try.",
-                "This is now in permanent weekly rotation at our house.",
-                "Better than the version I had at the restaurant that inspired it."
+            "Absolutely incredible recipe! The flavors were so rich and perfectly balanced.",
+            "Tried this for dinner tonight and it turned out restaurant quality!",
+            "The sauce turned out so glossy and rich. Saved to my favorites!",
+            "Made this three times already this month, my family can't get enough.",
+            "Followed it exactly and it came out perfect on the first try.",
+            "This is now in permanent weekly rotation at our house.",
+            "Better than the version I had at the restaurant that inspired it."
         };
         String[] fiveStarTitles = {"Outstanding dish!", "New family favorite", "Cooking this again for sure", "Nailed it first try"};
 
         String[] fourStarComments = {
-                "Easy to follow steps! My family wiped out the entire plate in minutes.",
-                "Great instructions and perfect timer recommendations. Will definitely make again.",
-                "Substituted one spice and it was still phenomenal. 10/10 recommend!",
-                "Super fresh and satisfying! Perfect for weeknight meal prep.",
-                "Really solid recipe, just needed a bit more salt for my taste.",
-                "Turned out great, though it took a little longer than the listed time.",
-                "Delicious! I'll cut back on the spice next time for the kids."
+            "Easy to follow steps! My family wiped out the entire plate in minutes.",
+            "Great instructions and perfect timer recommendations. Will definitely make again.",
+            "Substituted one spice and it was still phenomenal. 10/10 recommend!",
+            "Super fresh and satisfying! Perfect for weeknight meal prep.",
+            "Really solid recipe, just needed a bit more salt for my taste.",
+            "Turned out great, though it took a little longer than the listed time.",
+            "Delicious! I'll cut back on the spice next time for the kids."
         };
         String[] fourStarTitles = {"Really great recipe", "Would make again", "Tasty and easy", "Solid recipe"};
 
         String[] threeStarComments = {
-                "Good base recipe, but I had to tweak the seasoning quite a bit.",
-                "Came out a little dry for me - might reduce the cook time slightly next time.",
-                "Tasty, though not quite as impressive as the photos suggested.",
-                "Solid weeknight option, nothing fancy but reliable."
+            "Good base recipe, but I had to tweak the seasoning quite a bit.",
+            "Came out a little dry for me - might reduce the cook time slightly next time.",
+            "Tasty, though not quite as impressive as the photos suggested.",
+            "Solid weeknight option, nothing fancy but reliable."
         };
         String[] threeStarTitles = {"Decent, with tweaks", "Good but needs adjusting", "Worth trying"};
 
@@ -1355,9 +1605,10 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Recomputes each seeded recipe's denormalized {@code reviewCount} and {@code averageRating}
-     * from its just-seeded reviews, mirroring the aggregation the live review-creation/deletion
-     * flow performs, so the seeded data is internally consistent from the start.
+     * Recomputes each seeded recipe's denormalized {@code reviewCount} and
+     * {@code averageRating} from its just-seeded reviews, mirroring the
+     * aggregation the live review-creation/deletion flow performs, so the
+     * seeded data is internally consistent from the start.
      *
      * @param recipes the seeded recipes to update
      * @param reviews the seeded reviews to aggregate per recipe
@@ -1375,7 +1626,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Seeds one favorite bookmark per recipe, cycling through the seeded users as bookmarkers.
+     * Seeds one favorite bookmark per recipe, cycling through the seeded users
+     * as bookmarkers.
      *
      * @param recipes the seeded recipes to bookmark
      * @param users the seeded users to assign as bookmarkers, cycled by index
@@ -1395,8 +1647,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Seeds one recipe-wide personal note per recipe, cycling through a fixed pool of sample
-     * note texts and through the seeded users as note authors.
+     * Seeds one recipe-wide personal note per recipe, cycling through a fixed
+     * pool of sample note texts and through the seeded users as note authors.
      *
      * @param recipes the seeded recipes to attach a note to
      * @param users the seeded users to assign as note authors, cycled by index
@@ -1406,16 +1658,16 @@ public class DataSeeder implements CommandLineRunner {
         List<PersonalInstructionNote> notes = new ArrayList<>();
 
         String[] noteTemplates = {
-                "Add an extra pinch of sea salt right before serving.",
-                "Double the recipe next time - it goes fast!",
-                "Swapped in what I had on hand and it still worked great.",
-                "Let it rest a few extra minutes before serving - makes a real difference.",
-                "My go-to for busy weeknights, prepped ahead on Sunday.",
-                "Kids loved this one, used a bit less spice for them.",
-                "Worth the extra step - don't skip it.",
-                "Great for meal prep, keeps well for a few days in the fridge.",
-                "Cut back slightly on the sugar and it was still perfect.",
-                "Freezes surprisingly well for a quick reheat later."
+            "Add an extra pinch of sea salt right before serving.",
+            "Double the recipe next time - it goes fast!",
+            "Swapped in what I had on hand and it still worked great.",
+            "Let it rest a few extra minutes before serving - makes a real difference.",
+            "My go-to for busy weeknights, prepped ahead on Sunday.",
+            "Kids loved this one, used a bit less spice for them.",
+            "Worth the extra step - don't skip it.",
+            "Great for meal prep, keeps well for a few days in the fridge.",
+            "Cut back slightly on the sugar and it was still perfect.",
+            "Freezes surprisingly well for a quick reheat later."
         };
 
         for (int i = 0; i < recipes.size(); i++) {
