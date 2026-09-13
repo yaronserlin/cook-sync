@@ -6,6 +6,7 @@ import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.TranslationMemory;
 import com.cooksync_server.repositories.ContentTranslationRepository;
 import com.cooksync_server.repositories.TranslationMemoryRepository;
+import com.cooksync_server.translation.TranslationAttempt;
 import com.cooksync_server.translation.TranslationProvider;
 import com.cooksync_server.translation.TranslationProvider.TranslationResult;
 
@@ -53,7 +54,11 @@ public class TranslationService {
     private final MeterRegistry meterRegistry;
 
     /**
-     * Resolves one field's display value for the current request's locale.
+     * Resolves one field's display value for the current request's locale, as a standalone
+     * attempt with its own fresh {@link TranslationAttempt}. Delegates to
+     * {@link #resolve(ContentTranslation.EntityType, String, String, String, TranslationAttempt)}
+     * — kept as a separate overload so standalone callers (e.g. resolving a single unit or tag
+     * outside any recipe bundle) don't need to construct an attempt themselves.
      *
      * @param entityType which field this is (see {@link ContentTranslation.EntityType})
      * @param entityId id of the entity that field belongs to
@@ -65,17 +70,37 @@ public class TranslationService {
      */
     public TranslatedText resolve(ContentTranslation.EntityType entityType, String entityId,
                                    String original, String sourceLocale) {
+        return resolve(entityType, entityId, original, sourceLocale, TranslationAttempt.create());
+    }
+
+    /**
+     * Resolves one field's display value for the current request's locale, as part of the given
+     * {@code attempt} — pass the same {@link TranslationAttempt} across every field of one
+     * coordinated resolution (e.g. every field of one recipe) so a consecutive run of chunk
+     * failures anywhere in that set stops further translation calls for the rest of it.
+     *
+     * @param entityType which field this is (see {@link ContentTranslation.EntityType})
+     * @param entityId id of the entity that field belongs to
+     * @param original the field's value in {@code sourceLocale}
+     * @param sourceLocale the IETF language tag {@code original} is actually written in
+     * @param attempt the consecutive-chunk-failure tracker shared across this field's coordinated
+     *                resolution attempt
+     * @return the resolved value plus whether it came from on-demand machine translation and
+     *         whether it fell back to the original text after translation was attempted
+     */
+    public TranslatedText resolve(ContentTranslation.EntityType entityType, String entityId,
+                                   String original, String sourceLocale, TranslationAttempt attempt) {
         String requestLocale = normalize(LocaleContextHolder.getLocale().getLanguage());
         if (requestLocale.equalsIgnoreCase(normalize(sourceLocale)) || original == null || original.isBlank()) {
-            return new TranslatedText(original, false);
+            return new TranslatedText(original, false, false);
         }
 
         Optional<ContentTranslation> cached = translationRepository
                 .findByEntityTypeAndEntityIdAndLocale(entityType, entityId, requestLocale);
         resultCounter("translation.cache.lookup", cached.isPresent() ? "hit" : "miss").increment();
         return cached
-                .map(c -> new TranslatedText(c.getValue(), c.getSource() == ContentTranslation.Source.MACHINE))
-                .orElseGet(() -> translateOnDemand(entityType, entityId, original, requestLocale));
+                .map(c -> new TranslatedText(c.getValue(), c.getSource() == ContentTranslation.Source.MACHINE, false))
+                .orElseGet(() -> translateOnDemand(entityType, entityId, original, requestLocale, attempt));
     }
 
     /**
@@ -84,12 +109,12 @@ public class TranslationService {
      * from), and only calls {@link #provider} if that also misses. A shared-memory hit is copied
      * into the entity cache so this same entity's next request skips both lookups. A
      * <em>partial</em> provider result (some but not all chunks translated, see
-     * {@link TranslationResult#complete()}) is returned to this request but never persisted —
-     * caching a permanently mixed-language value would be worse than retrying on the next
-     * request.
+     * {@link TranslationResult#complete()}) is neither served nor persisted — the caller gets the
+     * original text back with {@link TranslatedText#fellBack()} set, since a permanently
+     * mixed-language value is worse than showing the untranslated original.
      */
     private TranslatedText translateOnDemand(ContentTranslation.EntityType entityType, String entityId,
-                                              String original, String requestLocale) {
+                                              String original, String requestLocale, TranslationAttempt attempt) {
         String textHash = TranslationTextHasher.hash(original);
 
         Optional<TranslationMemory> shared = translationMemoryRepository.findByTextHashAndLocale(textHash, requestLocale);
@@ -97,10 +122,10 @@ public class TranslationService {
         if (shared.isPresent()) {
             TranslationMemory memory = shared.get();
             cacheWriter.copyToEntityCache(entityType, entityId, requestLocale, memory.getValue(), memory.getSource());
-            return new TranslatedText(memory.getValue(), memory.getSource() == ContentTranslation.Source.MACHINE);
+            return new TranslatedText(memory.getValue(), memory.getSource() == ContentTranslation.Source.MACHINE, false);
         }
 
-        return provider.translate(original, requestLocale)
+        return provider.translate(original, requestLocale, attempt)
                 .map(result -> {
                     if (result.complete()) {
                         outcomeCounter("success");
@@ -111,14 +136,14 @@ public class TranslationService {
                                 .value(result.value())
                                 .source(ContentTranslation.Source.MACHINE)
                                 .build(), textHash);
-                    } else {
-                        outcomeCounter("partial");
+                        return new TranslatedText(result.value(), true, false);
                     }
-                    return new TranslatedText(result.value(), true);
+                    outcomeCounter("partial");
+                    return new TranslatedText(original, false, true);
                 })
                 .orElseGet(() -> {
                     outcomeCounter("failure");
-                    return new TranslatedText(original, false);
+                    return new TranslatedText(original, false, true);
                 });
     }
 
@@ -148,9 +173,14 @@ public class TranslationService {
      * translation — surfaced to the client so it can show an "auto-translated" indicator rather
      * than presenting machine output with the same confidence as reviewed content.
      *
-     * @param value the resolved display value
+     * @param value the resolved display value — the original text whenever {@code fellBack} is
+     *              {@code true}
      * @param isMachineTranslated whether {@code value} came from {@link TranslationProvider} on this or a prior request
+     * @param fellBack whether translation was actually needed and attempted for this field but
+     *                 did not complete (partial or failed provider result), so {@code value} is
+     *                 the original text rather than a translation — {@code false} whenever no
+     *                 translation was needed at all (request locale already matched the source)
      */
-    public record TranslatedText(String value, boolean isMachineTranslated) {
+    public record TranslatedText(String value, boolean isMachineTranslated, boolean fellBack) {
     }
 }

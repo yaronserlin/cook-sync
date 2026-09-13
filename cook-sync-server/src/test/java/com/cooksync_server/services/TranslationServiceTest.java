@@ -27,6 +27,7 @@ import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.TranslationMemory;
 import com.cooksync_server.repositories.ContentTranslationRepository;
 import com.cooksync_server.repositories.TranslationMemoryRepository;
+import com.cooksync_server.translation.TranslationAttempt;
 import com.cooksync_server.translation.TranslationProvider;
 import com.cooksync_server.translation.TranslationProvider.TranslationResult;
 
@@ -78,6 +79,7 @@ class TranslationServiceTest {
 
         assertEquals("Chicken Soup", result.value());
         assertFalse(result.isMachineTranslated());
+        assertFalse(result.fellBack());
         verifyNoInteractions(translationRepository, translationMemoryRepository, provider, cacheWriter);
     }
 
@@ -88,6 +90,7 @@ class TranslationServiceTest {
 
         assertNull(result.value());
         assertFalse(result.isMachineTranslated());
+        assertFalse(result.fellBack());
     }
 
     @Test
@@ -102,6 +105,7 @@ class TranslationServiceTest {
 
         assertEquals("שקשוקה", result.value());
         assertTrue(result.isMachineTranslated());
+        assertFalse(result.fellBack());
         verifyNoInteractions(provider, translationMemoryRepository);
     }
 
@@ -131,6 +135,7 @@ class TranslationServiceTest {
 
         assertEquals("קמח", result.value());
         assertTrue(result.isMachineTranslated());
+        assertFalse(result.fellBack());
         verify(cacheWriter).copyToEntityCache(
                 ContentTranslation.EntityType.INGREDIENT_NAME, "ing-1", "he", "קמח", ContentTranslation.Source.MACHINE);
         verifyNoInteractions(provider);
@@ -142,30 +147,33 @@ class TranslationServiceTest {
                 .thenReturn(Optional.empty());
         when(translationMemoryRepository.findByTextHashAndLocale(anyString(), anyString()))
                 .thenReturn(Optional.empty());
-        when(provider.translate("Flour", "he")).thenReturn(Optional.of(new TranslationResult("קמח", true)));
+        when(provider.translate(eq("Flour"), eq("he"), any(TranslationAttempt.class)))
+                .thenReturn(Optional.of(new TranslationResult("קמח", true)));
 
         TranslationService.TranslatedText result = translationService.resolve(
                 ContentTranslation.EntityType.INGREDIENT_NAME, "ing-1", "Flour", "en");
 
         assertEquals("קמח", result.value());
         assertTrue(result.isMachineTranslated());
+        assertFalse(result.fellBack());
         verify(cacheWriter).save(any(ContentTranslation.class), anyString());
     }
 
     @Test
-    void resolve_onDoubleMiss_withPartialProviderResult_returnsItButDoesNotCacheIt() {
+    void resolve_onDoubleMiss_withPartialProviderResult_fallsBackToOriginal_andDoesNotCacheIt() {
         when(translationRepository.findByEntityTypeAndEntityIdAndLocale(any(), anyString(), anyString()))
                 .thenReturn(Optional.empty());
         when(translationMemoryRepository.findByTextHashAndLocale(anyString(), anyString()))
                 .thenReturn(Optional.empty());
-        when(provider.translate("Long instructions", "he"))
+        when(provider.translate(eq("Long instructions"), eq("he"), any(TranslationAttempt.class)))
                 .thenReturn(Optional.of(new TranslationResult("partial תרגום Long instructions", false)));
 
         TranslationService.TranslatedText result = translationService.resolve(
                 ContentTranslation.EntityType.INSTRUCTION_TEXT, "inst-1", "Long instructions", "en");
 
-        assertEquals("partial תרגום Long instructions", result.value());
-        assertTrue(result.isMachineTranslated());
+        assertEquals("Long instructions", result.value());
+        assertFalse(result.isMachineTranslated());
+        assertTrue(result.fellBack());
         verify(cacheWriter, never()).save(any(ContentTranslation.class), anyString());
     }
 
@@ -175,13 +183,14 @@ class TranslationServiceTest {
                 .thenReturn(Optional.empty());
         when(translationMemoryRepository.findByTextHashAndLocale(anyString(), anyString()))
                 .thenReturn(Optional.empty());
-        when(provider.translate("Flour", "he")).thenReturn(Optional.empty());
+        when(provider.translate(eq("Flour"), eq("he"), any(TranslationAttempt.class))).thenReturn(Optional.empty());
 
         TranslationService.TranslatedText result = translationService.resolve(
                 ContentTranslation.EntityType.INGREDIENT_NAME, "ing-1", "Flour", "en");
 
         assertEquals("Flour", result.value());
         assertFalse(result.isMachineTranslated());
+        assertTrue(result.fellBack());
         verify(cacheWriter, never()).save(any(ContentTranslation.class), anyString());
     }
 
@@ -194,6 +203,7 @@ class TranslationServiceTest {
 
         assertEquals("שקשוקה", result.value());
         assertFalse(result.isMachineTranslated());
+        assertFalse(result.fellBack());
         verifyNoInteractions(translationRepository);
     }
 

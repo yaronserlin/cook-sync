@@ -34,6 +34,7 @@ import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
 import com.cooksync.app.util.GlideUtils;
+import com.cooksync.app.util.HebrewScriptDetector;
 import com.cooksync.app.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.dtos.response.instruction.InstructionResponse;
@@ -533,6 +534,10 @@ public class RecipeDetailActivity extends BaseActivity {
         }
 
         title.setText(recipe.title());
+        int contentDirection = HebrewScriptDetector.layoutDirection(recipe.title());
+        contentGroup.setLayoutDirection(contentDirection);
+        title.setTextDirection(contentDirection == View.LAYOUT_DIRECTION_RTL ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_LTR);
+        kicker.setTextDirection(contentDirection == View.LAYOUT_DIRECTION_RTL ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_LTR);
         machineTranslatedBadge.setVisibility(recipe.isMachineTranslated() ? View.VISIBLE : View.GONE);
         rating.setText(viewModel.formatAverageRating(recipe.averageRating()));
         reviewCount.setText(getString(R.string.review_count_format, recipe.reviewCount()));

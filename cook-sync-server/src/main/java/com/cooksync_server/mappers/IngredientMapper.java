@@ -73,4 +73,38 @@ public final class IngredientMapper {
                 unitResponse
         );
     }
+
+    /**
+     * Converts an Ingredient entity into an IngredientResponse DTO, reading its translated name
+     * (and its unit's translated name/plural) from an already-resolved
+     * {@link RecipeTranslationBundle} instead of resolving them independently — used when this
+     * ingredient is part of a recipe-wide coordinated translation attempt (see
+     * {@link RecipeTranslationCoordinator}).
+     *
+     * @param entity target Ingredient entity
+     * @param bundle the recipe's resolved translation bundle
+     * @return populated IngredientResponse DTO instance or null
+     */
+    static IngredientResponse toResponse(Ingredient entity, RecipeTranslationBundle bundle) {
+        if (entity == null) {
+            return null;
+        }
+
+        UnitResponse unitResponse = UnitMapper.toResponse(entity.getUnit(), bundle);
+
+        String recipeId = null;
+        if (entity.getRecipe() != null) {
+            recipeId = entity.getRecipe().getId();
+        }
+
+        String name = bundle.valueOf(ContentTranslation.EntityType.INGREDIENT_NAME, entity.getId(), entity.getName());
+
+        return new IngredientResponse(
+                entity.getId(),
+                name,
+                entity.getQuantity(),
+                recipeId,
+                unitResponse
+        );
+    }
 }

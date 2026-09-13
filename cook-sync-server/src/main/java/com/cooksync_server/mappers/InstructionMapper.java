@@ -48,4 +48,40 @@ public final class InstructionMapper {
                 instruction.getImageUrl()
         );
     }
+
+    /**
+     * Converts an Instruction entity into an InstructionResponse DTO, reading its translated text
+     * (and its embedded ingredients' translated names) from an already-resolved
+     * {@link RecipeTranslationBundle} instead of resolving them independently — used when this
+     * instruction is part of a recipe-wide coordinated translation attempt (see
+     * {@link RecipeTranslationCoordinator}).
+     *
+     * @param instruction target Instruction entity instance
+     * @param bundle the recipe's resolved translation bundle
+     * @return populated InstructionResponse DTO instance or null
+     */
+    static InstructionResponse toResponse(Instruction instruction, RecipeTranslationBundle bundle) {
+        if (instruction == null) {
+            return null;
+        }
+        Set<IngredientResponse> ingredients = instruction.getIngredients() == null ? null
+                : instruction.getIngredients().stream()
+                        .map(ingredient -> IngredientMapper.toResponse(ingredient, bundle))
+                        .collect(Collectors.toSet());
+        String created = MapperUtils.toIsoStringOrNull(instruction.getCreatedAt());
+        String updated = MapperUtils.toIsoStringOrNull(instruction.getUpdatedAt());
+        String description = bundle.valueOf(ContentTranslation.EntityType.INSTRUCTION_TEXT,
+                instruction.getId(), instruction.getDescription());
+        return new InstructionResponse(
+                instruction.getId(),
+                instruction.getStepNumber(),
+                description,
+                instruction.isHasTimer(),
+                instruction.getTimeSeconds(),
+                created,
+                updated,
+                ingredients,
+                instruction.getImageUrl()
+        );
+    }
 }

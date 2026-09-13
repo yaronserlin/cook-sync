@@ -9,7 +9,6 @@ import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.entities.DescriptionBlock;
 import com.cooksync_server.entities.Recipe;
 import com.cooksync_server.entities.RecipeImage;
-import com.cooksync_server.services.TranslationService;
 import com.dtos.response.ingredient.IngredientResponse;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
@@ -45,16 +44,14 @@ public final class RecipeMapper {
         String primaryImageUrl = resolvePrimaryImageUrl(recipe);
         List<ReviewResponse> visibleReviews = mapReviews(recipe);
 
-        TranslationService.TranslatedText title = TranslationAccess.resolve(
-                ContentTranslation.EntityType.RECIPE_TITLE, recipe.getId(), recipe.getTitle(), recipe.getSourceLocale());
-        List<DescriptionBlockDTO> blocks = mapDescriptionBlocks(recipe);
-        boolean isMachineTranslated = title.isMachineTranslated()
-                || blocks.stream().anyMatch(DescriptionBlockDTO::isMachineTranslated);
+        RecipeTranslationBundle bundle = RecipeTranslationCoordinator.resolveForDetail(recipe);
+        String title = bundle.valueOf(ContentTranslation.EntityType.RECIPE_TITLE, recipe.getId(), recipe.getTitle());
+        List<DescriptionBlockDTO> blocks = mapDescriptionBlocks(recipe, bundle);
 
         return new RecipeResponse(
                 recipe.getId(),
                 UserMapper.toPublicProfileResponse(recipe.getCreatedBy()),
-                title.value(),
+                title,
                 recipe.getDifficulty() == null ? null : recipe.getDifficulty().name(),
                 recipe.getVisibility() == null ? null : recipe.getVisibility().name(),
                 recipe.getPrepTimeMinutes(),
@@ -65,12 +62,12 @@ public final class RecipeMapper {
                 visibleReviews,
                 MapperUtils.toIsoStringOrNull(recipe.getCreatedAt()),
                 MapperUtils.toIsoStringOrNull(recipe.getUpdatedAt()),
-                mapTags(recipe),
-                mapIngredients(recipe),
-                mapInstructions(recipe),
+                mapTags(recipe, bundle),
+                mapIngredients(recipe, bundle),
+                mapInstructions(recipe, bundle),
                 primaryImageUrl,
                 blocks,
-                isMachineTranslated
+                bundle.isMachineTranslated()
         );
     }
 
@@ -97,16 +94,15 @@ public final class RecipeMapper {
             return null;
         }
         String authorName = recipe.getCreatedBy() == null ? null : recipe.getCreatedBy().getFullName();
-        TranslationService.TranslatedText title = TranslationAccess.resolve(
-                ContentTranslation.EntityType.RECIPE_TITLE, recipe.getId(), recipe.getTitle(), recipe.getSourceLocale());
-        TranslationService.TranslatedText description = TranslationAccess.resolve(
-                ContentTranslation.EntityType.RECIPE_DESCRIPTION, recipe.getId(), recipe.getDescription(), recipe.getSourceLocale());
+        RecipeTranslationBundle bundle = RecipeTranslationCoordinator.resolveForPreview(recipe);
+        String title = bundle.valueOf(ContentTranslation.EntityType.RECIPE_TITLE, recipe.getId(), recipe.getTitle());
+        String description = bundle.valueOf(ContentTranslation.EntityType.RECIPE_DESCRIPTION, recipe.getId(), recipe.getDescription());
 
         return new RecipePreviewResponse(
                 recipe.getId(),
                 authorName,
-                title.value(),
-                description.value(),
+                title,
+                description,
                 recipe.getDifficulty() == null ? null : recipe.getDifficulty().name(),
                 recipe.getVisibility() == null ? null : recipe.getVisibility().name(),
                 recipe.getPrepTimeMinutes(),
@@ -118,37 +114,41 @@ public final class RecipeMapper {
                 resolvePrimaryImageUrl(recipe),
                 hasPersonalNote,
                 personalNoteText,
-                title.isMachineTranslated() || description.isMachineTranslated()
+                bundle.isMachineTranslated()
         );
     }
 
     /**
-     * Maps recipe description blocks from entity to DTO list.
-     * Falls back to synthesizing blocks from legacy flat description and non-primary images
-     * when no explicit blocks are persisted on the recipe.
+     * Maps recipe description blocks from entity to DTO list, reading translated text from an
+     * already-resolved {@link RecipeTranslationBundle}. Falls back to synthesizing blocks from
+     * legacy flat description and non-primary images when no explicit blocks are persisted on the
+     * recipe. Every TEXT block's {@code isMachineTranslated} reflects the bundle's overall
+     * verdict rather than being tracked per block, since {@link RecipeTranslationCoordinator}
+     * resolves every block as part of the same all-or-nothing attempt.
      *
      * @param recipe target Recipe entity
+     * @param bundle the recipe's resolved translation bundle
      * @return ordered list of DescriptionBlockDTO instances
      */
-    private static List<DescriptionBlockDTO> mapDescriptionBlocks(Recipe recipe) {
+    private static List<DescriptionBlockDTO> mapDescriptionBlocks(Recipe recipe, RecipeTranslationBundle bundle) {
         if (recipe.getDescriptionBlocks() != null && !recipe.getDescriptionBlocks().isEmpty()) {
             return recipe.getDescriptionBlocks().stream()
                     .map(block -> {
                         if (block.getType() != DescriptionBlock.BlockType.TEXT) {
                             return new DescriptionBlockDTO(block.getType().name(), null, block.getImageUrl(), block.getCaption(), false);
                         }
-                        TranslationService.TranslatedText text = TranslationAccess.resolve(
-                                ContentTranslation.EntityType.RECIPE_DESCRIPTION_BLOCK, block.getId(),
-                                block.getText(), recipe.getSourceLocale());
-                        return new DescriptionBlockDTO(block.getType().name(), text.value(), block.getImageUrl(),
-                                block.getCaption(), text.isMachineTranslated());
+                        String text = bundle.valueOf(ContentTranslation.EntityType.RECIPE_DESCRIPTION_BLOCK,
+                                block.getId(), block.getText());
+                        return new DescriptionBlockDTO(block.getType().name(), text, block.getImageUrl(),
+                                block.getCaption(), bundle.isMachineTranslated());
                     })
                     .collect(Collectors.toList());
         }
         // Fallback: synthesize from legacy flat description + non-primary images
         List<DescriptionBlockDTO> blocks = new ArrayList<>();
         if (recipe.getDescription() != null && !recipe.getDescription().isBlank()) {
-            blocks.add(new DescriptionBlockDTO("TEXT", recipe.getDescription(), null, null, false));
+            String text = bundle.valueOf(ContentTranslation.EntityType.RECIPE_DESCRIPTION, recipe.getId(), recipe.getDescription());
+            blocks.add(new DescriptionBlockDTO("TEXT", text, null, null, bundle.isMachineTranslated()));
         }
         if (recipe.getImages() != null) {
             recipe.getImages().stream()
@@ -191,7 +191,10 @@ public final class RecipeMapper {
     }
 
     /**
-     * Maps a recipe's tag entities to their response DTOs.
+     * Maps a recipe's tag entities to their response DTOs, independently of any translation
+     * bundle. Used by {@link #toPreview} — preview-card tags stay out of the preview's smaller
+     * (title+description only) translation attempt, since they're used only for client-side
+     * filter-name matching and never rendered on the card itself.
      *
      * @param recipe target Recipe entity
      * @return the recipe's tags as response DTOs, or an empty list if it has none
@@ -202,25 +205,46 @@ public final class RecipeMapper {
     }
 
     /**
-     * Maps a recipe's ingredient entities to their response DTOs.
+     * Maps a recipe's tag entities to their response DTOs, reading each tag's translated name
+     * from an already-resolved {@link RecipeTranslationBundle}.
      *
      * @param recipe target Recipe entity
-     * @return the recipe's ingredients as response DTOs, or an empty set if it has none
+     * @param bundle the recipe's resolved translation bundle
+     * @return the recipe's tags as response DTOs, or an empty list if it has none
      */
-    private static Set<IngredientResponse> mapIngredients(Recipe recipe) {
-        return recipe.getIngredients() == null ? Set.of()
-                : recipe.getIngredients().stream().map(IngredientMapper::toResponse).collect(Collectors.toSet());
+    private static List<TagResponse> mapTags(Recipe recipe, RecipeTranslationBundle bundle) {
+        return recipe.getTags() == null ? List.of()
+                : recipe.getTags().stream().map(tag -> TagMapper.toResponse(tag, bundle)).collect(Collectors.toList());
     }
 
     /**
-     * Maps a recipe's instruction step entities to their response DTOs.
+     * Maps a recipe's ingredient entities to their response DTOs, reading each ingredient's
+     * translated name from an already-resolved {@link RecipeTranslationBundle}.
      *
      * @param recipe target Recipe entity
+     * @param bundle the recipe's resolved translation bundle
+     * @return the recipe's ingredients as response DTOs, or an empty set if it has none
+     */
+    private static Set<IngredientResponse> mapIngredients(Recipe recipe, RecipeTranslationBundle bundle) {
+        return recipe.getIngredients() == null ? Set.of()
+                : recipe.getIngredients().stream()
+                        .map(ingredient -> IngredientMapper.toResponse(ingredient, bundle))
+                        .collect(Collectors.toSet());
+    }
+
+    /**
+     * Maps a recipe's instruction step entities to their response DTOs, reading each
+     * instruction's translated text from an already-resolved {@link RecipeTranslationBundle}.
+     *
+     * @param recipe target Recipe entity
+     * @param bundle the recipe's resolved translation bundle
      * @return the recipe's instruction steps as response DTOs, or an empty list if it has none
      */
-    private static List<InstructionResponse> mapInstructions(Recipe recipe) {
+    private static List<InstructionResponse> mapInstructions(Recipe recipe, RecipeTranslationBundle bundle) {
         return recipe.getInstructions() == null ? List.of()
-                : recipe.getInstructions().stream().map(InstructionMapper::toResponse).collect(Collectors.toList());
+                : recipe.getInstructions().stream()
+                        .map(instruction -> InstructionMapper.toResponse(instruction, bundle))
+                        .collect(Collectors.toList());
     }
 
     /**

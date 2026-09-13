@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class UnavailableTranslationProvider implements TranslationProvider {
 
     @Override
-    public Optional<TranslationResult> translate(String text, String targetLocale) {
+    public Optional<TranslationResult> translate(String text, String targetLocale, TranslationAttempt attempt) {
         return Optional.empty();
     }
 }

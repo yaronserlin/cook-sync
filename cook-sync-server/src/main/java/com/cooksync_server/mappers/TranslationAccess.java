@@ -2,6 +2,7 @@ package com.cooksync_server.mappers;
 
 import com.cooksync_server.entities.ContentTranslation;
 import com.cooksync_server.services.TranslationService;
+import com.cooksync_server.translation.TranslationAttempt;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -52,8 +53,29 @@ class TranslationAccess {
     static TranslationService.TranslatedText resolve(ContentTranslation.EntityType entityType, String entityId,
                                                        String original, String sourceLocale) {
         if (instance == null) {
-            return new TranslationService.TranslatedText(original, false);
+            return new TranslationService.TranslatedText(original, false, false);
         }
         return instance.resolve(entityType, entityId, original, sourceLocale);
+    }
+
+    /**
+     * Resolves one field's display value as part of a coordinated multi-field attempt. See
+     * {@link TranslationService#resolve(ContentTranslation.EntityType, String, String, String, TranslationAttempt)}.
+     *
+     * @param entityType which field this is
+     * @param entityId id of the entity that field belongs to
+     * @param original the field's value in {@code sourceLocale}
+     * @param sourceLocale the IETF language tag {@code original} is actually written in
+     * @param attempt the consecutive-chunk-failure tracker shared across this field's coordinated
+     *                resolution attempt
+     * @return the resolved value plus whether it came from on-demand machine translation and
+     *         whether it fell back to the original text
+     */
+    static TranslationService.TranslatedText resolve(ContentTranslation.EntityType entityType, String entityId,
+                                                       String original, String sourceLocale, TranslationAttempt attempt) {
+        if (instance == null) {
+            return new TranslationService.TranslatedText(original, false, false);
+        }
+        return instance.resolve(entityType, entityId, original, sourceLocale, attempt);
     }
 }

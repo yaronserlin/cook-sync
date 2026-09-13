@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,11 +39,13 @@ import lombok.extern.slf4j.Slf4j;
  * seed data), so {@link #translate} splits long text into sentence-sized chunks
  * and translates each independently via {@link #chunkTranslator} (a real HTTP
  * call in production, swappable for a fake in tests). Each chunk gets one retry
- * before being considered failed; after three consecutive failed chunks across
- * provider calls the provider stops and returns original text, while isolated
- * failures keep their original-language text in place. The overall result is
- * marked {@link TranslationResult#complete()} {@code false} so callers know not
- * to cache it.</p>
+ * before being considered failed; the caller-supplied {@link TranslationAttempt}
+ * stops the provider early once three consecutive chunks have failed within that
+ * one attempt (e.g. one recipe's whole field set), returning original text —
+ * this state is scoped to the attempt, not shared across other recipes,
+ * requests, or users. The overall result is marked
+ * {@link TranslationResult#complete()} {@code false} so callers know not to
+ * cache it.</p>
  *
  * @author Yaron Serlin
  * @version 1.1
@@ -64,15 +65,10 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
      * One initial attempt plus one retry before a chunk is considered failed.
      */
     private static final int MAX_ATTEMPTS_PER_CHUNK = 2;
-    /**
-     * Stop spending requests when the provider is failing consistently.
-     */
-    private static final int MAX_CONSECUTIVE_FAILED_CHUNKS = 3;
 
     private final RestClient client;
     private final ChunkTranslator chunkTranslator;
     private final Counter quotaExhaustedCounter;
-    private final AtomicInteger consecutiveFailedChunks = new AtomicInteger();
 
     /**
      * Optional contact email sent as MyMemory's {@code de} parameter, which
@@ -116,7 +112,7 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
     }
 
     @Override
-    public Optional<TranslationResult> translate(String text, String targetLocale) {
+    public Optional<TranslationResult> translate(String text, String targetLocale, TranslationAttempt attempt) {
         if (text == null || text.isBlank()) {
             return Optional.empty();
         }
@@ -130,7 +126,7 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
             boolean anyChunkSucceeded = false;
             boolean everyChunkSucceeded = true;
             for (String piece : chunk(text, MAX_QUERY_BYTES)) {
-                if (consecutiveFailedChunks.get() >= MAX_CONSECUTIVE_FAILED_CHUNKS) {
+                if (attempt.isTripped()) {
                     return Optional.of(new TranslationResult(text, false));
                 }
                 String translated = translateChunkWithRetry(piece, sourceLocale, targetLocale);
@@ -140,15 +136,15 @@ public class MyMemoryTranslationProvider implements TranslationProvider {
                 if (translated != null) {
                     result.append(translated);
                     anyChunkSucceeded = true;
-                    consecutiveFailedChunks.set(0);
+                    attempt.recordSuccess();
                 } else {
                     // Keep the chunk's original-language text in place rather than dropping it, so a
                     // partially-translated result still reads as the complete recipe, just mixed-language.
                     result.append(piece);
                     everyChunkSucceeded = false;
-                    int failedChunks = consecutiveFailedChunks.incrementAndGet();
-                    if (failedChunks >= MAX_CONSECUTIVE_FAILED_CHUNKS) {
-                        log.warn("MyMemory translation failed for {} consecutive chunks across provider calls; "
+                    int failedChunks = attempt.recordFailure();
+                    if (attempt.isTripped()) {
+                        log.warn("MyMemory translation failed for {} consecutive chunks within this attempt; "
                                 + "using original text", failedChunks);
                         return Optional.of(new TranslationResult(text, false));
                     }

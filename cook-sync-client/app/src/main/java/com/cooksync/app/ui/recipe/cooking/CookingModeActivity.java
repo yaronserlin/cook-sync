@@ -38,6 +38,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.util.DimensionUtils;
 import com.cooksync.app.util.GlideUtils;
+import com.cooksync.app.util.HebrewScriptDetector;
 import com.cooksync.app.R;
 import com.cooksync.app.data.datasource.local.CookingPreferencesStore;
 import com.cooksync.app.domain.ApiResult;
@@ -100,10 +101,15 @@ public class CookingModeActivity extends BaseActivity {
      *  is destroyed while this dialog is still showing. */
     private androidx.appcompat.app.AlertDialog timerFinishedDialog;
 
+    private View cookingRoot;
     private TextView tvTitle;
     private LinearLayout llProgressBars;
     private TextView tvStepLabel;
     private TextView tvStepText;
+    /** Direction of the currently loaded recipe's content, detected from its title once at load
+     *  time; reapplied on every step render since {@link #tvStepText}/{@link #tvStepLabel} are
+     *  re-bound on each step navigation. */
+    private int contentLayoutDirection = View.LAYOUT_DIRECTION_LTR;
     private View stepImageContainer;
     private ImageView stepImage;
     private View usesContainer;
@@ -161,6 +167,7 @@ public class CookingModeActivity extends BaseActivity {
      * add/edit, prev/next step).
      */
     private void initViews() {
+        cookingRoot = findViewById(R.id.cooking_root);
         tvTitle = findViewById(R.id.tv_cook_title);
         llProgressBars = findViewById(R.id.ll_progress_bars);
         tvStepLabel = findViewById(R.id.tv_step_label);
@@ -205,6 +212,8 @@ public class CookingModeActivity extends BaseActivity {
             if (result instanceof ApiResult.Success<RecipeResponse> success) {
                 RecipeResponse recipe = success.getData();
                 tvTitle.setText(recipe.title());
+                contentLayoutDirection = HebrewScriptDetector.layoutDirection(recipe.title());
+                cookingRoot.setLayoutDirection(contentLayoutDirection);
                 originalServings = Math.max(recipe.servings(), 1);
                 if (selectedServings <= 0) {
                     selectedServings = originalServings;
@@ -330,6 +339,9 @@ public class CookingModeActivity extends BaseActivity {
         InstructionResponse step = steps.get(index);
 
         tvStepLabel.setText(getString(R.string.cook_step_label_format, index + 1, steps.size()));
+        int stepTextDirection = contentLayoutDirection == View.LAYOUT_DIRECTION_RTL ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_LTR;
+        tvStepLabel.setTextDirection(stepTextDirection);
+        tvStepText.setTextDirection(stepTextDirection);
         tvStepText.setText(buildStepText(step));
         applyStepTextSize(step.description());
 

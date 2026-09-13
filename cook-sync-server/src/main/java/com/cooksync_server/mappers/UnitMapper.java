@@ -32,4 +32,25 @@ public final class UnitMapper {
         String namePlural = TranslationAccess.resolve(ContentTranslation.EntityType.UNIT_NAME_PLURAL, unit.getId(), unit.getNamePlural(), "en").value();
         return new UnitResponse(unit.getId(), unit.getCode(), name, namePlural, created, updated);
     }
+
+    /**
+     * Converts a Unit entity into a UnitResponse DTO, reading its translated name and plural name
+     * from an already-resolved {@link RecipeTranslationBundle} instead of resolving them
+     * independently — used when this unit is part of a recipe-wide coordinated translation
+     * attempt (see {@link RecipeTranslationCoordinator}).
+     *
+     * @param unit target Unit entity instance
+     * @param bundle the recipe's resolved translation bundle
+     * @return populated UnitResponse instance or null
+     */
+    static UnitResponse toResponse(Unit unit, RecipeTranslationBundle bundle) {
+        if (unit == null) {
+            return null;
+        }
+        String created = MapperUtils.toIsoStringOrNull(unit.getCreatedAt());
+        String updated = MapperUtils.toIsoStringOrNull(unit.getUpdatedAt());
+        String name = bundle.valueOf(ContentTranslation.EntityType.UNIT_NAME, unit.getId(), unit.getName());
+        String namePlural = bundle.valueOf(ContentTranslation.EntityType.UNIT_NAME_PLURAL, unit.getId(), unit.getNamePlural());
+        return new UnitResponse(unit.getId(), unit.getCode(), name, namePlural, created, updated);
+    }
 }

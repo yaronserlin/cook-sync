@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.util.GlideUtils;
+import com.cooksync.app.util.HebrewScriptDetector;
 import com.cooksync.app.util.RecipeFilterUtils;
 import com.cooksync.app.util.constants.DomainValues;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -128,6 +129,10 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         RecipePreviewResponse recipe = getItem(position);
         android.content.Context context = holder.itemView.getContext();
+
+        int direction = HebrewScriptDetector.layoutDirection(recipe.title());
+        holder.itemView.setLayoutDirection(direction);
+        holder.title.setTextDirection(direction == View.LAYOUT_DIRECTION_RTL ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_LTR);
 
         holder.title.setText(recipe.title());
         holder.subtitle.setText(context.getString(R.string.review_count_format, recipe.reviewCount()));

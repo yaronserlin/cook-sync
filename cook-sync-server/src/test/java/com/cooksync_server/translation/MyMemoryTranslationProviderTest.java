@@ -39,7 +39,7 @@ class MyMemoryTranslationProviderTest {
     void translate_returnsComplete_whenAllChunksSucceed() {
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> text + "-translated");
 
-        Optional<TranslationResult> result = provider.translate("hello", "he");
+        Optional<TranslationResult> result = provider.translate("hello", "he", TranslationAttempt.create());
 
         assertTrue(result.isPresent());
         assertEquals("hello-translated", result.get().value());
@@ -54,7 +54,7 @@ class MyMemoryTranslationProviderTest {
             return null;
         });
 
-        Optional<TranslationResult> result = provider.translate("hello", "he");
+        Optional<TranslationResult> result = provider.translate("hello", "he", TranslationAttempt.create());
 
         assertTrue(result.isPresent());
         assertEquals("hello", result.get().value());
@@ -70,7 +70,7 @@ class MyMemoryTranslationProviderTest {
             throw new RuntimeException("connection reset");
         });
 
-        Optional<TranslationResult> result = provider.translate("hello", "he");
+        Optional<TranslationResult> result = provider.translate("hello", "he", TranslationAttempt.create());
 
         assertTrue(result.isPresent());
         assertEquals("hello", result.get().value());
@@ -92,7 +92,7 @@ class MyMemoryTranslationProviderTest {
         MyMemoryTranslationProvider provider = providerWith((chunk, source, target)
                 -> chunk.contains("Alpha") ? "ALPHA-TRANSLATED" : null);
 
-        Optional<TranslationResult> result = provider.translate(text, "he");
+        Optional<TranslationResult> result = provider.translate(text, "he", TranslationAttempt.create());
 
         assertTrue(result.isPresent());
         assertFalse(result.get().complete());
@@ -113,7 +113,7 @@ class MyMemoryTranslationProviderTest {
             return null;
         });
 
-        Optional<TranslationResult> result = provider.translate(text, "he");
+        Optional<TranslationResult> result = provider.translate(text, "he", TranslationAttempt.create());
 
         assertTrue(result.isPresent());
         assertEquals(text, result.get().value());
@@ -123,29 +123,60 @@ class MyMemoryTranslationProviderTest {
     }
 
     @Test
-    void translate_stopsAcrossSeparateCalls_afterThreeConsecutiveChunkFailures() {
+    void translate_carriesFailureState_acrossCallsSharingTheSameAttempt() {
+        // Regression test for the bug being fixed: the breaker used to live as a singleton field
+        // on the provider itself, shared unscoped across every call for the whole process
+        // lifetime with no reset. Now it only carries forward when the caller deliberately reuses
+        // the same TranslationAttempt across calls (e.g. every field of one recipe).
         AtomicInteger callCount = new AtomicInteger();
         MyMemoryTranslationProvider provider = providerWith((chunk, source, target) -> {
             callCount.incrementAndGet();
             return null;
         });
+        TranslationAttempt attempt = TranslationAttempt.create();
 
-        provider.translate("first", "he");
-        provider.translate("second", "he");
-        Optional<TranslationResult> thirdResult = provider.translate("third", "he");
-        Optional<TranslationResult> fourthResult = provider.translate("fourth", "he");
+        provider.translate("first", "he", attempt);
+        provider.translate("second", "he", attempt);
+        Optional<TranslationResult> thirdResult = provider.translate("third", "he", attempt);
 
         assertEquals("third", thirdResult.orElseThrow().value());
+        assertEquals(6, callCount.get(),
+                "three consecutive failed chunks sharing one attempt should each use the initial attempt and one retry");
+
+        Optional<TranslationResult> fourthResult = provider.translate("fourth", "he", attempt);
+
         assertEquals("fourth", fourthResult.orElseThrow().value());
         assertEquals(6, callCount.get(),
-                "the fourth call must not contact MyMemory after three failed chunks");
+                "a fourth call sharing the now-tripped attempt must not contact MyMemory again");
+    }
+
+    @Test
+    void translate_doesNotShareFailureState_acrossSeparateAttempts() {
+        AtomicInteger callCount = new AtomicInteger();
+        MyMemoryTranslationProvider provider = providerWith((chunk, source, target) -> {
+            callCount.incrementAndGet();
+            return null;
+        });
+        TranslationAttempt trippedAttempt = TranslationAttempt.create();
+        provider.translate("first", "he", trippedAttempt);
+        provider.translate("second", "he", trippedAttempt);
+        provider.translate("third", "he", trippedAttempt);
+        assertEquals(6, callCount.get(), "test setup expects trippedAttempt to be tripped by now");
+
+        TranslationAttempt freshAttempt = TranslationAttempt.create();
+        Optional<TranslationResult> fourthResult = provider.translate("fourth", "he", freshAttempt);
+
+        assertEquals("fourth", fourthResult.orElseThrow().value());
+        assertEquals(8, callCount.get(),
+                "a call using a fresh, unrelated attempt must still contact MyMemory even though a "
+                        + "different attempt is tripped");
     }
 
     @Test
     void translate_returnsOriginalText_whenEveryChunkFails() {
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> null);
 
-        Optional<TranslationResult> result = provider.translate("hello", "he");
+        Optional<TranslationResult> result = provider.translate("hello", "he", TranslationAttempt.create());
 
         assertTrue(result.isPresent());
         assertEquals("hello", result.get().value());
@@ -156,15 +187,15 @@ class MyMemoryTranslationProviderTest {
     void translate_returnsEmpty_forBlankText() {
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> "unused");
 
-        assertTrue(provider.translate("", "he").isEmpty());
-        assertTrue(provider.translate(null, "he").isEmpty());
+        assertTrue(provider.translate("", "he", TranslationAttempt.create()).isEmpty());
+        assertTrue(provider.translate(null, "he", TranslationAttempt.create()).isEmpty());
     }
 
     @Test
     void translate_returnsEmpty_forUnsupportedTargetLocale() {
         MyMemoryTranslationProvider provider = providerWith((text, source, target) -> "unused");
 
-        assertTrue(provider.translate("hello", "fr").isEmpty());
+        assertTrue(provider.translate("hello", "fr", TranslationAttempt.create()).isEmpty());
     }
 
     @Test

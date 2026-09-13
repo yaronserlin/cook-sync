@@ -20,12 +20,16 @@ public interface TranslationProvider {
      *
      * @param text the source-language text to translate
      * @param targetLocale IETF language tag to translate into, e.g. {@code "he"}
+     * @param attempt the consecutive-chunk-failure tracker for the top-level translation attempt
+     *                this call is part of (e.g. one recipe's whole field set) — implementations
+     *                that chunk long text should stop early once {@code attempt} reports too many
+     *                consecutive failures, and must not keep their own unscoped failure state
      * @return a {@link TranslationResult}, or empty if this provider has no translation available
      *         at all (not configured, request failed, or timed out) — never throws for that
      *         case, so callers can fall back to the original text without surfacing an error to
      *         the user
      */
-    Optional<TranslationResult> translate(String text, String targetLocale);
+    Optional<TranslationResult> translate(String text, String targetLocale, TranslationAttempt attempt);
 
     /**
      * The outcome of a translate attempt for text that may have needed to be split into multiple
