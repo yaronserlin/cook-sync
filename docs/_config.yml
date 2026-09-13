@@ -16,7 +16,7 @@ baseurl: /cook-sync
 
 # Permanent download URL for the newest signed APK, published by the onPush
 # workflow. Referenced by the layouts so it lives in exactly one place.
-apk_url: https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk
+apk_url: https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk
 repo_url: https://github.com/yaronserlin/cook-sync
 
 # Rewrites relative links to .md files (e.g. functional-spec.md) into their

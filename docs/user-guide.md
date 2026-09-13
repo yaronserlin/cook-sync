@@ -20,7 +20,7 @@ CookSync runs on **Android 7.0 (API 24) or newer**.
 
 The fastest way to install the current build is the rolling GitHub release:
 
-- **[Download the latest APK](https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk)**, or scan the QR code on the [project page](https://yaronserlin.github.io/cook-sync/).
+- **[Download the latest APK](https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk)**, or scan the QR code on the [project page](https://yaronserlin.github.io/cook-sync/).
 
 Android blocks installs from outside the Play Store by default. When prompted,
 allow installation from your browser or file manager ("Install unknown apps"),
