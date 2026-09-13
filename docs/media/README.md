@@ -2,32 +2,31 @@
 
 Images used by the README, the documentation and the public project page.
 
-| File | Used by |
+| Path | Contents |
 |---|---|
-| `apk-qr.png` | [Main README](../../README.md) and [`index.html`](../index.html) — points at the latest-APK download URL, so it never needs regenerating |
+| `screenshots/` | One image per app screen, named after the screen (`home.jpg`, `cooking-mode.jpg`, `admin-users.jpg`, …). Used by the [user guide](../user-guide.md), the [main README](../../README.md) and the project page. |
+| `diagrams/` | `architecture.png` (request path through the system), `erd.jpg` (full database schema) and `screen-flow.png` (navigation between screens). Used by the [functional specification](../functional-spec.md). |
+| `apk-qr.png` | QR code for the APK download, used by the README and `index.html`. |
 
-## Adding screenshots
+The screenshots and diagrams were taken from the submitted Hebrew documents in
+[`../pdf/`](../pdf), so both sets stay in step with each other.
 
-Screenshots are the highest-value thing that can be added to this repository:
-they work with no network, no server and no install, and they are the first
-thing a visitor looks at.
+## Adding or replacing a screenshot
 
-Capture them at device resolution and drop them here as
-`screenshot-<screen>.png` — for example `screenshot-home.png`,
-`screenshot-recipe.png`, `screenshot-cooking-mode.png`, `screenshot-wizard.png`,
-`screenshot-admin.png`. Then uncomment the screenshot table in the
-[main README](../../README.md).
-
-From a running emulator or device:
+Keep the existing file name and the new image drops into every place that
+already references it — no markup to update. From a running emulator or device:
 
 ```bash
-adb exec-out screencap -p > docs/media/screenshot-home.png
+adb exec-out screencap -p > docs/media/screenshots/home.png
 ```
 
-## Adding a demo recording
+The current set is 395 × 831 device mockups with the phone frame drawn in and
+white rounded corners. The site clips those corners with a `border-radius` in
+`assets/site.css` (`.shots img`, `.gallery img`) sized as a percentage, so it
+holds at any width. **A plain screenshot with no frame needs that rule relaxed**,
+otherwise its own corners get rounded off.
 
-A short screen recording of one complete flow (search → recipe → Cooking Mode)
-carries a presentation better than any static image.
+## Adding a demo recording
 
 ```bash
 adb shell screenrecord --time-limit 30 /sdcard/demo.mp4

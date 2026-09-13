@@ -28,6 +28,11 @@ required. To build and run the app against your own server instead, see
 
 ## 2. Creating an account
 
+<p class="shots">
+  <img src="media/screenshots/register.jpg" alt="Registration form" width="224">
+  <img src="media/screenshots/verify-otp.jpg" alt="Email verification code screen" width="224">
+</p>
+
 1. Open the app and tap **Register**.
 2. Enter your first name, last name, email address and a password.
 3. CookSync emails a **one-time verification code (OTP)** to the address you
@@ -41,6 +46,10 @@ discarded automatically after it expires.
 
 ## 3. Signing in and recovering a password
 
+<p class="shots">
+  <img src="media/screenshots/login.jpg" alt="Sign-in screen" width="224">
+</p>
+
 Sign in with your email and password. The session is stored **encrypted on the
 device**, so you stay signed in between launches; the app refreshes your session
 silently in the background and only asks you to sign in again after a long
@@ -50,6 +59,12 @@ Forgot your password? Tap **Forgot password** on the login screen, enter your
 email, and follow the reset link/code sent to you.
 
 ## 4. Finding recipes
+
+<p class="shots">
+  <img src="media/screenshots/home.jpg" alt="Home feed" width="224">
+  <img src="media/screenshots/search.jpg" alt="Search results" width="224">
+  <img src="media/screenshots/filters.jpg" alt="Filter sheet" width="224">
+</p>
 
 The **Home** tab is the main feed of published recipes. The bar at the bottom of
 the screen moves between the four main areas: **Home**, **My Recipes**,
@@ -66,6 +81,11 @@ Results are paged — scroll to load more.
 
 ## 5. Reading a recipe
 
+<p class="shots">
+  <img src="media/screenshots/recipe-detail.jpg" alt="Recipe page" width="224">
+  <img src="media/screenshots/recipe-instructions.jpg" alt="Ingredients and instructions" width="224">
+</p>
+
 A recipe page contains:
 
 - **Photos** — tap an image to open it full screen, then pinch to zoom.
@@ -78,6 +98,11 @@ From here you can favorite the recipe, add your own notes, write a review, or
 start **Cooking Mode**.
 
 ## 6. Cooking Mode
+
+<p class="shots">
+  <img src="media/screenshots/cooking-mode.jpg" alt="A step in Cooking Mode with its timer" width="224">
+  <img src="media/screenshots/cooking-timer-done.jpg" alt="Timer finished" width="224">
+</p>
 
 Cooking Mode is a full-screen, step-by-step view built for use while your hands
 are busy. It shows one instruction at a time, in large type, and you move
@@ -100,6 +125,10 @@ Two related options live under **Settings → Cooking preferences**:
 
 ## 7. Favorites
 
+<p class="shots">
+  <img src="media/screenshots/favorites.jpg" alt="Saved recipes" width="224">
+</p>
+
 Tap the heart on any recipe to save it. Saved recipes are collected under the
 **Favorites** tab.
 
@@ -119,6 +148,11 @@ Step notes are the ones surfaced during Cooking Mode.
 
 ## 9. Ratings and reviews
 
+<p class="shots">
+  <img src="media/screenshots/reviews.jpg" alt="Reviews on a recipe" width="224">
+  <img src="media/screenshots/rate-review.jpg" alt="Writing a review" width="224">
+</p>
+
 Open the reviews section of a recipe to leave a **star rating** and a written
 review. You can delete a review you wrote.
 
@@ -127,6 +161,13 @@ Reported reviews go into a moderation queue that administrators handle from the
 admin console.
 
 ## 10. Publishing your own recipe
+
+<p class="shots">
+  <img src="media/screenshots/wizard-basics.jpg" alt="Step 1 — basics" width="224">
+  <img src="media/screenshots/wizard-ingredients.jpg" alt="Step 2 — ingredients" width="224">
+  <img src="media/screenshots/wizard-instructions.jpg" alt="Step 3 — instructions" width="224">
+  <img src="media/screenshots/wizard-publish.jpg" alt="Step 4 — review and publish" width="224">
+</p>
 
 New recipes are created through a **four-step wizard**:
 
@@ -152,6 +193,10 @@ Useful things to know:
 
 ## 11. Managing your recipes
 
+<p class="shots">
+  <img src="media/screenshots/my-recipes.jpg" alt="My Recipes" width="224">
+</p>
+
 The **My Recipes** tab lists everything you've published. From there you can:
 
 - **Edit** a recipe — reopens the same wizard with your content loaded,
@@ -159,6 +204,13 @@ The **My Recipes** tab lists everything you've published. From there you can:
 - **Delete** a recipe permanently.
 
 ## 12. Your profile and settings
+
+<p class="shots">
+  <img src="media/screenshots/settings.jpg" alt="Settings" width="224">
+  <img src="media/screenshots/account-details.jpg" alt="Account details" width="224">
+  <img src="media/screenshots/cooking-preferences.jpg" alt="Cooking preferences" width="224">
+  <img src="media/screenshots/user-profile.jpg" alt="A public profile" width="224">
+</p>
 
 The **Settings** tab is the entry point to your account.
 
@@ -184,6 +236,13 @@ recipes and reviews immediately and permanently removes the account after a
 deletion.
 
 ## 13. Admin console
+
+<p class="shots">
+  <img src="media/screenshots/admin-reports.jpg" alt="Reported reviews" width="224">
+  <img src="media/screenshots/admin-tags.jpg" alt="Duplicate tags" width="224">
+  <img src="media/screenshots/admin-users.jpg" alt="Users" width="224">
+  <img src="media/screenshots/admin-units.jpg" alt="Measurement units" width="224">
+</p>
 
 Accounts flagged as administrators get an extra entry point into the **admin
 console**, which has five sections:

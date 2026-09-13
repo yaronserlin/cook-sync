@@ -367,6 +367,78 @@ h3:hover > .heading-anchor { opacity: .6; }
   .toc a.is-active { color: var(--accent-deep); border-left-color: var(--accent); font-weight: 600; }
 }
 
+/* -------------------------------------------------- screenshots & figures -- */
+
+/* The mockups carry a white rounded corner baked into the JPEG. Clipping the
+   image to the frame's own radius (41px on a 395px-wide source, expressed as a
+   percentage so it holds at any rendered size) drops those corners instead of
+   showing white notches against the cream ground. */
+.shot-frame,
+.prose .shots img,
+.shots img {
+  border-radius: 11% / 5.2%;
+  display: block;
+}
+
+.prose .shots,
+.shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0 0 1.9em;
+  padding: 0;
+}
+.prose .shots img { width: 224px; height: auto; max-width: calc(50% - 8px); }
+
+.prose .diagram {
+  margin: 1.9em 0;
+  text-align: center;
+}
+.prose .diagram a { display: block; }
+.prose .diagram a:hover img { border-color: var(--accent); }
+.prose .diagram img {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 10px;
+}
+.prose .diagram em {
+  display: block;
+  font-style: normal;
+  font-size: .86rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: .7em;
+}
+
+/* Homepage strip: scrolls sideways on a phone rather than wrapping into a wall. */
+.gallery {
+  margin: 2.8em 0 0;
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.gallery::-webkit-scrollbar { display: none; }
+
+/* Fade the trailing edge so it reads as "there is more to the right". */
+@media (max-width: 52rem) {
+  .gallery { mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
+}
+.gallery img {
+  flex: 0 0 auto;
+  width: 186px;
+  height: auto;
+  border-radius: 11% / 5.2%;
+}
+.gallery__caption {
+  color: var(--text-muted);
+  font-size: .87rem;
+  margin: 1em 0 0;
+}
+
 /* -------------------------------------------------------------- homepage -- */
 
 .home { max-width: 46rem; margin: 0 auto; padding: 68px 20px 0; text-align: center; }

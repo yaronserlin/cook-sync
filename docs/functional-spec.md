@@ -46,6 +46,16 @@ rather than through any in-app flow.
 
 ## 3. System overview
 
+<p class="diagram">
+  <a href="media/diagrams/architecture.png"><img src="media/diagrams/architecture.png" alt="CookSync system architecture"></a>
+  <em>How a request travels: the Android app through the security filters and controllers, into the services, and out to the database and the external providers.</em>
+</p>
+
+<p class="diagram">
+  <a href="media/diagrams/screen-flow.png"><img src="media/diagrams/screen-flow.png" alt="Navigation flow between the app's screens"></a>
+  <em>Every screen in the app and how they connect — open full size.</em>
+</p>
+
 Three deployable/consumable units:
 
 | Unit | Responsibility |
@@ -173,6 +183,11 @@ trusted with the sign-in flow still has to be able to learn that it must update.
 Administrators set the minimum version and the download link from the console.
 
 ## 5. Domain model
+
+<p class="diagram">
+  <a href="media/diagrams/erd.jpg"><img src="media/diagrams/erd.jpg" alt="Entity relationship diagram"></a>
+  <em>The full schema — open full size. Every table below appears here with its columns and relationships.</em>
+</p>
 
 | Entity | Meaning | Key relationships |
 |---|---|---|

@@ -45,13 +45,13 @@ The release build talks to the hosted API, so there's nothing to set up. The API
 
 New to the app? The [user guide](docs/user-guide.md) walks through every screen.
 
-<!-- Screenshots — uncomment once the files exist in docs/media/ (see docs/media/README.md)
 ## Screenshots
 
-| Home | Recipe | Cooking Mode | Add recipe |
+| Home | Recipe | Cooking Mode | Publish a recipe |
 |---|---|---|---|
-| <img src="docs/media/screenshot-home.png" width="180"> | <img src="docs/media/screenshot-recipe.png" width="180"> | <img src="docs/media/screenshot-cooking-mode.png" width="180"> | <img src="docs/media/screenshot-wizard.png" width="180"> |
--->
+| <img src="docs/media/screenshots/home.jpg" alt="Home feed" width="200"> | <img src="docs/media/screenshots/recipe-detail.jpg" alt="Recipe page" width="200"> | <img src="docs/media/screenshots/cooking-mode.jpg" alt="Cooking Mode with a step timer" width="200"> | <img src="docs/media/screenshots/wizard-publish.jpg" alt="The last step of the recipe wizard" width="200"> |
+
+Every screen is shown in the [user guide](docs/user-guide.md).
 
 ## Documentation
 
@@ -63,6 +63,7 @@ Every document is also published on the [project site](https://yaronserlin.githu
 | [Functional specification](docs/functional-spec.md) | [↗](https://yaronserlin.github.io/cook-sync/functional-spec.html) | Actors, functional areas, domain model, business rules, external services, API surface |
 | [Documentation index](docs/README.md) | — | Everything written about the project, in one place, and how the site is built |
 | Privacy policy · Terms of use | [↗](https://yaronserlin.github.io/cook-sync/privacy.html) · [↗](https://yaronserlin.github.io/cook-sync/terms.html) | Legal documents, also shown inside the app |
+| Hebrew originals (PDF) | — | The [user guide](docs/pdf/cooksync-user-guide-he.pdf) and [functional document](docs/pdf/cooksync-functional-document-he.pdf) as submitted |
 
 ## Repository layout
 

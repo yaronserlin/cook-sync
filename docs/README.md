@@ -12,12 +12,14 @@ the repository and served on the web.
 | [User guide](user-guide.md) ([live](https://yaronserlin.github.io/cook-sync/user-guide.html)) | Using the app, screen by screen — accounts, search, Cooking Mode, publishing a recipe, settings, admin console |
 | [Privacy policy](privacy.html) ([live](https://yaronserlin.github.io/cook-sync/privacy.html)) | What the app collects and the choices users have |
 | [Terms of use](terms.html) ([live](https://yaronserlin.github.io/cook-sync/terms.html)) | Terms accepted by using the app |
+| [User guide, Hebrew (PDF)](pdf/cooksync-user-guide-he.pdf) | The original illustrated guide as submitted |
 
 ## For readers of the project
 
 | Document | What it covers |
 |---|---|
 | [Functional specification](functional-spec.md) ([live](https://yaronserlin.github.io/cook-sync/functional-spec.html)) | Actors, functional areas, domain model, business rules, external services, API surface |
+| [Functional document, Hebrew (PDF)](pdf/cooksync-functional-document-he.pdf) | The original submitted document: user guide, implementation description, database and class breakdown, install instructions |
 | [Main README](../README.md) | What the project is, how the three modules fit together, how to build and run everything |
 | [Client README](../cook-sync-client/README.md) | Android app — tech stack, package layout, configuration, release signing, tests |
 | [Server README](../cook-sync-server/README.md) | Spring Boot API — package layout, per-endpoint API table, environment variables, profiles, Docker, health check |
@@ -30,7 +32,8 @@ the repository and served on the web.
 | `index.html` | The public project page (the GitHub Pages entry point) |
 | `privacy.html`, `terms.html` | Legal documents, also opened from inside the app |
 | `user-guide.md`, `functional-spec.md` | The two documents above |
-| `media/` | Screenshots, demo recordings and the APK QR code — see [`media/README.md`](media/README.md) |
+| `media/` | `screenshots/` (every app screen), `diagrams/` (architecture, ERD, screen flow) and the APK QR code — see [`media/README.md`](media/README.md) |
+| `pdf/` | The original Hebrew documents, as submitted |
 | `_config.yml`, `_layouts/`, `assets/` | The site itself — see [How the site is built](#how-the-site-is-built) |
 | `logo.png` | App logo used by the project page |
 | `google*.html` | Google Search Console site-verification file — do not remove |
