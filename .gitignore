@@ -27,3 +27,8 @@ cooksync-javadoc.zip
 cooksync-javadoc/**
 cook-sync-server/src/main/java/com/cooksync_server/config/ProductionSeeder.java
 
+
+# Jekyll build output from previewing the docs/ site locally
+docs/_site/
+docs/.jekyll-cache/
+docs/.jekyll-metadata

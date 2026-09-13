@@ -1,27 +1,21 @@
+---
+layout: doc
+title: Functional Specification
+eyebrow: Documentation
+summary: Actors, functional areas, domain model, business rules and the API surface.
+---
+
 # CookSync — Functional Specification
 
 What the system does, who uses it, and the rules it enforces. This document
 describes the functional behaviour of the system as implemented; the technical
 design behind it lives in the module READMEs
-([client](../cook-sync-client/README.md), [server](../cook-sync-server/README.md),
-[shared DTOs](../cooksync-DTOs/README.md)).
+([client](https://github.com/yaronserlin/cook-sync/blob/main/cook-sync-client/README.md), [server](https://github.com/yaronserlin/cook-sync/blob/main/cook-sync-server/README.md),
+[shared DTOs](https://github.com/yaronserlin/cook-sync/blob/main/cooksync-DTOs/README.md)).
 
 > **Note:** if you maintain your own functional document, replace the body of
 > this file with it — every link in the repository already points here.
 
-**Contents**
-
-1. [Purpose and scope](#1-purpose-and-scope)
-2. [Actors](#2-actors)
-3. [System overview](#3-system-overview)
-4. [Functional areas](#4-functional-areas)
-5. [Domain model](#5-domain-model)
-6. [Business rules](#6-business-rules)
-7. [Non-functional behaviour](#7-non-functional-behaviour)
-8. [External services](#8-external-services)
-9. [API surface](#9-api-surface)
-
----
 
 ## 1. Purpose and scope
 
@@ -262,7 +256,7 @@ applies across the API.
 ## 9. API surface
 
 All routes are prefixed `/api`. The authoritative, per-endpoint table lives in
-[`cook-sync-server/README.md`](../cook-sync-server/README.md#api-overview);
+[`cook-sync-server/README.md`](https://github.com/yaronserlin/cook-sync/blob/main/cook-sync-server/README.md#api-overview);
 the functional grouping is:
 
 | Area | Base path | Covers |

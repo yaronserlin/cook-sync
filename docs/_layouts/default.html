@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if page.title and page.title != site.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+<meta name="description" content="{{ page.summary | default: site.description | strip_newlines }}">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="{{ site.baseurl }}/logo.png">
+<link rel="stylesheet" href="{{ site.baseurl }}/assets/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="{{ site.baseurl }}/">
+      <img src="{{ site.baseurl }}/logo.png" alt="">
+      CookSync
+    </a>
+    <nav class="site-nav">
+      {% assign nav = "Home,/|User Guide,/user-guide.html|Functional Spec,/functional-spec.html|Privacy,/privacy.html|Terms,/terms.html" | split: "|" %}
+      {% for item in nav %}
+        {% assign parts = item | split: "," %}
+        {% assign href = site.baseurl | append: parts[1] %}
+        <a href="{{ href }}"{% if page.url == parts[1] or page.url == parts[1] | replace: ".html", "" %} aria-current="page"{% endif %}>{{ parts[0] }}</a>
+      {% endfor %}
+      <a href="{{ site.repo_url }}">GitHub&nbsp;&rarr;</a>
+    </nav>
+  </div>
+</header>
+
+{{ content }}
+
+<footer class="site-footer">
+  <nav>
+    <a href="{{ site.baseurl }}/user-guide.html">User Guide</a>
+    <a href="{{ site.baseurl }}/functional-spec.html">Functional Spec</a>
+    <a href="{{ site.baseurl }}/privacy.html">Privacy Policy</a>
+    <a href="{{ site.baseurl }}/terms.html">Terms of Use</a>
+    <a href="{{ site.apk_url }}">Download APK</a>
+    <a href="{{ site.repo_url }}">Source code</a>
+  </nav>
+  <p>CookSync — a recipe-sharing Android app.</p>
+</footer>
+
+</body>
+</html>

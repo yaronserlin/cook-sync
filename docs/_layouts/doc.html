@@ -1,0 +1,89 @@
+---
+layout: default
+---
+<main class="doc">
+  <div class="doc__body">
+    <div class="doc__header">
+      {% if page.eyebrow %}<span class="doc__eyebrow">{{ page.eyebrow }}</span>{% endif %}
+      <h1 class="doc__title">{{ page.title }}</h1>
+      {% if page.summary %}<p class="doc__summary">{{ page.summary }}</p>{% endif %}
+    </div>
+    <article class="prose" id="doc-content">
+      {{ content }}
+    </article>
+  </div>
+
+  <aside class="toc" aria-label="On this page">
+    <p class="toc__label">On this page</p>
+    <ol id="toc-list"></ol>
+  </aside>
+</main>
+
+<script>
+// Builds the sidebar index from the document's own <h2>s, so it stays correct
+// no matter what the Markdown behind this page says, and highlights the section
+// currently in view. Progressive enhancement: without JS the document reads fine,
+// it just loses the sidebar.
+(function () {
+  var article = document.getElementById('doc-content');
+  var list = document.getElementById('toc-list');
+  if (!article || !list) return;
+
+  // The rendered document opens with its own H1; the page header already shows
+  // the title, so drop it rather than printing the title twice.
+  var firstHeading = article.querySelector('h1');
+  if (firstHeading && !firstHeading.previousElementSibling) firstHeading.remove();
+
+  // Wide tables need to scroll on their own instead of stretching the page.
+  article.querySelectorAll('table').forEach(function (table) {
+    var wrap = document.createElement('div');
+    wrap.className = 'table-scroll';
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
+  });
+
+  var headings = Array.prototype.slice.call(article.querySelectorAll('h2[id], h3[id]'));
+
+  headings.forEach(function (heading) {
+    var anchor = document.createElement('a');
+    anchor.className = 'heading-anchor';
+    anchor.href = '#' + heading.id;
+    anchor.textContent = '#';
+    anchor.setAttribute('aria-label', 'Link to this section');
+    heading.appendChild(anchor);
+  });
+
+  var sections = headings.filter(function (h) { return h.tagName === 'H2'; });
+  if (!sections.length) { list.parentNode.style.display = 'none'; return; }
+
+  var links = sections.map(function (heading) {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + heading.id;
+    a.textContent = heading.textContent.replace(/#$/, '').trim();
+    li.appendChild(a);
+    list.appendChild(li);
+    return a;
+  });
+
+  var current = -1;
+  function highlight() {
+    var index = 0;
+    for (var i = 0; i < sections.length; i++) {
+      if (sections[i].getBoundingClientRect().top <= 90) index = i; else break;
+    }
+    if (index === current) return;
+    if (current > -1) links[current].classList.remove('is-active');
+    links[index].classList.add('is-active');
+    current = index;
+  }
+
+  highlight();
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () { highlight(); ticking = false; });
+  }, { passive: true });
+})();
+</script>
