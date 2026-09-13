@@ -1,8 +1,66 @@
-# cookSync
+<p align="center">
+  <img src="docs/logo.png" alt="CookSync" width="96" height="96">
+</p>
+
+<h1 align="center">CookSync</h1>
+
+<p align="center">
+  <a href="https://github.com/yaronserlin/cook-sync/actions/workflows/onPush.yml"><img src="https://github.com/yaronserlin/cook-sync/actions/workflows/onPush.yml/badge.svg" alt="Build status"></a>
+  <a href="https://github.com/yaronserlin/cook-sync/releases/latest"><img src="https://img.shields.io/github/v/release/yaronserlin/cook-sync?label=APK&color=2a6f4b" alt="Latest APK"></a>
+  <img src="https://img.shields.io/badge/Android-7.0%2B-2a6f4b" alt="Android 7.0+">
+  <img src="https://img.shields.io/badge/Java-17%20%7C%2021-2a6f4b" alt="Java 17 / 21">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2a6f4b" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  <a href="https://yaronserlin.github.io/cook-sync/"><b>Project page</b></a> ·
+  <a href="https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk"><b>Download APK</b></a> ·
+  <a href="docs/user-guide.md"><b>User guide</b></a> ·
+  <a href="docs/functional-spec.md"><b>Functional spec</b></a>
+</p>
 
 A mobile (Android) app for sharing and discovering cooking recipes. Users browse and search recipes, save favorites, write personal notes on preparation steps, follow a guided step-by-step "Cooking Mode" with timers, rate and review recipes, and create/publish their own recipes through a guided 4-step wizard. Admin users get a moderation console for managing users, tags, measurement units, and reported reviews.
 
 This file is self-contained: it covers everything needed to build, run, and understand the project as a whole. Each module below also has its own standalone README with module-specific detail.
+
+## Try it
+
+<table>
+<tr>
+<td valign="top">
+
+**On your phone** — scan the QR code, or [download the APK directly](https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk). Every push to `main` publishes a freshly built, signed APK to the [`latest-apk`](https://github.com/yaronserlin/cook-sync/releases/tag/latest-apk) release, so that link is always the current build.
+
+Android blocks installs from outside the Play Store by default — allow "Install unknown apps" for your browser when prompted. Requires **Android 7.0 (API 24)** or newer.
+
+The release build talks to the hosted API, so there's nothing to set up. The API sleeps when idle, so the very first request after a quiet spell can take up to a minute; everything after that is fast.
+
+</td>
+<td width="180" align="center" valign="top">
+<img src="docs/media/apk-qr.png" alt="QR code to download the latest CookSync APK" width="160">
+<br><sub>Latest APK</sub>
+</td>
+</tr>
+</table>
+
+New to the app? The [user guide](docs/user-guide.md) walks through every screen.
+
+<!-- Screenshots — uncomment once the files exist in docs/media/ (see docs/media/README.md)
+## Screenshots
+
+| Home | Recipe | Cooking Mode | Add recipe |
+|---|---|---|---|
+| <img src="docs/media/screenshot-home.png" width="180"> | <img src="docs/media/screenshot-recipe.png" width="180"> | <img src="docs/media/screenshot-cooking-mode.png" width="180"> | <img src="docs/media/screenshot-wizard.png" width="180"> |
+-->
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [User guide](docs/user-guide.md) | Using the app, screen by screen — accounts, search, Cooking Mode, publishing a recipe, settings, admin console |
+| [Functional specification](docs/functional-spec.md) | Actors, functional areas, domain model, business rules, external services, API surface |
+| [Documentation index](docs/README.md) | Everything written about the project, in one place |
+| [Privacy policy](https://yaronserlin.github.io/cook-sync/privacy.html) · [Terms of use](https://yaronserlin.github.io/cook-sync/terms.html) | Legal documents, also opened from inside the app |
 
 ## Repository layout
 
@@ -53,3 +111,9 @@ cp .env.example .env   # fill in JWT_SECRET and CLOUDINARY_* at minimum
 This builds `cooksync-DTOs` and `cook-sync-server` inside the image and starts MySQL alongside it (Flyway still applies schema migrations automatically on startup). The API is reachable at `http://localhost:8080` (or `http://10.0.2.2:8080/` from the Android emulator). See `.env.example` for the full list of variables.
 
 Add `--seed` to wipe and repopulate the database with the demo dataset (30 recipes, 15 users) on startup — `./docker-up.sh --seed`. Without it, the server starts normally with whatever data is already in the database.
+
+To sign in against a locally seeded database, use any of the accounts created by the seeder — e.g. `chef@cooksync.com` / `Password123!` for a regular user, or `admin@cooksync.com` / `Password123!` to see the admin console. These are **local demo accounts only**: the seeder is gated behind the `seed` profile and never runs in production, so these credentials do not exist on the hosted API — there, register a fresh account.
+
+## License
+
+Released under the [MIT License](LICENSE).
