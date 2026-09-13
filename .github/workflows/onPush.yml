@@ -134,6 +134,6 @@ jobs:
           cp cook-sync-client/app/build/outputs/apk/release/app-release.apk "$APK"
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" "$APK" \
-            --title "CookSync (V$VERSION)" \
+            --title "CookSync (v$VERSION)" \
             --notes "Automated build of v$VERSION from commit ${GITHUB_SHA::7}, built $(date -u +'%Y-%m-%d %H:%M UTC')." \
             --target "$GITHUB_SHA"
