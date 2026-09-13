@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://yaronserlin.github.io/cook-sync/"><b>Project page</b></a> ·
-  <a href="https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk"><b>Download APK</b></a> ·
+  <a href="https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk"><b>Download APK</b></a> ·
   <a href="docs/user-guide.md"><b>User guide</b></a> ·
   <a href="docs/functional-spec.md"><b>Functional spec</b></a>
 </p>
@@ -29,7 +29,7 @@ This file is self-contained: it covers everything needed to build, run, and unde
 <tr>
 <td valign="top">
 
-**On your phone** — scan the QR code, or [download the APK directly](https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk). Every push to `main` publishes a freshly built, signed APK to the [`latest-apk`](https://github.com/yaronserlin/cook-sync/releases/tag/latest-apk) release, so that link is always the current build.
+**On your phone** — scan the QR code, or [download the APK directly](https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk). Every push to `main` publishes a freshly built, signed APK to the [`latest-apk`](https://github.com/yaronserlin/cook-sync/releases/tag/latest-apk) release, so that link is always the current build.
 
 Android blocks installs from outside the Play Store by default — allow "Install unknown apps" for your browser when prompted. Requires **Android 7.0 (API 24)** or newer.
 

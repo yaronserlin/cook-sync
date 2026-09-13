@@ -120,11 +120,20 @@ jobs:
       - name: Publish rolling GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_CODE: ${{ github.run_number }}
         run: |
           TAG="latest-apk"
-          APK="cook-sync-client/app/build/outputs/apk/release/app-release.apk"
+          # Same three parts the APK's own versionName carries: MAJOR.MINOR bumped by hand
+          # in gradle.properties, plus this workflow's run number as the build component.
+          MAJOR=$(sed -n 's/^versionMajor=//p' cook-sync-client/gradle.properties | tr -d '[:space:]')
+          MINOR=$(sed -n 's/^versionMinor=//p' cook-sync-client/gradle.properties | tr -d '[:space:]')
+          VERSION="$MAJOR.$MINOR.$VERSION_CODE"
+          # The asset keeps a stable name so the QR code and the README's
+          # /releases/latest/download/ links never go stale; the version is in the title.
+          APK="CookSync.apk"
+          cp cook-sync-client/app/build/outputs/apk/release/app-release.apk "$APK"
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" "$APK" \
-            --title "CookSync (latest build)" \
-            --notes "Automated build from commit ${GITHUB_SHA::7}, built $(date -u +'%Y-%m-%d %H:%M UTC')." \
+            --title "CookSync (V$VERSION)" \
+            --notes "Automated build of v$VERSION from commit ${GITHUB_SHA::7}, built $(date -u +'%Y-%m-%d %H:%M UTC')." \
             --target "$GITHUB_SHA"

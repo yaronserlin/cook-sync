@@ -41,7 +41,7 @@ it is committed to the repository.
 ## Regenerating the QR code
 
 The QR encodes
-`https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk`
+`https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk`
 — a permanent URL that always resolves to the newest published APK — so it only
 needs regenerating if that URL changes:
 
@@ -49,7 +49,7 @@ needs regenerating if that URL changes:
 pip install segno
 python3 -c "
 import segno
-segno.make('https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk', error='h') \
+segno.make('https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk', error='h') \
      .save('docs/media/apk-qr.png', scale=8, border=3, dark='#2a6f4b', light='#ffffff')
 "
 ```
