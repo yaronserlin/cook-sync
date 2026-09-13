@@ -9,10 +9,6 @@ summary: Everything the app does, from installing it to running the moderation c
 
 How to use the CookSync Android app, screen by screen.
 
-> **Note:** this guide describes the app as built. If you maintain your own
-> written user guide, replace the body of this file with it — every link in the
-> repository already points here.
-
 
 ## 1. Installing the app
 

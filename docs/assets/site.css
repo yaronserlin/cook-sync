@@ -5,9 +5,6 @@
  *
  *   - Colours are the app's own tokens (cook-sync-client/.../values/colors.xml):
  *     the warm cream ground, terracotta accent and olive secondary.
- *   - Dark mode is the app's Cooking Mode palette (the deep-brown accent_900
- *     screen), not a generic grey inversion — the app has no system dark theme,
- *     but it does have this one, so the site borrows it.
  *   - Caprasimo sets headings and Figtree sets body text, matching
  *     CookSync.Heading.H2 and the app's layouts.
  *   - Pill buttons and inputs (27dp on a 54dp control), 16dp cards and 32dp
@@ -87,31 +84,6 @@
 
   --measure: 46rem;
   --header-h: 60px;
-}
-
-/* Cooking Mode's palette: color_accent_900 ground, accent_100/300 type. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #402310;                 /* color_accent_900 */
-    --surface: #643312;            /* color_accent_800 */
-    --text: #FFF2EB;               /* color_accent_100 */
-    --text-muted: #FFC6A5;         /* color_accent_300 */
-
-    --accent: #F6A06B;             /* color_accent_400 */
-    --accent-hover: #FFC6A5;       /* color_accent_300 */
-    --accent-deep: #FFE1D0;        /* color_accent_200 */
-    --accent-tint: #643312;
-    --accent-800: #FFC6A5;         /* on dark the button lightens on hover */
-    --on-accent: #402310;
-
-    --olive: #CCDBB2;              /* color_accent_2_300 */
-    --olive-deep: #E1EECC;         /* color_accent_2_200 */
-
-    --border: rgba(255, 242, 235, .18);
-    --border-strong: rgba(255, 242, 235, .32);
-    --code-bg: #643312;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .28);
-  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -418,7 +390,7 @@ h3:hover > .heading-anchor { opacity: .6; }
 .card h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; margin: 0 0 .25em; }
 .card > p { color: var(--text-muted); margin: 0 0 1.3em; }
 
-/* The QR keeps a white card in both schemes so it stays scannable. */
+/* The QR sits on a white card so it stays scannable. */
 .card img.qr {
   width: 156px;
   height: 156px;

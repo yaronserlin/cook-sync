@@ -13,9 +13,6 @@ design behind it lives in the module READMEs
 ([client](https://github.com/yaronserlin/cook-sync/blob/main/cook-sync-client/README.md), [server](https://github.com/yaronserlin/cook-sync/blob/main/cook-sync-server/README.md),
 [shared DTOs](https://github.com/yaronserlin/cook-sync/blob/main/cooksync-DTOs/README.md)).
 
-> **Note:** if you maintain your own functional document, replace the body of
-> this file with it — every link in the repository already points here.
-
 
 ## 1. Purpose and scope
 

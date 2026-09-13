@@ -41,7 +41,7 @@ the repository and served on the web.
 which GitHub Pages runs for us, with no build step to trigger by hand — renders
 `user-guide.md` and `functional-spec.md` in place, so each document is **one
 file** that reads well in the repository and is served as a real page with
-navigation, a generated "on this page" index and a dark mode. There is no second
+navigation and a generated "on this page" index. There is no second
 copy to keep in sync.
 
 | Path | Purpose |
@@ -49,7 +49,7 @@ copy to keep in sync.
 | `_config.yml` | Site metadata, the APK URL used by the layouts, and the excludes that keep this file out of the site |
 | `_layouts/default.html` | Header, navigation and footer shared by every page |
 | `_layouts/doc.html` | The document shell: title block, sidebar index, heading anchors, scrollable tables |
-| `assets/site.css` | All styling, light and dark |
+| `assets/site.css` | All styling, using the app's own colour tokens and typefaces |
 
 To edit a document, edit its `.md` file — nothing else. To preview the site
 locally:
