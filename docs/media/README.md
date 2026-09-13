@@ -43,13 +43,14 @@ it is committed to the repository.
 The QR encodes
 `https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk`
 — a permanent URL that always resolves to the newest published APK — so it only
-needs regenerating if that URL changes:
+needs regenerating if that URL changes. The ink colour is the app's
+`color_accent_900`; keep it dark on white so it stays scannable:
 
 ```bash
 pip install segno
 python3 -c "
 import segno
 segno.make('https://github.com/yaronserlin/cook-sync/releases/latest/download/app-release.apk', error='h') \
-     .save('docs/media/apk-qr.png', scale=8, border=3, dark='#2a6f4b', light='#ffffff')
+     .save('docs/media/apk-qr.png', scale=8, border=3, dark='#402310', light='#ffffff')
 "
 ```

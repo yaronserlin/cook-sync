@@ -6,7 +6,12 @@
 <title>{% if page.title and page.title != site.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
 <meta name="description" content="{{ page.summary | default: site.description | strip_newlines }}">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F5EAD8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#402310" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="{{ site.baseurl }}/logo.png">
+<!-- Caprasimo and Figtree are the app's own faces, self-hosted in assets/fonts. -->
+<link rel="preload" as="font" type="font/woff2" href="{{ site.baseurl }}/assets/fonts/figtree-var-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="{{ site.baseurl }}/assets/fonts/caprasimo-400-latin.woff2" crossorigin>
 <link rel="stylesheet" href="{{ site.baseurl }}/assets/site.css">
 </head>
 <body>
