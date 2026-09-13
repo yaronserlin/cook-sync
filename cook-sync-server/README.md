@@ -46,7 +46,11 @@ All routes are prefixed `/api`. Grouped by controller:
 | `UnitController` | `/api/units` | List measurement units (any authenticated user); create/delete (admin only) | Authenticated (mutations: admin) |
 | `UserController` | `/api/users` | A user's public profile, recipes, and favorites — gated by that user's own privacy settings | Authenticated |
 | `CloudinaryController` | `/api/cloudinary` | Signed upload signature + base folder, for direct client → Cloudinary uploads | Authenticated |
-| `AdminController` | `/api/admin` | Moderation console: stats, user list/suspend/enable/delete, reported reviews, duplicate-tag detection/merge | Admin only (`@PreAuthorize`) |
+| `DeviceController` | `/api/devices` | Register a device's push token (`POST`), unregister it on logout/uninstall (`DELETE /{pushToken}`) | Authenticated |
+| `NotificationPreferencesController` | `/api/notification-preferences` | Read (`GET`) and update (`PUT`) the caller's per-category push preferences | Authenticated |
+| `AnnouncementController` | `/api/announcements` | Fetch the currently active system announcement (`GET /active`), dismiss it for the calling user (`POST /{id}/dismiss`) | Authenticated |
+| `AppConfigController` | `/api/app-config` | Minimum supported client version + download link. **Public** — a client too old to trust its own login flow still has to be able to learn that it must update, so this is in `SecurityConfig`'s permit-all list | Public |
+| `AdminController` | `/api/admin` | Moderation console: stats, user list/suspend/enable/delete, reported reviews, duplicate-tag detection/merge, system announcements (create/list/deactivate), and publishing the app-config the endpoint above serves | Admin only (`@PreAuthorize`) |
 
 Errors are always a uniform JSON shape: `{"success": false, "data": null, "error": {"status": ..., "errorCode": "...", "message": "..."}, "message": null}`.
 

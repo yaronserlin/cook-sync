@@ -155,7 +155,9 @@ Administrators work from a console covering:
 - **Tags** — detection of near-duplicate tags (e.g. hyphenated vs. spaced
   variants) and merging them into a single canonical tag.
 - **Units** — maintenance of the measurement-unit catalog offered in the wizard.
-- **Announcements** — broadcasting a system message to users.
+- **Announcements** — broadcasting a system message to users, and setting the
+  minimum supported client version and download link that back
+  [§4.10](#410-client-version-gating).
 
 Platform statistics are shown alongside.
 
@@ -169,6 +171,15 @@ which categories they receive through notification preferences.
 Recipe content carries a source locale and can be automatically translated
 between Hebrew and English, so a recipe written in one language is readable in
 the other.
+
+### 4.10 Client version gating
+
+The API publishes a minimum supported client version for the platform, together
+with a download link. A client older than that minimum is stopped at a
+full-screen update prompt and cannot continue into the app. This check is
+deliberately reachable **without authentication** — a build too old to be
+trusted with the sign-in flow still has to be able to learn that it must update.
+Administrators set the minimum version and the download link from the console.
 
 ## 5. Domain model
 
@@ -196,8 +207,9 @@ Ownership is checked server-side on every mutation, never assumed from the
 client.
 
 **Authorization.** Every endpoint except registration, sign-in, token refresh,
-password recovery, OTP verification and the health check requires a valid access
-token. Admin endpoints additionally require the admin claim.
+password recovery, OTP verification, the client-version lookup
+([§4.10](#410-client-version-gating)) and the health check requires a valid
+access token. Admin endpoints additionally require the admin claim.
 
 **Verification before existence.** An account does not exist until its OTP is
 verified; an unverified registration expires.
@@ -265,9 +277,10 @@ the functional grouping is:
 | Units | `/api/units` | List (any user); create and delete (admin) |
 | Users | `/api/users` | Public profile, recipes and favorites, gated by privacy settings |
 | Media | `/api/cloudinary` | Upload signature for direct-to-cloud upload |
-| Devices & notifications | `/api/devices`, notification preferences | Device registration and per-category push preferences |
-| Announcements | announcements | System announcements |
-| App configuration | app config | Client-facing runtime configuration |
+| Devices | `/api/devices` | Registering and unregistering a device's push token |
+| Notification preferences | `/api/notification-preferences` | Reading and updating per-category push preferences |
+| Announcements | `/api/announcements` | Fetching the active system announcement and dismissing it |
+| App configuration | `/api/app-config` | Minimum supported client version and download link — the one endpoint besides sign-in and health that is reachable without a token, so an out-of-date client can learn it must update |
 | Administration | `/api/admin` | Statistics, users, reported reviews, duplicate-tag detection and merge |
 
 ---

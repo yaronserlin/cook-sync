@@ -209,9 +209,13 @@ console**, which has five sections:
 | **Reports** | Work through reviews that users reported, and act on them |
 | **Tags** | Find near-duplicate tags and merge them into one |
 | **Units** | Maintain the catalog of measurement units available in the wizard |
-| **Announcements** | Broadcast a system announcement to users |
+| **Announcements** | Broadcast a system announcement to users, and set the minimum app version required to keep using CookSync |
 
 The console also shows summary statistics for the platform.
+
+Users see an active announcement inside the app and can dismiss it. If an
+administrator raises the minimum supported version above the build installed on
+a device, that device is held at an update screen until the app is updated.
 
 ## 14. Troubleshooting
 
