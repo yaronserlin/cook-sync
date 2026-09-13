@@ -1,0 +1,42 @@
+# GitHub Pages configuration for the CookSync project site.
+#
+# The site is published from this folder (Settings -> Pages -> Branch: main, /docs).
+# Jekyll renders the Markdown documents in place, so user-guide.md and
+# functional-spec.md are the single source of truth: they read well in the
+# repository and are served as real pages here, with no second copy to keep in
+# sync and no build step to run by hand.
+
+title: CookSync
+description: >-
+  A mobile app for sharing and discovering cooking recipes — browse and search
+  recipes, save favorites, follow a guided step-by-step cooking mode, and
+  publish your own recipes.
+url: https://yaronserlin.github.io
+baseurl: /cook-sync
+
+# Permanent download URL for the newest signed APK, published by the onPush
+# workflow. Referenced by the layouts so it lives in exactly one place.
+apk_url: https://github.com/yaronserlin/cook-sync/releases/latest/download/CookSync.apk
+repo_url: https://github.com/yaronserlin/cook-sync
+
+# Rewrites relative links to .md files (e.g. functional-spec.md) into their
+# rendered URLs, so the same link works both in the repository and on the site.
+# GitHub Pages enables this plugin by default; declaring it keeps the local
+# build identical to the published one.
+plugins:
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: false
+
+# Markdown files that are repository navigation rather than site pages.
+exclude:
+  - README.md
+  - media/README.md
+  - Gemfile
+  - Gemfile.lock
+
+kramdown:
+  input: GFM
+  auto_ids: true

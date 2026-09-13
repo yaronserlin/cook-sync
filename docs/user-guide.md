@@ -1,3 +1,10 @@
+---
+layout: doc
+title: User Guide
+eyebrow: Documentation
+summary: Everything the app does, from installing it to running the moderation console.
+---
+
 # CookSync — User Guide
 
 How to use the CookSync Android app, screen by screen.
@@ -6,24 +13,6 @@ How to use the CookSync Android app, screen by screen.
 > written user guide, replace the body of this file with it — every link in the
 > repository already points here.
 
-**Contents**
-
-1. [Installing the app](#1-installing-the-app)
-2. [Creating an account](#2-creating-an-account)
-3. [Signing in and recovering a password](#3-signing-in-and-recovering-a-password)
-4. [Finding recipes](#4-finding-recipes)
-5. [Reading a recipe](#5-reading-a-recipe)
-6. [Cooking Mode](#6-cooking-mode)
-7. [Favorites](#7-favorites)
-8. [Personal notes](#8-personal-notes)
-9. [Ratings and reviews](#9-ratings-and-reviews)
-10. [Publishing your own recipe](#10-publishing-your-own-recipe)
-11. [Managing your recipes](#11-managing-your-recipes)
-12. [Your profile and settings](#12-your-profile-and-settings)
-13. [Admin console](#13-admin-console)
-14. [Troubleshooting](#14-troubleshooting)
-
----
 
 ## 1. Installing the app
 
@@ -39,7 +28,7 @@ then open the downloaded file again.
 
 The release build talks to the hosted CookSync API, so no local setup is
 required. To build and run the app against your own server instead, see
-[`cook-sync-client/README.md`](../cook-sync-client/README.md).
+[`cook-sync-client/README.md`](https://github.com/yaronserlin/cook-sync/blob/main/cook-sync-client/README.md).
 
 ## 2. Creating an account
 
@@ -238,5 +227,5 @@ the app you'll need to sign in again.
 ---
 
 Building or running the project yourself is covered in the
-[main README](../README.md); what the system does and why is covered in the
+[main README](https://github.com/yaronserlin/cook-sync/blob/main/README.md); what the system does and why is covered in the
 [functional specification](functional-spec.md).

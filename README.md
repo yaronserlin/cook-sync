@@ -55,12 +55,14 @@ New to the app? The [user guide](docs/user-guide.md) walks through every screen.
 
 ## Documentation
 
-| Document | What it covers |
-|---|---|
-| [User guide](docs/user-guide.md) | Using the app, screen by screen — accounts, search, Cooking Mode, publishing a recipe, settings, admin console |
-| [Functional specification](docs/functional-spec.md) | Actors, functional areas, domain model, business rules, external services, API surface |
-| [Documentation index](docs/README.md) | Everything written about the project, in one place |
-| [Privacy policy](https://yaronserlin.github.io/cook-sync/privacy.html) · [Terms of use](https://yaronserlin.github.io/cook-sync/terms.html) | Legal documents, also opened from inside the app |
+Every document is also published on the [project site](https://yaronserlin.github.io/cook-sync/), rendered from these same files.
+
+| Document | Read online | What it covers |
+|---|---|---|
+| [User guide](docs/user-guide.md) | [↗](https://yaronserlin.github.io/cook-sync/user-guide.html) | Using the app, screen by screen — accounts, search, Cooking Mode, publishing a recipe, settings, admin console |
+| [Functional specification](docs/functional-spec.md) | [↗](https://yaronserlin.github.io/cook-sync/functional-spec.html) | Actors, functional areas, domain model, business rules, external services, API surface |
+| [Documentation index](docs/README.md) | — | Everything written about the project, in one place, and how the site is built |
+| Privacy policy · Terms of use | [↗](https://yaronserlin.github.io/cook-sync/privacy.html) · [↗](https://yaronserlin.github.io/cook-sync/terms.html) | Legal documents, also shown inside the app |
 
 ## Repository layout
 
