@@ -154,6 +154,7 @@
             android:visibility="gone">
 
             <ImageView
+                android:importantForAccessibility="no"
                 android:id="@+id/iv_empty_icon"
                 android:layout_width="@dimen/dp_56"
                 android:layout_height="@dimen/dp_56"
