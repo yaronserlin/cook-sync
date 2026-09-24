@@ -55,6 +55,7 @@
                 tools:visibility="visible">
 
                 <ImageView
+                    android:contentDescription="@string/cd_cover_photo"
                     android:id="@+id/iv_cover_preview"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -75,6 +76,7 @@
                 android:orientation="vertical">
 
                 <ImageView
+                    android:importantForAccessibility="no"
                     android:layout_width="@dimen/dp_26"
                     android:layout_height="@dimen/dp_26"
                     android:src="@drawable/ic_add"
