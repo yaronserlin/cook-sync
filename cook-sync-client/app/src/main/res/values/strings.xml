@@ -557,4 +557,10 @@
     <string name="wizard_resume_draft_subtitle">Tap to resume</string>
     <string name="wizard_draft_badge">Draft</string>
     <string name="my_recipes_draft_untitled">Untitled draft</string>
+
+    <!-- Screen-reader labels for photos -->
+    <string name="cd_recipe_photo">Recipe photo</string>
+    <string name="cd_step_photo">Step photo</string>
+    <string name="cd_description_photo">Recipe description photo</string>
+    <string name="cd_cover_photo">Cover photo</string>
 </resources>
