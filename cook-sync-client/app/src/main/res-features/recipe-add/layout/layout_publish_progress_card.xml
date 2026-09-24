@@ -33,6 +33,7 @@
                 android:indeterminateTint="@color/color_accent" />
 
             <ImageView
+                android:importantForAccessibility="no"
                 android:id="@+id/iv_publish_success_icon"
                 android:layout_width="@dimen/dp_24"
                 android:layout_height="@dimen/dp_24"
