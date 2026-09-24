@@ -16,6 +16,9 @@
         android:gravity="center"
         android:textColor="@color/color_bg"
         android:textSize="@dimen/sp_14"
+        app:autoSizeMaxTextSize="@dimen/sp_14"
+        app:autoSizeMinTextSize="8sp"
+        app:autoSizeTextType="uniform"
         tools:text="1" />
 
     <LinearLayout
@@ -54,6 +57,7 @@
                 app:strokeWidth="@dimen/dp_0">
 
                 <ImageView
+                    android:contentDescription="@string/cd_step_photo"
                     android:id="@+id/step_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
