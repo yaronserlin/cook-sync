@@ -53,6 +53,7 @@
             app:strokeWidth="@dimen/dp_0">
 
             <ImageView
+                android:contentDescription="@string/cd_description_photo"
                 android:id="@+id/iv_block_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
