@@ -11,6 +11,7 @@
     android:paddingVertical="@dimen/dp_10">
 
     <ImageView
+        android:importantForAccessibility="no"
         android:id="@+id/iv_tag_suggestion_icon"
         android:layout_width="@dimen/dp_14"
         android:layout_height="@dimen/dp_14"
