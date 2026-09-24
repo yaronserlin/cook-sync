@@ -69,6 +69,7 @@
             android:paddingHorizontal="@dimen/dp_14">
 
             <ImageView
+                android:importantForAccessibility="no"
                 android:layout_width="@dimen/dp_16"
                 android:layout_height="@dimen/dp_16"
                 android:src="@drawable/ic_add"
