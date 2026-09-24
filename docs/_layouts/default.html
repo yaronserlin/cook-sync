@@ -22,7 +22,7 @@
       CookSync
     </a>
     <nav class="site-nav">
-      {% assign nav = "Home,/|User Guide,/user-guide.html|Functional Spec,/functional-spec.html|Privacy,/privacy.html|Terms,/terms.html" | split: "|" %}
+      {% assign nav = "Home,/|User Guide,/user-guide.html|Functional Spec,/functional-spec.html|Privacy,/privacy.html|Terms,/terms.html|Accessibility,/accessibility.html" | split: "|" %}
       {% for item in nav %}
         {% assign parts = item | split: "," %}
         {% assign href = site.baseurl | append: parts[1] %}
@@ -41,6 +41,7 @@
     <a href="{{ site.baseurl }}/functional-spec.html">Functional Spec</a>
     <a href="{{ site.baseurl }}/privacy.html">Privacy Policy</a>
     <a href="{{ site.baseurl }}/terms.html">Terms of Use</a>
+    <a href="{{ site.baseurl }}/accessibility.html">Accessibility</a>
     <a href="{{ site.apk_url }}">Download APK</a>
     <a href="{{ site.repo_url }}">Source code</a>
   </nav>
