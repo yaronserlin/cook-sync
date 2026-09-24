@@ -170,6 +170,7 @@ dependencies {
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.mockito.core)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.espresso.accessibility)
     androidTestImplementation(libs.ext.junit)
 
     // Shared DTOs (../cooksync-DTOs) — single source of truth for request/response
