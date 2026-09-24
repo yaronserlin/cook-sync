@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.CookSync" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- Light only: the palette is designed for light backgrounds and there are no
+         values-night colors. Under DayNight, the system dark mode switched Material's
+         default colors (dialogs, sheets, default text) to dark while the app's own cream
+         backgrounds stayed light, which mixed dark and light and broke contrast. -->
+    <style name="Theme.CookSync" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/color_accent</item>
         <item name="colorPrimaryDark">@color/color_accent_700</item>
         <item name="colorAccent">@color/color_accent</item>
