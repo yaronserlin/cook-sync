@@ -556,4 +556,10 @@
     <string name="wizard_resume_draft_subtitle">הקש/י כדי להמשיך</string>
     <string name="wizard_draft_badge">טיוטה</string>
     <string name="my_recipes_draft_untitled">טיוטה ללא כותרת</string>
+
+    <!-- Screen-reader labels for photos -->
+    <string name="cd_recipe_photo">תמונת המתכון</string>
+    <string name="cd_step_photo">תמונת השלב</string>
+    <string name="cd_description_photo">תמונה בתיאור המתכון</string>
+    <string name="cd_cover_photo">תמונת השער</string>
 </resources>
