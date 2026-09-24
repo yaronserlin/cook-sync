@@ -15,6 +15,7 @@
         android:background="@drawable/bg_accent_circle_200">
 
         <ImageView
+            android:importantForAccessibility="no"
             android:layout_width="@dimen/dp_22"
             android:layout_height="@dimen/dp_22"
             android:layout_gravity="center"
